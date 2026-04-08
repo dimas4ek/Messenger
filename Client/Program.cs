@@ -9,9 +9,6 @@ namespace Client;
 
 internal static class Program
 {
-    /// <summary>
-    ///     The main entry point for the application.
-    /// </summary>
     [STAThread]
     private static async Task Main()
     {
@@ -61,7 +58,6 @@ internal static class Program
         services.AddSingleton<UserContext>();
 
         var apiBaseUrl = remoteConfig.ApiBaseUrl;
-        MessageBox.Show(apiBaseUrl);
 
         services.AddHttpClient<AuthApiClient>(client => client.BaseAddress = new Uri(apiBaseUrl));
         services.AddHttpClient<FriendApiClient>(client => client.BaseAddress = new Uri(apiBaseUrl));

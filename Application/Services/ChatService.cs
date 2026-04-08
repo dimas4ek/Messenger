@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Application.DTO;
+﻿using Application.DTO;
 using Application.Interfaces;
 using Application.Utils;
 using Application.Utils.Mapper;
@@ -84,7 +83,6 @@ public class ChatService(
         if (companionUser == null)
             return Result<MessageInfo>.Failure(ErrorCode.UserNotFound);
 
-        Debug.WriteLine(companionUser.Username);
         var conversationResult = await GetOrCreatePrivateConversation(currentUserId, companionUser.Id);
         if (!conversationResult.IsSuccess)
             return Result<MessageInfo>.Failure(conversationResult.ErrorCode);

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using Application.Utils;
 using Client.Utils;
 using Contracts.DTO;
@@ -49,11 +48,9 @@ public class AuthApiClient
 
             return ApiResult<LogoutResponse>.Failure(errorResponse?.ErrorCode ?? ErrorCode.UnknownError);
         }
-        catch (Exception e)
+        catch
         {
-            Debug.WriteLine(e.Message);
-            throw;
-            //return ApiResult<bool>.Failure(ErrorCode.AuthError);
+            return ApiResult<LogoutResponse>.Failure(ErrorCode.AuthError);
         }
     }
 
@@ -68,7 +65,6 @@ public class AuthApiClient
             });
 
             var body = await response.Content.ReadAsStringAsync();
-            MessageBox.Show($"Status: {(int)response.StatusCode}\nBody: {body}");
 
             if (response.IsSuccessStatusCode)
             {
@@ -85,10 +81,7 @@ public class AuthApiClient
         }
         catch (Exception e)
         {
-            Debug.WriteLine($"error: {e.Message}");
             return ApiResult<AuthResponse>.Failure(ErrorCode.AuthError);
         }
     }
-
-
 }

@@ -17,7 +17,6 @@ public class Conversation
 
     [Column("updated_at")] public DateTime UpdatedAt { get; set; }
 
-    // Навигационные свойства
     public ICollection<ConversationParticipant> Participants { get; set; } = new List<ConversationParticipant>();
     public ICollection<Message> Messages { get; set; } = new List<Message>();
 }

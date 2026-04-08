@@ -119,8 +119,11 @@ public class FriendApiClient
     {
         try
         {
-            var response = await _httpClient.GetAsync(
-                $"api/friend/already-friends?currentUserId={currentUserId}&friendName={Uri.EscapeDataString(friendName)}");
+            var response = await _httpClient.PostAsJsonAsync("api/friend/already-friends", new AlreadyFriendsRequest
+            {
+                CurrentUserId = currentUserId,
+                FriendName = friendName
+            });
 
             if (response.IsSuccessStatusCode)
             {

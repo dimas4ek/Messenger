@@ -14,7 +14,6 @@ public class ConversationParticipant
 
     [Column("joined_at")] public DateTime JoinedAt { get; set; }
 
-    // Навигационные свойства
     public Conversation Conversation { get; set; }
     public User Participant { get; set; }
 }

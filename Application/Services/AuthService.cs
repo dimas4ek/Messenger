@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Application.DTO;
+﻿using Application.DTO;
 using Application.Interfaces;
 using Application.Utils;
 using Application.Utils.Mapper;
@@ -17,11 +16,7 @@ public class AuthService(IUserRepository userRepository, IAppMapper mapper)
 
         try
         {
-            if (await userRepository.UserExists(username))
-            {
-                Debug.WriteLine("RegisterUser: пользователь уже существует");
-                return Result<UserInfo>.Failure(ErrorCode.UsernameTaken);
-            }
+            if (await userRepository.UserExists(username)) return Result<UserInfo>.Failure(ErrorCode.UsernameTaken);
 
             var user = new User
             {
@@ -32,19 +27,13 @@ public class AuthService(IUserRepository userRepository, IAppMapper mapper)
             await userRepository.Add(user);
             await userRepository.Save();
 
-            Debug.WriteLine("User saved");
             var userDto = MapToUserInfo(user);
-            Debug.WriteLine("User mapped");
 
             return Result<UserInfo>.Success(userDto);
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"RegisterUser error: {ex}");
             return Result<UserInfo>.Failure(ErrorCode.DatabaseError);
-
-            /*Debug.WriteLine($"RegisterUser error: {ex.Message}");
-            return Result<UserInfo>.Failure(ErrorCode.DatabaseError);*/
         }
     }
 
@@ -57,17 +46,10 @@ public class AuthService(IUserRepository userRepository, IAppMapper mapper)
         {
             var user = await userRepository.GetByUsername(username);
 
-            if (user == null)
-            {
-                Debug.WriteLine("LoginUser: пользователь не найден");
-                return Result<UserInfo>.Failure(ErrorCode.UserNotFound);
-            }
+            if (user == null) return Result<UserInfo>.Failure(ErrorCode.UserNotFound);
 
             if (!BCrypt.Net.BCrypt.Verify(password, user.Password))
-            {
-                Debug.WriteLine("LoginUser: неверный пароль");
                 return Result<UserInfo>.Failure(ErrorCode.InvalidPassword);
-            }
 
             user.Status = UserStatus.Online;
             await userRepository.Save();
@@ -78,7 +60,6 @@ public class AuthService(IUserRepository userRepository, IAppMapper mapper)
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"LoginUser error: {ex}");
             return Result<UserInfo>.Failure(ErrorCode.DatabaseError);
         }
     }

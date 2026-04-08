@@ -36,14 +36,19 @@ public class Program
         app.MapHub<ChatHub>("/chatHub");
         app.MapGet("/health", () => Results.Ok("OK"));
 
+        app.UseSwagger();
+        app.UseSwaggerUI();
+
         await app.RunAsync();
     }
 
     private static void ConfigureServerServices(IServiceCollection services, WebApplicationBuilder builder)
     {
         services.AddControllers();
-        //services.AddOpenApi();
         services.AddSignalR();
+
+        services.AddEndpointsApiExplorer();
+        services.AddSwaggerGen();
 
         services.AddDbContext<MessengerContext>(options =>
         {

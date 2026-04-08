@@ -1,4 +1,5 @@
 ﻿using Client.Config;
+using Client.Service;
 using Contracts.DTO.Chat;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -7,12 +8,14 @@ namespace Client.Realtime;
 
 public class ChatRealtimeClient
 {
+    private readonly IDialogService _dialogService;
     private readonly RemoteConfig _remoteConfig;
     private HubConnection? _connection;
 
-    public ChatRealtimeClient(RemoteConfig remoteConfig)
+    public ChatRealtimeClient(RemoteConfig remoteConfig, IDialogService dialogService)
     {
         _remoteConfig = remoteConfig;
+        _dialogService = dialogService;
     }
 
     public event Action<MessageResponse>? MessageReceived;
@@ -36,7 +39,7 @@ public class ChatRealtimeClient
             }
             catch (Exception e)
             {
-                MessageBox.Show(e.ToString());
+                _dialogService.ShowError(e.Message);
             }
 
             if (_connection.State == HubConnectionState.Connected)
@@ -47,9 +50,7 @@ public class ChatRealtimeClient
         }
         catch (Exception e)
         {
-            ;
-            MessageBox.Show(e.ToString());
-            throw;
+            _dialogService.ShowError(e.Message);
         }
     }
 

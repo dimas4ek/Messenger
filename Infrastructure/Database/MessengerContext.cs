@@ -20,24 +20,6 @@ public class MessengerContext : DbContext
     public DbSet<Message> Messages => Set<Message>();
     public DbSet<Friendship> Friends => Set<Friendship>();
 
-    /*protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        if (!optionsBuilder.IsConfigured)
-        {
-            string connectionString = "Host=localhost;Port=5432;Database=messenger_db;Username=postgres;Password=root";
-
-            optionsBuilder.UseNpgsql(connectionString, npgsqlOptions =>
-            {
-                npgsqlOptions.MapEnum<UserStatus>("user_status");
-                npgsqlOptions.MapEnum<ParticipationRole>("participation_role");
-                npgsqlOptions.MapEnum<ConversationType>("conversation_type");
-            });
-
-            optionsBuilder.LogTo(Console.WriteLine, LogLevel.Information);
-            optionsBuilder.EnableSensitiveDataLogging(); //DEV!!!
-        }
-    }*/
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<User>(entity =>

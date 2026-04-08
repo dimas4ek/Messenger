@@ -22,7 +22,6 @@ public class Message
 
     [Column("updated_at")] public DateTime UpdatedAt { get; set; }
 
-    // Навигационные свойства
     public Conversation Conversation { get; set; }
     public User Sender { get; set; }
 }

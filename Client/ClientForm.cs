@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Threading.Channels;
+﻿using System.Threading.Channels;
 using Application.DTO;
 using Client.ApiClients;
 using Client.Properties;
@@ -13,33 +12,12 @@ namespace Client;
 
 public partial class ClientForm : Form
 {
-    private readonly ChatRealtimeClient _chatRealtimeClient;
-
     private readonly AuthApiClient _authApiClient;
     private readonly ChatApiClient _chatApiClient;
-    private readonly FriendApiClient _friendApiClient;
-    private readonly UserApiClient _userApiClient;
+    private readonly ChatRealtimeClient _chatRealtimeClient;
 
     private readonly IDialogService _dialogService;
-
-    private readonly UserContext _userContext;
-
-    private UserInfo? _companion;
-    private UserInfo _currentUser;
-
-    private List<UserInfo> _friendList = [];
-    private Guna2TextBox _addFriendTxtBox;
-    private bool _isFriendTxtBoxOpen;
-
-    private FlowLayoutPanel _chatPanel;
-    private List<MessageInfo>? _messages = [];
-
-    private Guna2Panel _profilePanel;
-    private bool _isProfileOpen;
-
-    private CancellationTokenSource? _sendMessagesCts;
-
-    private sealed record OutgoingChatMessage(int SenderId, int CompanionId, string Text);
+    private readonly FriendApiClient _friendApiClient;
 
     private readonly Channel<OutgoingChatMessage> _messageQueue =
         Channel.CreateBounded<OutgoingChatMessage>(new BoundedChannelOptions(100)
@@ -49,9 +27,29 @@ public partial class ClientForm : Form
             FullMode = BoundedChannelFullMode.Wait
         });
 
+    private readonly UserApiClient _userApiClient;
+
+    private readonly UserContext _userContext;
+    private Guna2TextBox _addFriendTxtBox;
+
+    private FlowLayoutPanel _chatPanel;
+
+    private UserInfo? _companion;
+    private UserInfo _currentUser;
+
+    private List<UserInfo> _friendList = [];
+    private bool _isFriendTxtBoxOpen;
+    private bool _isProfileOpen;
+    private List<MessageInfo>? _messages = [];
+
+    private Guna2Panel _profilePanel;
+
+    private CancellationTokenSource? _sendMessagesCts;
+
     public ClientForm(
         UserContext userContext, IDialogService dialogService, FriendApiClient friendApiClient,
-        UserApiClient userApiClient, ChatApiClient chatApiClient, ChatRealtimeClient chatRealtimeClient, AuthApiClient authApiClient)
+        UserApiClient userApiClient, ChatApiClient chatApiClient, ChatRealtimeClient chatRealtimeClient,
+        AuthApiClient authApiClient)
     {
         _userContext = userContext;
         _dialogService = dialogService;
@@ -65,6 +63,13 @@ public partial class ClientForm : Form
 
         Load += ClientForm_Load;
     }
+
+    public void btnUpdServers_Click(object sender, EventArgs e)
+    {
+        //todo
+    }
+
+    private sealed record OutgoingChatMessage(int SenderId, int CompanionId, string Text);
 
     #region Main Things
 
@@ -103,10 +108,7 @@ public partial class ClientForm : Form
             if (currentUser != null)
             {
                 var result = await _authApiClient.Logout(currentUser.Id);
-                if (!result.IsSuccess || result.Value == null)
-                {
-                    _dialogService.ShowError(result.ToMessage());
-                }
+                if (!result.IsSuccess || result.Value == null) _dialogService.ShowError(result.ToMessage());
                 _userContext.Clear();
             }
 
@@ -587,8 +589,6 @@ public partial class ClientForm : Form
             _currentUser.Id,
             _companion.Id,
             text));
-
-        Debug.WriteLine($"Queued: {text}");
     }
 
     private async Task ProcessOutgoingMessages(CancellationToken token)
@@ -597,8 +597,6 @@ public partial class ClientForm : Form
         {
             await foreach (var item in _messageQueue.Reader.ReadAllAsync(token))
             {
-                Debug.WriteLine($"Sending: {item.Text}");
-
                 var result = await _chatApiClient.SendMessage(item.SenderId, item.CompanionId, item.Text);
 
                 if (result is { IsSuccess: true, Value: not null }) continue;
@@ -657,9 +655,4 @@ public partial class ClientForm : Form
     }
 
     #endregion
-
-    public void btnUpdServers_Click(object sender, EventArgs e)
-    {
-        //todo
-    }
 }
