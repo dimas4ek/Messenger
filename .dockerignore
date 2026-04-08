@@ -1,0 +1,8 @@
+**/bin
+**/obj
+.git
+.vs
+.dotnet-home
+README*
+riderModule.iml
+_ReSharper.Caches
