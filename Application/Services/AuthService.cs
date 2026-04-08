@@ -32,14 +32,19 @@ public class AuthService(IUserRepository userRepository, IAppMapper mapper)
             await userRepository.Add(user);
             await userRepository.Save();
 
+            Debug.WriteLine("User saved");
             var userDto = MapToUserInfo(user);
+            Debug.WriteLine("User mapped");
 
             return Result<UserInfo>.Success(userDto);
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"RegisterUser error: {ex.Message}");
+            Debug.WriteLine($"RegisterUser error: {ex}");
             return Result<UserInfo>.Failure(ErrorCode.DatabaseError);
+
+            /*Debug.WriteLine($"RegisterUser error: {ex.Message}");
+            return Result<UserInfo>.Failure(ErrorCode.DatabaseError);*/
         }
     }
 

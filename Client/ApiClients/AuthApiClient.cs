@@ -67,6 +67,9 @@ public class AuthApiClient
                 Password = password
             });
 
+            var body = await response.Content.ReadAsStringAsync();
+            MessageBox.Show($"Status: {(int)response.StatusCode}\nBody: {body}");
+
             if (response.IsSuccessStatusCode)
             {
                 var authResponse = await response.Content.ReadFromJsonAsync<AuthResponse>();
@@ -82,6 +85,7 @@ public class AuthApiClient
         }
         catch (Exception e)
         {
+            Debug.WriteLine($"error: {e.Message}");
             return ApiResult<AuthResponse>.Failure(ErrorCode.AuthError);
         }
     }
