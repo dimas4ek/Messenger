@@ -36,7 +36,7 @@ public class MessengerContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Type)
-                .HasColumnType("type")
+                .HasColumnType("chat_type")
                 .HasDefaultValue(ChatType.Private);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
@@ -46,7 +46,7 @@ public class MessengerContext : DbContext
         {
             entity.HasKey(e => new { e.ChatId, e.ParticipantId });
             entity.Property(e => e.Role)
-                .HasColumnType("role")
+                .HasColumnType("chat_participation_role")
                 .HasDefaultValue(ChatParticipationRole.Member);
             entity.Property(e => e.JoinedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
