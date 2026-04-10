@@ -23,7 +23,7 @@ public static class DatabaseInitializer
                                end if;
 
                                if not exists (select 1 from pg_type where typname = 'chat_participation_role') then
-                                   create type participation_role as enum ('member', 'admin');
+                                   create type chat_participation_role as enum ('member', 'admin');
                                end if;
 
                                if not exists (select 1 from pg_type where typname = 'user_status') then
