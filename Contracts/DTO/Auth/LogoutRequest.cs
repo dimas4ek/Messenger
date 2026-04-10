@@ -1,6 +1,8 @@
-﻿namespace Contracts.DTO.Auth;
+﻿using System.Text.Json.Serialization;
+
+namespace Contracts.DTO.Auth;
 
 public class LogoutRequest
 {
-    public int UserId { get; set; }
+    [JsonPropertyName("userId")] public int UserId { get; set; }
 }

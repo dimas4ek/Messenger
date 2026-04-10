@@ -1,22 +1,14 @@
-﻿using Application.DTO;
-using Application.Interfaces;
-using Application.Utils.Mapper;
+﻿using Application.Interfaces;
 using Domain.Entities;
 using Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories;
 
-public class FriendRepository : Repository<Friendship>, IFriendRepository
+public class FriendRepository(MessengerContext context)
+    : Repository<Friendship>(context), IFriendRepository
 {
-    private readonly MessengerContext _context;
-    private readonly IAppMapper _mapper;
-
-    public FriendRepository(MessengerContext context, IAppMapper mapper) : base(context)
-    {
-        _context = context;
-        _mapper = mapper;
-    }
+    private readonly MessengerContext _context = context;
 
     public async Task AddFriend(int userId, int friendId)
     {
@@ -29,19 +21,6 @@ public class FriendRepository : Repository<Friendship>, IFriendRepository
         return await _context.Friends
             .Include(f => f.Friend)
             .Where(f => f.UserId == userId)
-            .ToListAsync();
-    }
-
-    public async Task<List<UserInfo>> SearchFriends(int userId, string text)
-    {
-        if (string.IsNullOrWhiteSpace(text))
-            return [];
-
-        return await _context.Friends
-            .Where(f =>
-                f.UserId == userId &&
-                EF.Functions.ILike(f.Friend.Username, $"%{text}%"))
-            .Select(f => _mapper.Map<User, UserInfo>(f.Friend))
             .ToListAsync();
     }
 

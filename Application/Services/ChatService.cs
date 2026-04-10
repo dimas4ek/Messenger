@@ -8,72 +8,62 @@ using Domain.Enums;
 namespace Application.Services;
 
 public class ChatService(
-    IConversationRepository conversationRepository,
+    IChatRepository chatRepository,
     IMessageRepository messageRepository,
     IUserRepository userRepository,
     IAppMapper mapper)
 {
-    public async Task<Result<ConversationInfo>> LoadPrivateConversation(int currentUserId, int companionId)
+    public async Task<Result<ChatInfo>> LoadPrivateChat(int currentUserId, int companionId)
     {
-        return await GetOrCreatePrivateConversation(currentUserId, companionId);
+        return await GetOrCreatePrivateChat(currentUserId, companionId);
     }
 
-    private async Task<Result<ConversationInfo>> GetOrCreatePrivateConversation(int currentUserId, int companionId)
+    private async Task<Result<ChatInfo>> GetOrCreatePrivateChat(int currentUserId, int companionId)
     {
-        var conversation = await conversationRepository.GetByUsersId(currentUserId, companionId);
+        var chat = await chatRepository.GetByParticipantsId(currentUserId, companionId);
 
-        if (conversation != null)
+        if (chat != null)
         {
-            var conversationDto = mapper.Map<Conversation, ConversationInfo>(conversation);
-            return Result<ConversationInfo>.Success(conversationDto);
+            var chatDto = mapper.Map<Chat, ChatInfo>(chat);
+            return Result<ChatInfo>.Success(chatDto);
         }
 
-        var newConversation = new Conversation
+        var newChat = new Chat
         {
-            Type = ConversationType.Private
+            Type = ChatType.Private
         };
 
-        await conversationRepository.Add(newConversation);
-        await conversationRepository.Save();
+        await chatRepository.Add(newChat);
+        await chatRepository.Save();
 
         var participants = new[]
         {
-            new ConversationParticipant
+            new ChatParticipant
             {
-                ConversationId = newConversation.Id,
+                ChatId = newChat.Id,
                 ParticipantId = currentUserId,
-                Role = ParticipationRole.Member
+                Role = ChatParticipationRole.Member
             },
-            new ConversationParticipant
+            new ChatParticipant
             {
-                ConversationId = newConversation.Id,
+                ChatId = newChat.Id,
                 ParticipantId = companionId,
-                Role = ParticipationRole.Member
+                Role = ChatParticipationRole.Member
             }
         };
 
-        await conversationRepository.AddParticipants(participants);
-        await conversationRepository.Save();
+        await chatRepository.AddParticipants(participants);
+        await chatRepository.Save();
 
-        /*var newConversationDto = new ConversationInfo
-        {
-            Id = newConversation.Id,
-            Type = ConversationType.Private,
-            Messages = mapper.MapList<Message, MessageInfo>(
-                await messageRepository.GetConversationMessages(newConversation.Id)),
-            Participants = mapper.MapList<ConversationParticipant, ParticipantInfo>(
-                    await conversationRepository.GetParticipants(newConversation.Id)),
-            CreatedAt = newConversation.CreatedAt,
-            UpdatedAt = newConversation.UpdatedAt
-        };*/
+        var newChatDto = mapper.Map<Chat, ChatInfo>(newChat);
 
-        var newConversationDto = mapper.Map<Conversation, ConversationInfo>(newConversation);
-        newConversationDto.Messages = mapper.MapList<Message, MessageInfo>(
-            await messageRepository.GetConversationMessages(newConversation.Id));
-        newConversationDto.Participants = mapper.MapList<ConversationParticipant, ParticipantInfo>(
-            await conversationRepository.GetParticipants(newConversation.Id));
+        newChatDto.Messages = mapper.MapList<Message, MessageInfo>(
+            await messageRepository.GetChatMessages(newChat.Id));
 
-        return Result<ConversationInfo>.Success(newConversationDto);
+        newChatDto.Participants = mapper.MapList<ChatParticipant, ChatParticipantInfo>(
+            await chatRepository.GetParticipants(newChat.Id));
+
+        return Result<ChatInfo>.Success(newChatDto);
     }
 
     public async Task<Result<MessageInfo>> SaveMessage(int currentUserId, int companionId, string message)
@@ -83,13 +73,14 @@ public class ChatService(
         if (companionUser == null)
             return Result<MessageInfo>.Failure(ErrorCode.UserNotFound);
 
-        var conversationResult = await GetOrCreatePrivateConversation(currentUserId, companionUser.Id);
-        if (!conversationResult.IsSuccess)
-            return Result<MessageInfo>.Failure(conversationResult.ErrorCode);
+        var chatResult = await GetOrCreatePrivateChat(currentUserId, companionUser.Id);
+
+        if (!chatResult.IsSuccess || chatResult.Value == null)
+            return Result<MessageInfo>.Failure(chatResult.ErrorCode);
 
         var newMessage = new Message
         {
-            ConversationId = conversationResult.Value.Id,
+            ChatId = chatResult.Value.Id,
             SenderId = currentUserId,
             MessageText = message
         };

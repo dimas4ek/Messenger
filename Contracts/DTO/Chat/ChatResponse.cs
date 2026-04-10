@@ -1,8 +1,9 @@
-﻿using Application.DTO;
+﻿using System.Text.Json.Serialization;
+using Application.DTO;
 
 namespace Contracts.DTO.Chat;
 
 public class ChatResponse
 {
-    public ConversationInfo Conversation { get; set; }
+    [JsonPropertyName("chat")] public ChatInfo Chat { get; set; }
 }

@@ -1,9 +1,10 @@
-﻿using Application.DTO;
+﻿using System.Text.Json.Serialization;
 
 namespace Contracts.DTO.Friend;
 
 public class AddFriendRequest
 {
-    public int CurrentUserId { get; set; }
-    public UserInfo Friend { get; set; }
+    [JsonPropertyName("userId")] public int UserId { get; set; }
+
+    [JsonPropertyName("friendId")] public int FriendId { get; set; }
 }

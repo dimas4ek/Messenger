@@ -11,19 +11,19 @@ public class FriendService(
     UserService userService,
     IAppMapper mapper)
 {
-    public async Task<Result<bool>> FindFriend(string friendName)
-    {
-        var result = await userService.GetUserByUsername(friendName);
-        return result.IsSuccess ? Result<bool>.Success(true) : Result<bool>.Failure(result.ErrorCode);
-    }
-
-    public async Task<Result<UserInfo>> AddFriend(int currentUserId, UserInfo friend)
+    public async Task<Result<UserInfo>> AddFriend(int currentUserId, int friendId)
     {
         try
         {
-            await friendRepository.AddFriend(currentUserId, friend.Id);
+            await friendRepository.AddFriend(currentUserId, friendId);
 
             await friendRepository.Save();
+
+            var friendResult = await userService.GetById(friendId);
+
+            if (!friendResult.IsSuccess || friendResult.Value == null)
+                return Result<UserInfo>.Failure(friendResult.ErrorCode);
+            var friend = friendResult.Value;
 
             return Result<UserInfo>.Success(friend);
         }
@@ -49,26 +49,14 @@ public class FriendService(
         }
     }
 
-    public async Task<Result<List<UserInfo>>> FriendsFromSearch(int currentUserId, string text)
+    public async Task<Result<bool>> AlreadyFriends(int currentUserId, int friendId)
     {
-        try
-        {
-            var friends = await friendRepository.SearchFriends(currentUserId, text);
+        var result = await userService.GetById(friendId);
 
-            return Result<List<UserInfo>>.Success(friends);
-        }
-        catch
-        {
-            return Result<List<UserInfo>>.Failure(ErrorCode.DatabaseError);
-        }
-    }
-
-    public async Task<Result<bool>> AlreadyFriends(int currentUserId, string friendName)
-    {
-        var result = await userService.GetUserByUsername(friendName);
+        if (!result.IsSuccess || result.Value == null) return Result<bool>.Failure(ErrorCode.UserNotFound);
 
         return result.IsSuccess
-            ? Result<bool>.Success(await friendRepository.IsFriends(currentUserId, result.Value.Id))
+            ? Result<bool>.Success(await friendRepository.IsFriends(currentUserId, friendId))
             : Result<bool>.Failure(result.ErrorCode);
     }
 }

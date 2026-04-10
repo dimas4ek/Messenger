@@ -326,14 +326,24 @@ public partial class ClientForm : Form
         var friendName = _addFriendTxtBox.Text;
         if (string.IsNullOrWhiteSpace(friendName)) return;
 
-        var foundFriend = await _friendApiClient.Find(friendName);
-        if (!foundFriend.IsSuccess)
+        if (friendName == _currentUser.Username)
         {
-            _dialogService.ShowError(foundFriend.ToMessage());
+            _dialogService.ShowMessage("You can't add yourself as a Friend");
             return;
         }
 
-        var alreadyFriends = await _friendApiClient.AlreadyFriends(_currentUser.Id, friendName);
+        var friendResult = await _userApiClient.Get(friendName);
+        var friend = friendResult.Value;
+
+        if (!friendResult.IsSuccess || friend == null)
+        {
+            _dialogService.ShowError(friendResult.ToMessage());
+            return;
+        }
+
+        var friendUser = friend.User;
+
+        var alreadyFriends = await _friendApiClient.AlreadyFriends(_currentUser.Id, friendUser.Id);
         if (!alreadyFriends.IsSuccess || alreadyFriends.Value == null)
         {
             _dialogService.ShowError(alreadyFriends.ToMessage());
@@ -346,27 +356,14 @@ public partial class ClientForm : Form
             return;
         }
 
-        if (friendName == _currentUser.Username)
-        {
-            _dialogService.ShowMessage("You can't add yourself as a Friend");
-            return;
-        }
-
-        var friend = await _userApiClient.Get(friendName);
-        if (!friend.IsSuccess || friend.Value == null)
-        {
-            _dialogService.ShowError(friend.ToMessage());
-            return;
-        }
-
-        var result = await _friendApiClient.Add(_currentUser.Id, friend.Value.User);
+        var result = await _friendApiClient.Add(_currentUser.Id, friendUser.Id);
         if (!result.IsSuccess)
         {
             _dialogService.ShowError(result.ToMessage());
             return;
         }
 
-        _dialogService.ShowMessage("User has been added to your Friend list!");
+        _dialogService.ShowMessage("Participant has been added to your Friend list!");
 
         await UpdateFriendList();
 
@@ -441,20 +438,11 @@ public partial class ClientForm : Form
             return;
         }
 
-        var foundedFriendsResult = await _friendApiClient.FriendsFromSearch(_currentUser.Id, txtBoxSearch.Text);
-        if (!foundedFriendsResult.IsSuccess || foundedFriendsResult.Value == null)
-        {
-            _dialogService.ShowError(foundedFriendsResult.ToMessage());
-            return;
-        }
-
-        var foundedFriends = foundedFriendsResult.Value.Friends;
-
-        if (foundedFriends.Count == 0) return;
+        if (_friendList.Count == 0) return;
 
         addedFriendPanel.Controls.Clear();
 
-        foreach (var friend in foundedFriends)
+        foreach (var friend in _friendList)
         {
             if (friend.Username == _currentUser.Username) continue;
 
@@ -499,14 +487,14 @@ public partial class ClientForm : Form
         txtBoxPanel.Visible = true;
 
         if (_companion == null) return;
-        var conversationResult = await _chatApiClient.LoadPrivateChat(_currentUser.Id, _companion.Id);
-        if (!conversationResult.IsSuccess || conversationResult.Value == null)
+        var chatResult = await _chatApiClient.LoadPrivateChat(_currentUser.Id, _companion.Id);
+        if (!chatResult.IsSuccess || chatResult.Value == null)
         {
-            _dialogService.ShowError("Failed to load conversation: " + conversationResult.ToMessage());
+            _dialogService.ShowError("Failed to load chat: " + chatResult.ToMessage());
             return;
         }
 
-        _messages = conversationResult.Value.Conversation.Messages;
+        _messages = chatResult.Value.Chat.Messages;
         if (_messages == null)
         {
             _dialogService.ShowError("Failed to load messages: Messages are null");

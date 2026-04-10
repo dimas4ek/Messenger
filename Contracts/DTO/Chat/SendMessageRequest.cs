@@ -1,8 +1,12 @@
-﻿namespace Contracts.DTO.Chat;
+﻿using System.Text.Json.Serialization;
+
+namespace Contracts.DTO.Chat;
 
 public class SendMessageRequest
 {
-    public int CurrentUserId { get; set; }
-    public int CompanionId { get; set; }
-    public string Message { get; set; } = string.Empty;
+    [JsonPropertyName("senderId")] public int SenderId { get; set; }
+
+    [JsonPropertyName("companionId")] public int CompanionId { get; set; }
+
+    [JsonPropertyName("message")] public string Message { get; set; } = string.Empty;
 }

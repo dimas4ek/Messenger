@@ -12,12 +12,9 @@ internal static class Program
     [STAThread]
     private static async Task Main()
     {
-        //var environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Production";
-
         var configuration = new ConfigurationBuilder()
             .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
             .AddJsonFile("appsettings.json", false)
-            //.AddJsonFile($"appsettings.{environment}.json", true)
             .Build();
 
         var services = new ServiceCollection();
@@ -27,20 +24,25 @@ internal static class Program
             ApiBaseUrl = configuration["Api:BaseUrl"]!
         };
 
-        /*try
-        {
-            remoteConfig = await RemoteConfigLoader.Load();
-        }
-        catch
-        {
-            // ignored
-        }*/
-
         ConfigureClientServices(services, remoteConfig);
 
         await using var serviceProvider = services.BuildServiceProvider();
 
         ApplicationConfiguration.Initialize();
+
+        var serverAvailability = serviceProvider.GetRequiredService<ServerAvailability>();
+        var isAvailable = await serverAvailability.WaitUntilAvailable();
+
+        if (!isAvailable)
+        {
+            MessageBox.Show(
+                "Сервер недоступен. Попробуйте открыть приложение чуть позже.",
+                "Ошибка подключения",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+
+            return;
+        }
 
         var mainForm = serviceProvider.GetRequiredService<LoginForm>();
         System.Windows.Forms.Application.Run(mainForm);
@@ -49,6 +51,8 @@ internal static class Program
     private static void ConfigureClientServices(IServiceCollection services, RemoteConfig remoteConfig)
     {
         services.AddSingleton(remoteConfig);
+
+        services.AddSingleton<ServerAvailability>();
 
         services.AddScoped<IDialogService, DialogService>();
 

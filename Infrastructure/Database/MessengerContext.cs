@@ -15,8 +15,8 @@ public class MessengerContext : DbContext
     }
 
     public DbSet<User> Users => Set<User>();
-    public DbSet<Conversation> Conversations => Set<Conversation>();
-    public DbSet<ConversationParticipant> ConversationParticipants => Set<ConversationParticipant>();
+    public DbSet<Chat> Chats => Set<Chat>();
+    public DbSet<ChatParticipant> ChatParticipants => Set<ChatParticipant>();
     public DbSet<Message> Messages => Set<Message>();
     public DbSet<Friendship> Friends => Set<Friendship>();
 
@@ -32,27 +32,27 @@ public class MessengerContext : DbContext
                 .HasDefaultValue(UserStatus.Offline);
         });
 
-        modelBuilder.Entity<Conversation>(entity =>
+        modelBuilder.Entity<Chat>(entity =>
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Type)
-                .HasColumnType("conversation_type")
-                .HasDefaultValue(ConversationType.Private);
+                .HasColumnType("type")
+                .HasDefaultValue(ChatType.Private);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
         });
 
-        modelBuilder.Entity<ConversationParticipant>(entity =>
+        modelBuilder.Entity<ChatParticipant>(entity =>
         {
-            entity.HasKey(e => new { e.ConversationId, e.ParticipantId });
+            entity.HasKey(e => new { e.ChatId, e.ParticipantId });
             entity.Property(e => e.Role)
-                .HasColumnType("participation_role")
-                .HasDefaultValue(ParticipationRole.Member);
+                .HasColumnType("role")
+                .HasDefaultValue(ChatParticipationRole.Member);
             entity.Property(e => e.JoinedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-            entity.HasOne(e => e.Conversation)
+            entity.HasOne(e => e.Chat)
                 .WithMany(c => c.Participants)
-                .HasForeignKey(e => e.ConversationId)
+                .HasForeignKey(e => e.ChatId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(e => e.Participant)
@@ -69,9 +69,9 @@ public class MessengerContext : DbContext
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-            entity.HasOne(e => e.Conversation)
+            entity.HasOne(e => e.Chat)
                 .WithMany(c => c.Messages)
-                .HasForeignKey(e => e.ConversationId)
+                .HasForeignKey(e => e.ChatId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(e => e.Sender)

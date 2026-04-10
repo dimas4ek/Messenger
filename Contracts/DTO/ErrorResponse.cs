@@ -1,8 +1,9 @@
-﻿using Application.Utils;
+﻿using System.Text.Json.Serialization;
+using Application.Utils;
 
 namespace Contracts.DTO;
 
 public class ErrorResponse
 {
-    public ErrorCode ErrorCode { get; set; }
+    [JsonPropertyName("errorCode")] public ErrorCode ErrorCode { get; set; }
 }

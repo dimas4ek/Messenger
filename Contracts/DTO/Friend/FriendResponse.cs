@@ -1,8 +1,9 @@
-﻿using Application.DTO;
+﻿using System.Text.Json.Serialization;
+using Application.DTO;
 
 namespace Contracts.DTO.Friend;
 
 public class FriendResponse
 {
-    public UserInfo Friend { get; set; }
+    [JsonPropertyName("friend")] public UserInfo Friend { get; set; }
 }

@@ -3,16 +3,16 @@ using Domain.Entities;
 
 namespace Application.Utils.Mapper;
 
-public class ParticipantMapper : IMapper<ConversationParticipant, ParticipantInfo>
+public class ParticipantMapper : IMapper<ChatParticipant, ChatParticipantInfo>
 {
-    public ParticipantInfo Map(ConversationParticipant conversationParticipant)
+    public ChatParticipantInfo Map(ChatParticipant chatParticipant)
     {
-        return new ParticipantInfo
+        return new ChatParticipantInfo
         {
-            ConversationId = conversationParticipant.ConversationId,
-            UserId = conversationParticipant.ParticipantId,
-            Role = conversationParticipant.Role,
-            JoinedAt = conversationParticipant.JoinedAt
+            ChatId = chatParticipant.ChatId,
+            UserId = chatParticipant.ParticipantId,
+            Role = chatParticipant.Role,
+            JoinedAt = chatParticipant.JoinedAt
         };
     }
 }

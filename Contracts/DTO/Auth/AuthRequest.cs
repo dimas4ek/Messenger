@@ -1,7 +1,10 @@
-﻿namespace Contracts.DTO.Auth;
+﻿using System.Text.Json.Serialization;
+
+namespace Contracts.DTO.Auth;
 
 public class AuthRequest
 {
-    public string Username { get; set; } = string.Empty;
-    public string Password { get; set; } = string.Empty;
+    [JsonPropertyName("username")] public string Username { get; set; } = string.Empty;
+
+    [JsonPropertyName("password")] public string Password { get; set; } = string.Empty;
 }

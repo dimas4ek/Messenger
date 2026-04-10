@@ -6,21 +6,14 @@ using Contracts.DTO.Chat;
 
 namespace Client.ApiClients;
 
-public class ChatApiClient
+public class ChatApiClient(HttpClient httpClient)
 {
-    private readonly HttpClient _httpClient;
-
-    public ChatApiClient(HttpClient httpClient)
-    {
-        _httpClient = httpClient;
-    }
-
     public async Task<ApiResult<ChatResponse>> LoadPrivateChat(int currentUserId, int companionId)
     {
         try
         {
             var response =
-                await _httpClient.GetAsync($"api/chat/private?currentUserId={currentUserId}&companionId={companionId}");
+                await httpClient.GetAsync($"api/chat/private?userId={currentUserId}&companionId={companionId}");
 
             if (response.IsSuccessStatusCode)
             {
@@ -44,9 +37,9 @@ public class ChatApiClient
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync("api/chat/message", new SendMessageRequest
+            var response = await httpClient.PostAsJsonAsync("api/chat/message", new SendMessageRequest
             {
-                CurrentUserId = currentUserId,
+                SenderId = currentUserId,
                 CompanionId = companionId,
                 Message = message
             });
@@ -68,28 +61,4 @@ public class ChatApiClient
             return ApiResult<MessageResponse>.Failure(ErrorCode.DatabaseError);
         }
     }
-
-    /*public async Task<ApiResult<MessageResponse>> GetMessage(int messageId)
-    {
-        try
-        {
-            var response = await _httpClient.GetAsync($"api/chat/message?messageId={messageId}");
-
-            if (response.IsSuccessStatusCode)
-            {
-                var messageResponse = await response.Content.ReadFromJsonAsync<MessageResponse>();
-
-                return messageResponse == null
-                    ? ApiResult<MessageResponse>.Failure(ErrorCode.EmptyResponse)
-                    : ApiResult<MessageResponse>.Success(messageResponse);
-            }
-
-            var errorResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return ApiResult<MessageResponse>.Failure(errorResponse?.ErrorCode ?? ErrorCode.UnknownError);
-        }
-        catch
-        {
-            return ApiResult<MessageResponse>.Failure(ErrorCode.DatabaseError);
-        }
-    }*/
 }

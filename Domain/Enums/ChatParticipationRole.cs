@@ -2,7 +2,7 @@
 
 namespace Domain.Enums;
 
-public enum ParticipationRole
+public enum ChatParticipationRole
 {
     [PgName("member")] Member,
     [PgName("admin")] Admin

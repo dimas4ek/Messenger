@@ -1,6 +1,8 @@
-﻿namespace Contracts.DTO.Auth;
+﻿using System.Text.Json.Serialization;
+
+namespace Contracts.DTO.Auth;
 
 public class LogoutResponse
 {
-    public bool Success { get; set; }
+    [JsonPropertyName("success")] public bool Success { get; set; }
 }

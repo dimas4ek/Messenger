@@ -7,33 +7,12 @@ namespace HttpServer.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class FriendController : ControllerBase
+public class FriendController(FriendService friendService) : ControllerBase
 {
-    private readonly FriendService _friendService;
-
-    public FriendController(FriendService friendService)
-    {
-        _friendService = friendService;
-    }
-
-    [HttpGet("find")]
-    public async Task<ActionResult<bool>> Find([FromQuery] string friendName)
-    {
-        var result = await _friendService.FindFriend(friendName);
-
-        if (!result.IsSuccess)
-            return BadRequest(new ErrorResponse
-            {
-                ErrorCode = result.ErrorCode
-            });
-
-        return Ok(true);
-    }
-
     [HttpPost("add")]
     public async Task<ActionResult<FriendResponse>> Add([FromBody] AddFriendRequest request)
     {
-        var result = await _friendService.AddFriend(request.CurrentUserId, request.Friend);
+        var result = await friendService.AddFriend(request.UserId, request.FriendId);
 
         if (!result.IsSuccess)
             return BadRequest(new ErrorResponse
@@ -48,27 +27,10 @@ public class FriendController : ControllerBase
     }
 
     [HttpGet("list")]
-    public async Task<ActionResult<FriendListResponse>> GetFriendList([FromQuery] int currentUserId)
+    public async Task<ActionResult<FriendListResponse>> GetFriendList([FromQuery(Name = "userId")] int userId)
     {
-        var result = await _friendService.GetFriendList(currentUserId);
+        var result = await friendService.GetFriendList(userId);
 
-        if (!result.IsSuccess)
-            return BadRequest(new ErrorResponse
-            {
-                ErrorCode = result.ErrorCode
-            });
-
-        return Ok(new FriendListResponse
-        {
-            Friends = result.Value
-        });
-    }
-
-    [HttpGet("search")]
-    public async Task<ActionResult<FriendListResponse>> SearchFriends([FromQuery] int currentUserId,
-        [FromQuery] string text)
-    {
-        var result = await _friendService.FriendsFromSearch(currentUserId, text);
         if (!result.IsSuccess)
             return BadRequest(new ErrorResponse
             {
@@ -84,7 +46,7 @@ public class FriendController : ControllerBase
     [HttpPost("already-friends")]
     public async Task<ActionResult<AlreadyFriendsResponse>> AlreadyFriends([FromBody] AlreadyFriendsRequest request)
     {
-        var result = await _friendService.AlreadyFriends(request.CurrentUserId, request.FriendName);
+        var result = await friendService.AlreadyFriends(request.UserId, request.FriendId);
 
         if (!result.IsSuccess)
             return BadRequest(new ErrorResponse

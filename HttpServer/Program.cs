@@ -21,11 +21,6 @@ public class Program
 
         var app = builder.Build();
 
-        /*if (app.Environment.IsDevelopment())
-        {
-            app.MapOpenApi();
-        }*/
-
         using (var scope = app.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<MessengerContext>();
@@ -60,8 +55,8 @@ public class Program
             options.UseNpgsql(connectionString, npgsqlOptions =>
             {
                 npgsqlOptions.MapEnum<UserStatus>("user_status");
-                npgsqlOptions.MapEnum<ParticipationRole>("participation_role");
-                npgsqlOptions.MapEnum<ConversationType>("conversation_type");
+                npgsqlOptions.MapEnum<ChatParticipationRole>("chat_participation_role");
+                npgsqlOptions.MapEnum<ChatType>("chat_type");
             });
 
             if (builder.Environment.IsDevelopment())
@@ -72,7 +67,7 @@ public class Program
         });
 
         services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IConversationRepository, ConversationRepository>();
+        services.AddScoped<IChatRepository, ChatRepository>();
         services.AddScoped<IMessageRepository, MessageRepository>();
         services.AddScoped<IFriendRepository, FriendRepository>();
 
@@ -80,8 +75,8 @@ public class Program
 
         services.AddScoped<IMapper<User, UserInfo>, UserMapper>();
         services.AddScoped<IMapper<Message, MessageInfo>, MessageMapper>();
-        services.AddScoped<IMapper<Conversation, ConversationInfo>, ConversationMapper>();
-        services.AddScoped<IMapper<ConversationParticipant, ParticipantInfo>, ParticipantMapper>();
+        services.AddScoped<IMapper<Chat, ChatInfo>, ChatMapper>();
+        services.AddScoped<IMapper<ChatParticipant, ChatParticipantInfo>, ParticipantMapper>();
 
         services.AddScoped<AuthService>();
         services.AddScoped<FriendService>();

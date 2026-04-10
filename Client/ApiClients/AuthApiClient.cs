@@ -6,15 +6,8 @@ using Contracts.DTO.Auth;
 
 namespace Client.ApiClients;
 
-public class AuthApiClient
+public class AuthApiClient(HttpClient httpClient)
 {
-    private readonly HttpClient _httpClient;
-
-    public AuthApiClient(HttpClient httpClient)
-    {
-        _httpClient = httpClient;
-    }
-
     public async Task<ApiResult<AuthResponse>> Login(string username, string password)
     {
         return await SendAuthRequest("api/auth/login", username, password);
@@ -29,11 +22,10 @@ public class AuthApiClient
     {
         try
         {
-            var response =
-                await _httpClient.PostAsJsonAsync("api/auth/logout", new LogoutRequest
-                {
-                    UserId = userId
-                });
+            var response = await httpClient.PostAsJsonAsync("api/auth/logout", new LogoutRequest
+            {
+                UserId = userId
+            });
 
             if (response.IsSuccessStatusCode)
             {
@@ -58,7 +50,7 @@ public class AuthApiClient
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync(url, new AuthRequest
+            var response = await httpClient.PostAsJsonAsync(url, new AuthRequest
             {
                 Username = username,
                 Password = password
@@ -79,7 +71,7 @@ public class AuthApiClient
 
             return ApiResult<AuthResponse>.Failure(errorResponse?.ErrorCode ?? ErrorCode.UnknownError);
         }
-        catch (Exception e)
+        catch
         {
             return ApiResult<AuthResponse>.Failure(ErrorCode.AuthError);
         }

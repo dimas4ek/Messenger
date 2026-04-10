@@ -8,7 +8,7 @@ public class Message
 {
     [Key] [Column("id")] public int Id { get; set; }
 
-    [Column("conversation_id")] public int ConversationId { get; set; }
+    [Column("chat_id")] public int ChatId { get; set; }
 
     [Column("sender_id")] public int SenderId { get; set; }
 
@@ -22,6 +22,6 @@ public class Message
 
     [Column("updated_at")] public DateTime UpdatedAt { get; set; }
 
-    public Conversation Conversation { get; set; }
+    public Chat Chat { get; set; }
     public User Sender { get; set; }
 }

@@ -5,20 +5,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories;
 
-public class MessageRepository : Repository<Message>, IMessageRepository
+public class MessageRepository(MessengerContext context) : Repository<Message>(context), IMessageRepository
 {
-    private readonly MessengerContext _context;
+    private readonly MessengerContext _context = context;
 
-    public MessageRepository(MessengerContext context) : base(context)
-    {
-        _context = context;
-    }
-
-    public async Task<List<Message>> GetConversationMessages(int conversationId)
+    public async Task<List<Message>> GetChatMessages(int chatId)
     {
         return await _context.Messages
             .Include(m => m.Sender)
-            .Where(m => m.ConversationId == conversationId)
+            .Where(m => m.ChatId == chatId)
             .OrderBy(m => m.CreatedAt)
             .ToListAsync();
     }

@@ -6,17 +6,9 @@ using Microsoft.AspNetCore.SignalR.Client;
 
 namespace Client.Realtime;
 
-public class ChatRealtimeClient
+public class ChatRealtimeClient(RemoteConfig remoteConfig, IDialogService dialogService)
 {
-    private readonly IDialogService _dialogService;
-    private readonly RemoteConfig _remoteConfig;
     private HubConnection? _connection;
-
-    public ChatRealtimeClient(RemoteConfig remoteConfig, IDialogService dialogService)
-    {
-        _remoteConfig = remoteConfig;
-        _dialogService = dialogService;
-    }
 
     public event Action<MessageResponse>? MessageReceived;
 
@@ -24,7 +16,7 @@ public class ChatRealtimeClient
     {
         try
         {
-            var hubUrl = $"{_remoteConfig.ApiBaseUrl.TrimEnd('/')}/chatHub";
+            var hubUrl = $"{remoteConfig.ApiBaseUrl.TrimEnd('/')}/chatHub";
 
             _connection = new HubConnectionBuilder()
                 .WithUrl(hubUrl, options => { options.Transports = HttpTransportType.WebSockets; })
@@ -39,7 +31,7 @@ public class ChatRealtimeClient
             }
             catch (Exception e)
             {
-                _dialogService.ShowError(e.Message);
+                dialogService.ShowError(e.Message);
             }
 
             if (_connection.State == HubConnectionState.Connected)
@@ -50,7 +42,7 @@ public class ChatRealtimeClient
         }
         catch (Exception e)
         {
-            _dialogService.ShowError(e.Message);
+            dialogService.ShowError(e.Message);
         }
     }
 

@@ -1,6 +1,8 @@
-﻿namespace Contracts.DTO.Friend;
+﻿using System.Text.Json.Serialization;
+
+namespace Contracts.DTO.Friend;
 
 public class AlreadyFriendsResponse
 {
-    public bool IsFriends { get; set; }
+    [JsonPropertyName("isFriends")] public bool IsFriends { get; set; }
 }

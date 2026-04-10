@@ -6,20 +6,13 @@ using Contracts.DTO.User;
 
 namespace Client.ApiClients;
 
-public class UserApiClient
+public class UserApiClient(HttpClient httpClient)
 {
-    private readonly HttpClient _httpClient;
-
-    public UserApiClient(HttpClient httpClient)
-    {
-        _httpClient = httpClient;
-    }
-
     public async Task<ApiResult<UserResponse>> Get(string username)
     {
         try
         {
-            var response = await _httpClient.GetAsync($"api/user/get?username={Uri.EscapeDataString(username)}");
+            var response = await httpClient.GetAsync($"api/user/get?username={Uri.EscapeDataString(username)}");
 
             if (response.IsSuccessStatusCode)
             {

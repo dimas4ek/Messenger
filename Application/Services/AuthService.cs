@@ -31,7 +31,7 @@ public class AuthService(IUserRepository userRepository, IAppMapper mapper)
 
             return Result<UserInfo>.Success(userDto);
         }
-        catch (Exception ex)
+        catch
         {
             return Result<UserInfo>.Failure(ErrorCode.DatabaseError);
         }
@@ -58,7 +58,7 @@ public class AuthService(IUserRepository userRepository, IAppMapper mapper)
 
             return Result<UserInfo>.Success(userDto);
         }
-        catch (Exception ex)
+        catch
         {
             return Result<UserInfo>.Failure(ErrorCode.DatabaseError);
         }
@@ -77,7 +77,7 @@ public class AuthService(IUserRepository userRepository, IAppMapper mapper)
 
             return Result<bool>.Success(true);
         }
-        catch (Exception e)
+        catch
         {
             return Result<bool>.Failure(ErrorCode.DatabaseError);
         }

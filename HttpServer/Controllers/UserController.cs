@@ -7,19 +7,12 @@ namespace HttpServer.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class UserController : ControllerBase
+public class UserController(UserService userService) : ControllerBase
 {
-    private readonly UserService _userService;
-
-    public UserController(UserService userService)
-    {
-        _userService = userService;
-    }
-
     [HttpGet("get")]
-    public async Task<ActionResult<UserResponse>> Get([FromQuery] string username)
+    public async Task<ActionResult<UserResponse>> Get([FromQuery(Name = "username")] string username)
     {
-        var result = await _userService.GetUserByUsername(username);
+        var result = await userService.GetUserByUsername(username);
 
         if (!result.IsSuccess)
             return BadRequest(new ErrorResponse

@@ -2,7 +2,7 @@
 
 namespace Domain.Enums;
 
-public enum ConversationType
+public enum ChatType
 {
     [PgName("private")] Private,
     [PgName("group")] Group

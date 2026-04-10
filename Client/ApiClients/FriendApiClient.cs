@@ -1,5 +1,4 @@
 ﻿using System.Net.Http.Json;
-using Application.DTO;
 using Application.Utils;
 using Client.Utils;
 using Contracts.DTO;
@@ -7,45 +6,16 @@ using Contracts.DTO.Friend;
 
 namespace Client.ApiClients;
 
-public class FriendApiClient
+public class FriendApiClient(HttpClient httpClient)
 {
-    private readonly HttpClient _httpClient;
-
-    public FriendApiClient(HttpClient httpClient)
-    {
-        _httpClient = httpClient;
-    }
-
-    public async Task<ApiResult<bool>> Find(string friendName)
+    public async Task<ApiResult<FriendResponse>> Add(int currentUserId, int friendId)
     {
         try
         {
-            var response = await _httpClient.GetAsync(
-                $"api/friend/find?friendName={Uri.EscapeDataString(friendName)}");
-
-            if (response.IsSuccessStatusCode)
+            var response = await httpClient.PostAsJsonAsync("api/friend/add", new AddFriendRequest
             {
-                var value = await response.Content.ReadFromJsonAsync<bool>();
-                return ApiResult<bool>.Success(value);
-            }
-
-            var errorResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return ApiResult<bool>.Failure(errorResponse?.ErrorCode ?? ErrorCode.UnknownError);
-        }
-        catch
-        {
-            return ApiResult<bool>.Failure(ErrorCode.DatabaseError);
-        }
-    }
-
-    public async Task<ApiResult<FriendResponse>> Add(int currentUserId, UserInfo friend)
-    {
-        try
-        {
-            var response = await _httpClient.PostAsJsonAsync("api/friend/add", new AddFriendRequest
-            {
-                CurrentUserId = currentUserId,
-                Friend = friend
+                UserId = currentUserId,
+                FriendId = friendId
             });
 
             if (response.IsSuccessStatusCode)
@@ -70,7 +40,7 @@ public class FriendApiClient
     {
         try
         {
-            var response = await _httpClient.GetAsync($"api/friend/list?currentUserId={currentUserId}");
+            var response = await httpClient.GetAsync($"api/friend/list?userId={currentUserId}");
 
             if (response.IsSuccessStatusCode)
             {
@@ -90,39 +60,14 @@ public class FriendApiClient
         }
     }
 
-    public async Task<ApiResult<FriendListResponse>> FriendsFromSearch(int currentUserId, string text)
+    public async Task<ApiResult<AlreadyFriendsResponse>> AlreadyFriends(int currentUserId, int friendId)
     {
         try
         {
-            var response = await _httpClient.GetAsync(
-                $"api/friend/search?currentUserId={currentUserId}&text={Uri.EscapeDataString(text)}");
-
-            if (response.IsSuccessStatusCode)
+            var response = await httpClient.PostAsJsonAsync("api/friend/already-friends", new AlreadyFriendsRequest
             {
-                var friendListResponse = await response.Content.ReadFromJsonAsync<FriendListResponse>();
-
-                return friendListResponse == null
-                    ? ApiResult<FriendListResponse>.Failure(ErrorCode.EmptyResponse)
-                    : ApiResult<FriendListResponse>.Success(friendListResponse);
-            }
-
-            var errorResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return ApiResult<FriendListResponse>.Failure(errorResponse?.ErrorCode ?? ErrorCode.UnknownError);
-        }
-        catch
-        {
-            return ApiResult<FriendListResponse>.Failure(ErrorCode.DatabaseError);
-        }
-    }
-
-    public async Task<ApiResult<AlreadyFriendsResponse>> AlreadyFriends(int currentUserId, string friendName)
-    {
-        try
-        {
-            var response = await _httpClient.PostAsJsonAsync("api/friend/already-friends", new AlreadyFriendsRequest
-            {
-                CurrentUserId = currentUserId,
-                FriendName = friendName
+                UserId = currentUserId,
+                FriendId = friendId
             });
 
             if (response.IsSuccessStatusCode)

@@ -17,7 +17,7 @@ public class User
 
     [Column("created_at")] public DateTime CreatedAt { get; set; }
 
-    public ICollection<ConversationParticipant> Participations { get; set; }
+    public ICollection<ChatParticipant> Participations { get; set; }
     public ICollection<Message> SentMessages { get; set; }
     public ICollection<Friendship> Friends { get; set; } = new List<Friendship>();
     public ICollection<Friendship> AddedByFriends { get; set; } = new List<Friendship>();

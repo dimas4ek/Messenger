@@ -7,19 +7,12 @@ namespace HttpServer.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class AuthController : ControllerBase
+public class AuthController(AuthService authService) : ControllerBase
 {
-    private readonly AuthService _authService;
-
-    public AuthController(AuthService authService)
-    {
-        _authService = authService;
-    }
-
     [HttpPost("login")]
     public async Task<ActionResult<AuthResponse>> Login([FromBody] AuthRequest request)
     {
-        var result = await _authService.LoginUser(request.Username, request.Password);
+        var result = await authService.LoginUser(request.Username, request.Password);
 
         if (!result.IsSuccess)
             return BadRequest(new ErrorResponse
@@ -36,7 +29,7 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponse>> Register([FromBody] AuthRequest request)
     {
-        var result = await _authService.RegisterUser(request.Username, request.Password);
+        var result = await authService.RegisterUser(request.Username, request.Password);
 
         if (!result.IsSuccess)
             return BadRequest(new ErrorResponse
@@ -53,7 +46,7 @@ public class AuthController : ControllerBase
     [HttpPost("logout")]
     public async Task<ActionResult<LogoutResponse>> Logout([FromBody] LogoutRequest request)
     {
-        var result = await _authService.LogoutUser(request.UserId);
+        var result = await authService.LogoutUser(request.UserId);
 
         if (!result.IsSuccess)
             return BadRequest(new ErrorResponse

@@ -1,8 +1,9 @@
-﻿using Application.DTO;
+﻿using System.Text.Json.Serialization;
+using Application.DTO;
 
 namespace Contracts.DTO.User;
 
 public class UserResponse
 {
-    public UserInfo User { get; set; }
+    [JsonPropertyName("user")] public UserInfo User { get; set; }
 }

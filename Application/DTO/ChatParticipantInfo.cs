@@ -2,10 +2,10 @@
 
 namespace Application.DTO;
 
-public class ParticipantInfo
+public class ChatParticipantInfo
 {
-    public int ConversationId { get; set; }
+    public int ChatId { get; set; }
     public int UserId { get; set; }
-    public ParticipationRole Role { get; set; }
+    public ChatParticipationRole Role { get; set; }
     public DateTime JoinedAt { get; set; }
 }

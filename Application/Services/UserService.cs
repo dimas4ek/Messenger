@@ -18,19 +18,13 @@ public class UserService(IUserRepository userRepository, IAppMapper mapper)
         return Result<UserInfo>.Success(userDto);
     }
 
-    public async Task<Result<bool>> CheckIfUserExists(string username)
+    public async Task<Result<UserInfo>> GetById(int id)
     {
-        if (string.IsNullOrWhiteSpace(username))
-            return Result<bool>.Failure(ErrorCode.InvalidUsername);
+        var user = await userRepository.GetById(id);
 
-        try
-        {
-            var exists = await userRepository.UserExists(username);
-            return Result<bool>.Success(exists);
-        }
-        catch
-        {
-            return Result<bool>.Failure(ErrorCode.DatabaseError);
-        }
+        if (user == null) return Result<UserInfo>.Failure(ErrorCode.UserNotFound);
+
+        var userDto = mapper.Map<User, UserInfo>(user);
+        return Result<UserInfo>.Success(userDto);
     }
 }

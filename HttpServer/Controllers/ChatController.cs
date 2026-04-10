@@ -9,22 +9,13 @@ namespace HttpServer.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class ChatController : ControllerBase
+public class ChatController(ChatService chatService, IHubContext<ChatHub> hubContext) : ControllerBase
 {
-    private readonly ChatService _chatService;
-    private readonly IHubContext<ChatHub> _hubContext;
-
-    public ChatController(ChatService chatService, IHubContext<ChatHub> hubContext)
-    {
-        _chatService = chatService;
-        _hubContext = hubContext;
-    }
-
     [HttpGet("private")]
-    public async Task<ActionResult<ChatResponse>> LoadPrivateChat([FromQuery] int currentUserId,
-        [FromQuery] int companionId)
+    public async Task<ActionResult<ChatResponse>> LoadPrivateChat([FromQuery(Name = "userId")] int userId,
+        [FromQuery(Name = "companionId")] int companionId)
     {
-        var result = await _chatService.LoadPrivateConversation(currentUserId, companionId);
+        var result = await chatService.LoadPrivateChat(userId, companionId);
 
         if (!result.IsSuccess)
             return BadRequest(new ErrorResponse
@@ -34,14 +25,14 @@ public class ChatController : ControllerBase
 
         return Ok(new ChatResponse
         {
-            Conversation = result.Value
+            Chat = result.Value
         });
     }
 
     [HttpPost("message")]
     public async Task<ActionResult<MessageResponse>> SendMessage([FromBody] SendMessageRequest request)
     {
-        var result = await _chatService.SaveMessage(request.CurrentUserId, request.CompanionId, request.Message);
+        var result = await chatService.SaveMessage(request.SenderId, request.CompanionId, request.Message);
 
         if (!result.IsSuccess)
             return BadRequest(new ErrorResponse
@@ -49,7 +40,7 @@ public class ChatController : ControllerBase
                 ErrorCode = result.ErrorCode
             });
 
-        await _hubContext.Clients.Group($"user:{request.CompanionId}")
+        await hubContext.Clients.Group($"user:{request.CompanionId}")
             .SendAsync("ReceiveMessage", new MessageResponse
             {
                 Message = result.Value
@@ -60,21 +51,4 @@ public class ChatController : ControllerBase
             Message = result.Value
         });
     }
-
-    /*[HttpGet("message")]
-    public async Task<ActionResult<MessageResponse>> GetMessage([FromQuery] int messageId)
-    {
-        var result = await _chatService.GetMessage(messageId);
-
-        if (!result.IsSuccess)
-            return BadRequest(new ErrorResponse
-            {
-                ErrorCode = result.ErrorCode
-            });
-
-        return Ok(new MessageResponse
-        {
-            Message = result.Value
-        });
-    }*/
 }
