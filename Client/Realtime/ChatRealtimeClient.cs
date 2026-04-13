@@ -48,6 +48,18 @@ public class ChatRealtimeClient(RemoteConfig remoteConfig, IDialogService dialog
         }
     }
 
+    public async Task JoinChat(int chatId)
+    {
+        if (_connection?.State == HubConnectionState.Connected)
+            await _connection.InvokeAsync("JoinChatGroup", chatId.ToString());
+    }
+
+    public async Task LeaveChat(int chatId)
+    {
+        if (_connection?.State == HubConnectionState.Connected)
+            await _connection.InvokeAsync("LeaveChatGroup", chatId.ToString());
+    }
+
     public async Task Disconnect()
     {
         if (_connection != null)

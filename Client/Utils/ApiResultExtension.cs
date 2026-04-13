@@ -6,6 +6,9 @@ public static class ApiResultExtensions
 {
     extension<T>(ApiResult<T> result)
     {
-        public string ToMessage() => ErrorMapper.ToMessage(result.ErrorCode);
+        public string ToMessage()
+        {
+            return ErrorMapper.ToMessage(result.ErrorCode);
+        }
     }
 }
