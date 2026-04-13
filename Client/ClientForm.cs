@@ -163,8 +163,8 @@ public partial class ClientForm : Form
 
         if (panel == null) return;
 
-        var label = panel.Controls.OfType<Label>().FirstOrDefault();
-        if (label != null) label.Text = message.Text;
+        if (panel.Controls.Find("messageLabel", false).FirstOrDefault() is Label label) 
+            label.Text = message.Text;
 
         ((MessageInfo)panel.Tag!).Text = message.Text;
     }
@@ -565,16 +565,8 @@ public partial class ClientForm : Form
         nameLabel.AutoSize = true;
         nameLabel.Tag = message.Sender;
 
-        var messagePanel = new Guna2Panel();
-        messagePanel.BackColor = Color.FromArgb(24, 37, 51);
-        messagePanel.MaximumSize = new Size(400, 0);
-        messagePanel.AutoSize = true;
-        messagePanel.Controls.Add(nameLabel);
-        messagePanel.Tag = message;
-        messagePanel.MouseClick += MessagePanel_MouseClick;
-
         var messageLabel = new Label();
-        messageLabel.Parent = messagePanel;
+        messageLabel.Name = "messageLabel";
         messageLabel.Text = message.Text;
         //var options = new JsonSerializerOptions { WriteIndented = true };
         //messageLabel.Text = $"{message.Text}\n{JsonSerializer.Serialize(message, options)}";
@@ -584,6 +576,14 @@ public partial class ClientForm : Form
         messageLabel.MaximumSize = new Size(380, 0);
         messageLabel.Location = new Point(0, 20);
 
+        var messagePanel = new Guna2Panel();
+        messagePanel.BackColor = Color.FromArgb(24, 37, 51);
+        messagePanel.MaximumSize = new Size(400, 0);
+        messagePanel.AutoSize = true;
+        messagePanel.Tag = message;
+        messagePanel.MouseClick += MessagePanel_MouseClick;
+
+        messagePanel.Controls.Add(nameLabel);
         messagePanel.Controls.Add(messageLabel);
 
         _chatPanel.Controls.Add(messagePanel);
@@ -603,7 +603,6 @@ public partial class ClientForm : Form
                 ShowMessageContextMenu(panel, message, e.Location);
 
                 //await DeleteMessage(panel, message);
-
             }
         }
         catch (Exception ex)
@@ -651,21 +650,27 @@ public partial class ClientForm : Form
 
         editButton.Click += async (_, _) =>
         {
-            menuPanel.Dispose();
+            menuPanel.Hide();
             await EditMessage(messagePanel, message);
+            menuPanel.Dispose();
         };
 
         deleteButton.Click += async (_, _) =>
         {
-            menuPanel.Dispose();
+            menuPanel.Hide();
             await DeleteMessage(messagePanel, message);
+            menuPanel.Dispose();
         };
 
         menuPanel.Controls.Add(editButton);
         menuPanel.Controls.Add(deleteButton);
 
         // закрыть при клике вне меню
-        menuPanel.LostFocus += (_, _) => menuPanel.Dispose();
+        menuPanel.LostFocus += (_, _) =>
+        {
+            if (!menuPanel.ContainsFocus)
+                menuPanel.Dispose();
+        };
 
         var screenPos = messagePanel.PointToScreen(location);
         var formPos = PointToClient(screenPos);
@@ -691,14 +696,14 @@ public partial class ClientForm : Form
             return;
         }
 
-        var label = panel.Controls.OfType<Label>().FirstOrDefault();
-        if (label != null) label.Text = newText;
+        if (panel.Controls.Find("messageLabel", false).FirstOrDefault() is Label label)
+            label.Text = newText;
         message.Text = newText;
     }
 
     private string? ShowEditDialog(string currentText)
     {
-        var form = new Form
+         var form = new Form
         {
             Size = new Size(400, 150),
             StartPosition = FormStartPosition.CenterParent,
@@ -731,7 +736,7 @@ public partial class ClientForm : Form
         confirmButton.Click += (_, _) =>
         {
             result = textBox.Text.Trim();
-            form.Close();
+            form.Dispose();
         };
 
         form.Controls.Add(textBox);

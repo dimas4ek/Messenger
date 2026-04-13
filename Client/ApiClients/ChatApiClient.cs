@@ -13,7 +13,7 @@ public class ChatApiClient(HttpClient httpClient)
         try
         {
             var response =
-                await httpClient.GetAsync($"api/chats/private?userId={currentUserId}&companionId={companionId}");
+                await httpClient.GetAsync($"api/chat/private?userId={currentUserId}&companionId={companionId}");
 
             if (response.IsSuccessStatusCode)
             {
@@ -37,7 +37,7 @@ public class ChatApiClient(HttpClient httpClient)
     {
         try
         {
-            var response = await httpClient.PostAsJsonAsync($"api/chats/{currentChatId}/messages", new SendMessageRequest
+            var response = await httpClient.PostAsJsonAsync($"api/chat/{currentChatId}/messages", new SendMessageRequest
             {
                 SenderId = senderId,
                 Message = message
@@ -65,7 +65,7 @@ public class ChatApiClient(HttpClient httpClient)
     {
         try
         {
-            var response = await httpClient.PatchAsJsonAsync($"api/chats/{chatId}/messages/{messageId}", new EditMessageRequest
+            var response = await httpClient.PatchAsJsonAsync($"api/chat/{chatId}/messages/{messageId}", new EditMessageRequest
             {
                 Message = newText
             });
@@ -93,7 +93,7 @@ public class ChatApiClient(HttpClient httpClient)
     {
         try
         {
-            var response = await httpClient.DeleteAsync($"api/chats/{chatId}/messages/{messageId}");
+            var response = await httpClient.DeleteAsync($"api/chat/{chatId}/messages/{messageId}");
 
             if (response.IsSuccessStatusCode)
             {
