@@ -4,8 +4,8 @@ namespace Client.Utils;
 
 public static class ApiResultExtensions
 {
-    public static string ToMessage<T>(this ApiResult<T> result)
+    extension<T>(ApiResult<T> result)
     {
-        return ErrorMapper.ToMessage(result.ErrorCode);
+        public string ToMessage() => ErrorMapper.ToMessage(result.ErrorCode);
     }
 }

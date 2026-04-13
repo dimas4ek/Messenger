@@ -10,13 +10,22 @@ namespace Application.Services;
 public class ChatService(
     IChatRepository chatRepository,
     IMessageRepository messageRepository,
-    IUserRepository userRepository,
     IAppMapper mapper)
 {
     public async Task<Result<ChatInfo>> LoadPrivateChat(int currentUserId, int companionId)
     {
         return await GetOrCreatePrivateChat(currentUserId, companionId);
     }
+
+    /*private async Task<Result<ChatInfo>> GetPrivateChat(int chatId)
+    {
+        var chat = await chatRepository.GetById(chatId);
+
+        if (chat == null) return Result<ChatInfo>.Failure(ErrorCode.ChatNotFound);
+        var chatDto = mapper.Map<Chat, ChatInfo>(chat);
+        return Result<ChatInfo>.Success(chatDto);
+
+    }*/
 
     private async Task<Result<ChatInfo>> GetOrCreatePrivateChat(int currentUserId, int companionId)
     {
@@ -66,22 +75,12 @@ public class ChatService(
         return Result<ChatInfo>.Success(newChatDto);
     }
 
-    public async Task<Result<MessageInfo>> SaveMessage(int currentUserId, int companionId, string message)
+    public async Task<Result<MessageInfo>> SaveMessage(int chatId, int senderId, string message)
     {
-        var companionUser = await userRepository.GetById(companionId);
-
-        if (companionUser == null)
-            return Result<MessageInfo>.Failure(ErrorCode.UserNotFound);
-
-        var chatResult = await GetOrCreatePrivateChat(currentUserId, companionUser.Id);
-
-        if (!chatResult.IsSuccess || chatResult.Value == null)
-            return Result<MessageInfo>.Failure(chatResult.ErrorCode);
-
         var newMessage = new Message
         {
-            ChatId = chatResult.Value.Id,
-            SenderId = currentUserId,
+            ChatId = chatId,
+            SenderId = senderId,
             MessageText = message
         };
 
@@ -101,10 +100,19 @@ public class ChatService(
         return Result<MessageInfo>.Success(messageDto);
     }
 
-    public async Task<bool> CheckSender(int currentUserId, int messageId)
+    public async Task<Result<bool>> DeleteMessage(int chatId, int messageId)
     {
-        var senderId = await messageRepository.GetSenderId(messageId);
+        var messageResult = await messageRepository.GetMessageById(messageId);
 
-        return senderId == currentUserId;
+        if (messageResult == null)
+            return Result<bool>.Failure(ErrorCode.MessageNotFound);
+
+        if (messageResult.ChatId != chatId)
+            return Result<bool>.Failure(ErrorCode.AccessDenied);
+
+        messageRepository.Remove(messageResult);
+        await messageRepository.Save();
+
+        return Result<bool>.Success(true);
     }
 }

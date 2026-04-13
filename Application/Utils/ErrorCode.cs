@@ -13,9 +13,11 @@ public enum ErrorCode
 
     // Database
     UserNotFound,
+    ChatNotFound,
     InvalidUsername,
     MessageNotFound,
     DatabaseError,
+    AccessDenied,
 
     // Common
     ValidationError,

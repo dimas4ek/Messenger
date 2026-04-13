@@ -12,6 +12,7 @@ public class MessageMapper(IAppMapper mapper) : IMapper<Message, MessageInfo>
             Id = message.Id,
             Text = message.MessageText,
             Sender = mapper.Map<User, UserInfo>(message.Sender),
+            ChatId = message.ChatId,
             CreatedAt = message.CreatedAt,
             IsEdited = message.IsEdited,
             IsRead = message.IsRead

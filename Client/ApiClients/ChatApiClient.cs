@@ -1,4 +1,6 @@
 ﻿using System.Net.Http.Json;
+using Application.DTO;
+using Application.Services;
 using Application.Utils;
 using Client.Utils;
 using Contracts.DTO;
@@ -33,14 +35,13 @@ public class ChatApiClient(HttpClient httpClient)
         }
     }
 
-    public async Task<ApiResult<MessageResponse>> SendMessage(int currentUserId, int companionId, string message)
+    public async Task<ApiResult<MessageResponse>> SendMessage(int currentChatId, int senderId, string message)
     {
         try
         {
-            var response = await httpClient.PostAsJsonAsync("api/chat/message", new SendMessageRequest
+            var response = await httpClient.PostAsJsonAsync($"api/chat/{currentChatId}/messages", new SendMessageRequest
             {
-                SenderId = currentUserId,
-                CompanionId = companionId,
+                SenderId = senderId,
                 Message = message
             });
 
@@ -59,6 +60,29 @@ public class ChatApiClient(HttpClient httpClient)
         catch
         {
             return ApiResult<MessageResponse>.Failure(ErrorCode.DatabaseError);
+        }
+    }
+
+    public async Task<ApiResult<DeleteResponse>> DeleteMessage(int chatId, int messageId)
+    {
+        try
+        {
+            var response = await httpClient.DeleteAsync($"api/chat/{chatId}/messages/{messageId}");
+            if (response.IsSuccessStatusCode)
+            {
+                var deleteResponse = await response.Content.ReadFromJsonAsync<DeleteResponse>();
+
+                return deleteResponse == null
+                    ? ApiResult<DeleteResponse>.Failure(ErrorCode.EmptyResponse)
+                    : ApiResult<DeleteResponse>.Success(deleteResponse);
+            }
+
+            var errorResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+            return ApiResult<DeleteResponse>.Failure(errorResponse?.ErrorCode ?? ErrorCode.UnknownError);
+        }
+        catch
+        {
+            return ApiResult<DeleteResponse>.Failure(ErrorCode.DatabaseError);
         }
     }
 }

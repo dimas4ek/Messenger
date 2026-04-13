@@ -11,6 +11,7 @@ public class ChatRealtimeClient(RemoteConfig remoteConfig, IDialogService dialog
     private HubConnection? _connection;
 
     public event Action<MessageResponse>? MessageReceived;
+    public event Action<int>? MessageDeleted;
 
     public async Task Connect(int currentUserId)
     {
@@ -24,6 +25,7 @@ public class ChatRealtimeClient(RemoteConfig remoteConfig, IDialogService dialog
                 .Build();
 
             _connection.On<MessageResponse>("ReceiveMessage", message => MessageReceived?.Invoke(message));
+            _connection.On<int>("DeleteMessage", messageId => MessageDeleted?.Invoke(messageId));
 
             try
             {

@@ -1,5 +1,6 @@
-﻿using System.Threading.Channels;
-using Application.DTO;
+﻿using Application.DTO;
+using Application.Utils;
+using Application.Utils.Mapper;
 using Client.ApiClients;
 using Client.Properties;
 using Client.Realtime;
@@ -7,6 +8,10 @@ using Client.Service;
 using Client.Utils;
 using Contracts.DTO.Chat;
 using Guna.UI2.WinForms;
+using System.Diagnostics;
+using System.Text.Json;
+using System.Threading.Channels;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace Client;
 
@@ -18,6 +23,8 @@ public partial class ClientForm : Form
 
     private readonly IDialogService _dialogService;
     private readonly FriendApiClient _friendApiClient;
+
+    private sealed record OutgoingChatMessage(int CurrentChatId, int SenderId, string Text, Guid TempId);
 
     private readonly Channel<OutgoingChatMessage> _messageQueue =
         Channel.CreateBounded<OutgoingChatMessage>(new BoundedChannelOptions(100)
@@ -36,6 +43,8 @@ public partial class ClientForm : Form
 
     private UserInfo? _companion;
     private UserInfo _currentUser;
+
+    private ChatInfo _currentChat;
 
     private List<UserInfo> _friendList = [];
     private bool _isFriendTxtBoxOpen;
@@ -69,8 +78,6 @@ public partial class ClientForm : Form
         //todo
     }
 
-    private sealed record OutgoingChatMessage(int SenderId, int CompanionId, string Text);
-
     #region Main Things
 
     public async void ClientForm_Load(object? sender, EventArgs e)
@@ -85,6 +92,7 @@ public partial class ClientForm : Form
 
             await _chatRealtimeClient.Connect(_currentUser.Id);
             _chatRealtimeClient.MessageReceived += OnMessageReceived;
+            _chatRealtimeClient.MessageDeleted += OnMessageDeleted;
 
             _sendMessagesCts = new CancellationTokenSource();
             _ = ProcessOutgoingMessages(_sendMessagesCts.Token);
@@ -120,13 +128,32 @@ public partial class ClientForm : Form
         }
     }
 
-    public void OnMessageReceived(MessageResponse response)
+    private void OnMessageReceived(MessageResponse response)
     {
         var message = response.Message;
-        var messageSender = message.Sender;
-        if (_companion == null) return;
-        if (messageSender.Id == _companion.Id || messageSender.Id == _currentUser.Id)
-            Invoke(() => LoadMessage(message.Text, messageSender.Username));
+        if (_currentChat == null) return;
+        if (message.ChatId != _currentChat.Id) return;
+
+        Invoke(() => LoadMessage(message));
+    }
+
+    private void OnMessageDeleted(int messageId)
+    {
+        if (InvokeRequired)
+        {
+            BeginInvoke(() => OnMessageDeleted(messageId));
+            return;
+        }
+
+        var panel = _chatPanel.Controls
+            .OfType<Guna2Panel>()
+            .FirstOrDefault(p => p.Tag is MessageInfo m && m.Id == messageId);
+
+        if (panel == null) return;
+
+        var message = (MessageInfo)panel.Tag!;
+        _chatPanel.Controls.Remove(panel);
+        _messages?.Remove(message);
     }
 
     private void DoImportantThings()
@@ -173,7 +200,7 @@ public partial class ClientForm : Form
         var addFriendButton = new Guna2Button();
         addFriendButton.Parent = _profilePanel;
         addFriendButton.Location = new Point(0, 58);
-        addFriendButton.Size = new Size(285, 45);
+        addFriendButton.Size = new Size(leftPanel.Width + mainPanel.Width, 45);
         addFriendButton.FillColor = Color.FromArgb(23, 33, 43);
         addFriendButton.HoverState.FillColor = Color.FromArgb(35, 46, 60);
         addFriendButton.Text = @"Add Friend";
@@ -202,10 +229,10 @@ public partial class ClientForm : Form
             _addFriendTxtBox.PlaceholderForeColor = Color.FromArgb(193, 200, 207);
             _addFriendTxtBox.FillColor = Color.FromArgb(35, 46, 60);
             _addFriendTxtBox.Location = new Point(0, 103);
-            _addFriendTxtBox.Size = new Size(285, 45);
+            _addFriendTxtBox.Size = new Size(leftPanel.Width + mainPanel.Width, 45);
             _addFriendTxtBox.BorderThickness = 0;
 
-            _addFriendTxtBox.KeyUp += AddFriendTxtBox_KeyUp;
+            _addFriendTxtBox.KeyDown += AddFriendTxtBox_KeyDown;
 
             return;
         }
@@ -214,11 +241,11 @@ public partial class ClientForm : Form
         _addFriendTxtBox.Visible = false;
     }
 
-    private async void AddFriendTxtBox_KeyUp(object? sender, KeyEventArgs e)
+    private async void AddFriendTxtBox_KeyDown(object? sender, KeyEventArgs e)
     {
         try
         {
-            await HandleAddFriendKeyUp(e);
+            await HandleAddFriendKeyDown(e);
         }
         catch (Exception ex)
         {
@@ -286,31 +313,9 @@ public partial class ClientForm : Form
 
             _friendList = friendListResult.Value.Friends;
 
-            foreach (var friend in _friendList)
+            foreach (var friend in _friendList.Where(friend => !ThereIsAlreadyFriend(friend)))
             {
-                if (ThereIsAlreadyFriend(friend)) continue;
-
-                var friendPanel = new Guna2Panel();
-                friendPanel.Parent = addedFriendPanel;
-                friendPanel.Size = new Size(210, 70);
-                friendPanel.BackColor = Color.FromArgb(23, 33, 43);
-                friendPanel.MouseMove += FriendPanel_MouseMove;
-                friendPanel.MouseLeave += FriendPanel_MouseLeave;
-                friendPanel.MouseClick += FriendPanel_MouseClick;
-                friendPanel.Dock = DockStyle.Top;
-                friendPanel.Tag = friend;
-
-                var friendLabel = new Label();
-                friendLabel.Parent = friendPanel;
-                friendLabel.Text = friend.Username;
-                friendLabel.Location = new Point(6, 13);
-                friendLabel.Font = new Font(FontFamily.GenericSansSerif, 12);
-                friendLabel.BackColor = Color.FromArgb(23, 33, 43);
-                friendLabel.ForeColor = Color.White;
-                friendLabel.MouseMove += FriendLabel_MouseMove;
-                friendLabel.MouseLeave += FriendLabel_MouseLeave;
-                friendLabel.MouseClick += FriendPanel_MouseClick;
-                friendLabel.Tag = friend;
+                CreateFriendPanel(friend);
             }
         }
         finally
@@ -319,7 +324,7 @@ public partial class ClientForm : Form
         }
     }
 
-    private async Task HandleAddFriendKeyUp(KeyEventArgs e)
+    private async Task HandleAddFriendKeyDown(KeyEventArgs e)
     {
         if (e.KeyCode != Keys.Enter) return;
 
@@ -403,6 +408,7 @@ public partial class ClientForm : Form
             return;
 
         _companion = user;
+
         lblCompanionUsername.Text = _companion.Username;
 
         chatPanelGuna.Controls.Clear();
@@ -432,7 +438,9 @@ public partial class ClientForm : Form
 
     private async Task HandleSearchKeyUp()
     {
-        if (txtBoxSearch.Text == "")
+        var searchText = txtBoxSearch.Text;
+
+        if (searchText == "")
         {
             await UpdateFriendList();
             return;
@@ -442,29 +450,36 @@ public partial class ClientForm : Form
 
         addedFriendPanel.Controls.Clear();
 
-        foreach (var friend in _friendList)
+        foreach (var friend in _friendList.Where(friend =>
+                     friend.Username != _currentUser.Username &&
+                     friend.Username.Contains(searchText, StringComparison.OrdinalIgnoreCase)))
         {
-            if (friend.Username == _currentUser.Username) continue;
-
-            var friendPanel = new Guna2Panel();
-            friendPanel.Parent = addedFriendPanel;
-            friendPanel.Size = new Size(210, 70);
-            friendPanel.BackColor = Color.FromArgb(23, 33, 43);
-            friendPanel.MouseMove += FriendPanel_MouseMove;
-            friendPanel.MouseLeave += FriendPanel_MouseLeave;
-            friendPanel.MouseClick += FriendPanel_MouseClick;
-            friendPanel.Dock = DockStyle.Top;
-
-            var friendLabel = new Label();
-            friendLabel.Parent = friendPanel;
-            friendLabel.Text = friend.Username;
-            friendLabel.Location = new Point(6, 13);
-            friendLabel.Font = new Font(FontFamily.GenericSansSerif, 12);
-            friendLabel.BackColor = Color.FromArgb(23, 33, 43);
-            friendLabel.ForeColor = Color.White;
-            friendLabel.MouseMove += FriendLabel_MouseMove;
-            friendLabel.MouseLeave += FriendLabel_MouseLeave;
+            CreateFriendPanel(friend);
         }
+    }
+
+    private void CreateFriendPanel(UserInfo friend)
+    {
+        var friendPanel = new Guna2Panel();
+        friendPanel.Parent = addedFriendPanel;
+        friendPanel.Size = new Size(210, 70);
+        friendPanel.BackColor = Color.FromArgb(23, 33, 43);
+        friendPanel.MouseMove += FriendPanel_MouseMove;
+        friendPanel.MouseLeave += FriendPanel_MouseLeave;
+        friendPanel.MouseClick += FriendPanel_MouseClick;
+        friendPanel.Dock = DockStyle.Top;
+        friendPanel.Tag = friend;
+
+        var friendLabel = new Label();
+        friendLabel.Parent = friendPanel;
+        friendLabel.Text = friend.Username;
+        friendLabel.Location = new Point(6, 13);
+        friendLabel.Font = new Font(FontFamily.GenericSansSerif, 12);
+        friendLabel.BackColor = Color.FromArgb(23, 33, 43);
+        friendLabel.ForeColor = Color.White;
+        friendLabel.MouseMove += FriendLabel_MouseMove;
+        friendLabel.MouseLeave += FriendLabel_MouseLeave;
+        friendLabel.Tag = friend;
     }
 
     #endregion
@@ -501,26 +516,33 @@ public partial class ClientForm : Form
             return;
         }
 
-        foreach (var message in _messages) LoadMessage(message.Text, message.Sender.Username);
+        _currentChat = chatResult.Value.Chat;
+
+        foreach (var message in _messages) LoadMessage(message);
     }
 
-    private void LoadMessage(string message, string userName)
+    private void LoadMessage(MessageInfo message)
     {
         var nameLabel = new Label();
-        nameLabel.Text = userName;
+        nameLabel.Text = message.Sender.Username;
         nameLabel.Font = new Font(FontFamily.GenericSansSerif, 9, FontStyle.Bold);
         nameLabel.ForeColor = Color.LightGray;
         nameLabel.AutoSize = true;
+        nameLabel.Tag = message.Sender;
 
         var messagePanel = new Guna2Panel();
         messagePanel.BackColor = Color.FromArgb(24, 37, 51);
         messagePanel.MaximumSize = new Size(400, 0);
         messagePanel.AutoSize = true;
         messagePanel.Controls.Add(nameLabel);
+        messagePanel.Tag = message;
+        messagePanel.MouseClick += MessagePanel_MouseClick;
 
         var messageLabel = new Label();
         messageLabel.Parent = messagePanel;
-        messageLabel.Text = message;
+        messageLabel.Text = message.Text;
+        //var options = new JsonSerializerOptions { WriteIndented = true };
+        //messageLabel.Text = $"{message.Text}\n{JsonSerializer.Serialize(message, options)}";
         messageLabel.Font = new Font(FontFamily.GenericSansSerif, 12);
         messageLabel.ForeColor = Color.White;
         messageLabel.AutoSize = true;
@@ -532,6 +554,32 @@ public partial class ClientForm : Form
         _chatPanel.Controls.Add(messagePanel);
 
         _chatPanel.ScrollControlIntoView(messagePanel);
+    }
+
+    private async void MessagePanel_MouseClick(object? sender, MouseEventArgs e)
+    {
+        try
+        {
+            if ((e.Button & MouseButtons.Right) != 0)
+            {
+                var panel = (Guna2Panel)sender!;
+                var message = (MessageInfo)panel.Tag!;
+                var result = await _chatApiClient.DeleteMessage(_currentChat.Id, message.Id);
+
+                if (!result.IsSuccess)
+                {
+                    _dialogService.ShowError(result.ToMessage());
+                    return;
+                }
+
+                _chatPanel.Controls.Remove(panel);
+                _messages.Remove(message);
+            }
+        }
+        catch (Exception ex)
+        {
+            _dialogService.ShowError(ex.Message);
+        }
     }
 
     private async void btnSndMsg_Click(object sender, EventArgs e)
@@ -571,12 +619,21 @@ public partial class ClientForm : Form
 
         txtBoxMessage.Clear();
 
-        LoadMessage(text, _currentUser.Username);
+        var message = new MessageInfo
+        {
+            Text = text,
+            Sender = _currentUser,
+            ChatId = _currentChat.Id,
+            TempId = Guid.NewGuid()
+        };
+
+        LoadMessage(message);
 
         await _messageQueue.Writer.WriteAsync(new OutgoingChatMessage(
+            _currentChat.Id,
             _currentUser.Id,
-            _companion.Id,
-            text));
+            text,
+            message.TempId));
     }
 
     private async Task ProcessOutgoingMessages(CancellationToken token)
@@ -585,9 +642,13 @@ public partial class ClientForm : Form
         {
             await foreach (var item in _messageQueue.Reader.ReadAllAsync(token))
             {
-                var result = await _chatApiClient.SendMessage(item.SenderId, item.CompanionId, item.Text);
+                var result = await _chatApiClient.SendMessage(item.CurrentChatId, item.SenderId, item.Text);
 
-                if (result is { IsSuccess: true, Value: not null }) continue;
+                if (result is { IsSuccess: true, Value: not null })
+                {
+                    UpdateMessage(item, result.Value.Message);
+                    continue;
+                }
 
                 if (!IsDisposed)
                     BeginInvoke(() => _dialogService.ShowError(result.ToMessage()));
@@ -596,6 +657,30 @@ public partial class ClientForm : Form
         catch (OperationCanceledException)
         {
         }
+    }
+
+    private void UpdateMessage(OutgoingChatMessage item, MessageInfo message)
+    {
+        BeginInvoke(() =>
+        {
+            var panel = _chatPanel.Controls
+                .OfType<Guna2Panel>()
+                .FirstOrDefault(p => p.Tag is MessageInfo m && m.TempId == item.TempId);
+
+            if (panel?.Tag is not MessageInfo) return;
+
+            message.TempId = item.TempId;
+            panel.Tag = message;
+
+            /*var label = panel.Controls.OfType<Label>()
+                .FirstOrDefault(l => l.Location.Y == 20);
+
+            if (label != null)
+            {
+                var options = new JsonSerializerOptions { WriteIndented = true };
+                label.Text = $"{message.Text}\n{JsonSerializer.Serialize(message, options)}";
+            }*/
+        });
     }
 
     #endregion

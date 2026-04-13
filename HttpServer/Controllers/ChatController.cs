@@ -29,10 +29,10 @@ public class ChatController(ChatService chatService, IHubContext<ChatHub> hubCon
         });
     }
 
-    [HttpPost("message")]
-    public async Task<ActionResult<MessageResponse>> SendMessage([FromBody] SendMessageRequest request)
+    [HttpPost("{chatId:int}/messages")]
+    public async Task<ActionResult<MessageResponse>> SendMessage(int chatId, [FromBody] SendMessageRequest request)
     {
-        var result = await chatService.SaveMessage(request.SenderId, request.CompanionId, request.Message);
+        var result = await chatService.SaveMessage(chatId, request.SenderId, request.Message);
 
         if (!result.IsSuccess)
             return BadRequest(new ErrorResponse
@@ -40,15 +40,41 @@ public class ChatController(ChatService chatService, IHubContext<ChatHub> hubCon
                 ErrorCode = result.ErrorCode
             });
 
-        await hubContext.Clients.Group($"user:{request.CompanionId}")
+        await hubContext.Clients.Group($"chat:{chatId}")
             .SendAsync("ReceiveMessage", new MessageResponse
             {
                 Message = result.Value
             });
 
+        /*await hubContext.Clients.Group($"user:{request.CompanionId}")
+            .SendAsync("ReceiveMessage", new MessageResponse
+            {
+                Message = result.Value
+            });*/
+
         return Ok(new MessageResponse
         {
             Message = result.Value
+        });
+    }
+
+    [HttpDelete("{chatId:int}/messages/{messageId:int}")]
+    public async Task<ActionResult<DeleteResponse>> DeleteMessage(int chatId, int messageId)
+    {
+        var result = await chatService.DeleteMessage(chatId, messageId);
+
+        if (!result.IsSuccess)
+            return BadRequest(new ErrorResponse
+            {
+                ErrorCode = result.ErrorCode
+            });
+
+        await hubContext.Clients.Group($"chat:{chatId}")
+            .SendAsync("DeleteMessage", messageId);
+
+        return Ok(new DeleteResponse
+        {
+            Success = result.Value
         });
     }
 }
