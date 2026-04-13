@@ -100,17 +100,36 @@ public class ChatService(
         return Result<MessageInfo>.Success(messageDto);
     }
 
+    public async Task<Result<MessageInfo>> EditMessage(int chatId, int messageId, string newText)
+    {
+        var message = await messageRepository.GetMessageById(messageId);
+
+        if (message == null)
+            return Result<MessageInfo>.Failure(ErrorCode.MessageNotFound);
+
+        if (message.ChatId != chatId)
+            return Result<MessageInfo>.Failure(ErrorCode.AccessDenied);
+
+        message.MessageText = newText;
+        message.IsEdited = true;
+
+        messageRepository.Update(message);
+        await messageRepository.Save();
+
+        return await GetMessage(messageId);
+    }
+
     public async Task<Result<bool>> DeleteMessage(int chatId, int messageId)
     {
-        var messageResult = await messageRepository.GetMessageById(messageId);
+        var message = await messageRepository.GetMessageById(messageId);
 
-        if (messageResult == null)
+        if (message == null)
             return Result<bool>.Failure(ErrorCode.MessageNotFound);
 
-        if (messageResult.ChatId != chatId)
+        if (message.ChatId != chatId)
             return Result<bool>.Failure(ErrorCode.AccessDenied);
 
-        messageRepository.Remove(messageResult);
+        messageRepository.Remove(message);
         await messageRepository.Save();
 
         return Result<bool>.Success(true);

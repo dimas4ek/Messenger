@@ -1,12 +1,14 @@
-﻿using System.Threading.Channels;
-using Application.DTO;
+﻿using Application.DTO;
 using Client.ApiClients;
 using Client.Properties;
 using Client.Realtime;
 using Client.Service;
 using Client.Utils;
 using Contracts.DTO.Chat;
+using Domain.Entities;
 using Guna.UI2.WinForms;
+using System.Threading.Channels;
+using static Guna.UI2.Native.WinApi;
 
 namespace Client;
 
@@ -87,6 +89,7 @@ public partial class ClientForm : Form
 
             await _chatRealtimeClient.Connect(_currentUser.Id);
             _chatRealtimeClient.MessageReceived += OnMessageReceived;
+            _chatRealtimeClient.MessageUpdated += OnMessageUpdated;
             _chatRealtimeClient.MessageDeleted += OnMessageDeleted;
 
             _sendMessagesCts = new CancellationTokenSource();
@@ -127,6 +130,12 @@ public partial class ClientForm : Form
     {
         if (_currentChat == null) return;
 
+        if (InvokeRequired)
+        {
+            BeginInvoke(() => OnMessageReceived(response));
+            return;
+        }
+
         var message = response.Message;
         if (message.ChatId != _currentChat.Id) return;
         if (message.Sender.Id == _currentUser.Id) return;
@@ -134,8 +143,36 @@ public partial class ClientForm : Form
         Invoke(() => LoadMessage(message));
     }
 
+    private void OnMessageUpdated(MessageResponse response)
+    {
+        if (_currentChat == null) return;
+
+        if (InvokeRequired)
+        {
+            BeginInvoke(() => OnMessageUpdated(response));
+            return;
+        }
+
+        var message = response.Message;
+        if (message.ChatId != _currentChat.Id) return;
+        if (message.Sender.Id == _currentUser.Id) return;
+
+        var panel = _chatPanel.Controls
+            .OfType<Guna2Panel>()
+            .FirstOrDefault(p => p.Tag is MessageInfo m && m.Id == message.Id);
+
+        if (panel == null) return;
+
+        var label = panel.Controls.OfType<Label>().FirstOrDefault();
+        if (label != null) label.Text = message.Text;
+
+        ((MessageInfo)panel.Tag!).Text = message.Text;
+    }
+
     private void OnMessageDeleted(int messageId)
     {
+        if (_currentChat == null) return;
+
         if (InvokeRequired)
         {
             BeginInvoke(() => OnMessageDeleted(messageId));
@@ -562,22 +599,162 @@ public partial class ClientForm : Form
             {
                 var panel = (Guna2Panel)sender!;
                 var message = (MessageInfo)panel.Tag!;
-                var result = await _chatApiClient.DeleteMessage(_currentChat.Id, message.Id);
 
-                if (!result.IsSuccess)
-                {
-                    _dialogService.ShowError(result.ToMessage());
-                    return;
-                }
+                ShowMessageContextMenu(panel, message, e.Location);
 
-                _chatPanel.Controls.Remove(panel);
-                _messages.Remove(message);
+                //await DeleteMessage(panel, message);
+
             }
         }
         catch (Exception ex)
         {
             _dialogService.ShowError(ex.Message);
         }
+    }
+
+    private void ShowMessageContextMenu(Guna2Panel messagePanel, MessageInfo message, Point location)
+    {
+        var menuPanel = new Guna2Panel
+        {
+            Size = new Size(160, 80),
+            BackColor = Color.FromArgb(30, 43, 56),
+            BorderRadius = 8,
+            BorderColor = Color.FromArgb(50, 63, 76),
+            BorderThickness = 1
+        };
+
+        var editButton = new Guna2Button
+        {
+            Text = "Изменить",
+            Size = new Size(150, 32),
+            Location = new Point(5, 5),
+            BackColor = Color.Transparent,
+            ForeColor = Color.White,
+            BorderRadius = 6,
+            Font = new Font("Segoe UI", 9f),
+            FillColor = Color.Transparent,
+            HoverState = { FillColor = Color.FromArgb(45, 58, 71) }
+        };
+
+        var deleteButton = new Guna2Button
+        {
+            Text = "Удалить",
+            Size = new Size(150, 32),
+            Location = new Point(5, 42),
+            BackColor = Color.Transparent,
+            ForeColor = Color.FromArgb(220, 80, 80),
+            BorderRadius = 6,
+            Font = new Font("Segoe UI", 9f),
+            FillColor = Color.Transparent,
+            HoverState = { FillColor = Color.FromArgb(45, 58, 71) }
+        };
+
+        editButton.Click += async (_, _) =>
+        {
+            menuPanel.Dispose();
+            await EditMessage(messagePanel, message);
+        };
+
+        deleteButton.Click += async (_, _) =>
+        {
+            menuPanel.Dispose();
+            await DeleteMessage(messagePanel, message);
+        };
+
+        menuPanel.Controls.Add(editButton);
+        menuPanel.Controls.Add(deleteButton);
+
+        // закрыть при клике вне меню
+        menuPanel.LostFocus += (_, _) => menuPanel.Dispose();
+
+        var screenPos = messagePanel.PointToScreen(location);
+        var formPos = PointToClient(screenPos);
+
+        menuPanel.Location = formPos;
+        Controls.Add(menuPanel);
+        menuPanel.BringToFront();
+        menuPanel.Focus();
+    }
+
+    public async Task EditMessage(Guna2Panel panel, MessageInfo message)
+    {
+        if (_currentChat == null) return;
+
+        var newText = ShowEditDialog(message.Text);
+        if (newText == null) return;
+
+        var result = await _chatApiClient.EditMessage(_currentChat.Id, message.Id, newText);
+
+        if (!result.IsSuccess)
+        {
+            _dialogService.ShowError(result.ToMessage());
+            return;
+        }
+
+        var label = panel.Controls.OfType<Label>().FirstOrDefault();
+        if (label != null) label.Text = newText;
+        message.Text = newText;
+    }
+
+    private string? ShowEditDialog(string currentText)
+    {
+        var form = new Form
+        {
+            Size = new Size(400, 150),
+            StartPosition = FormStartPosition.CenterParent,
+            Text = "Изменить сообщение",
+            BackColor = Color.FromArgb(23, 33, 43),
+            FormBorderStyle = FormBorderStyle.FixedDialog,
+            MaximizeBox = false,
+            MinimizeBox = false
+        };
+
+        var textBox = new Guna2TextBox
+        {
+            Text = currentText,
+            Location = new Point(10, 10),
+            Size = new Size(360, 40),
+            ForeColor = Color.White,
+            FillColor = Color.FromArgb(30, 43, 56)
+        };
+
+        var confirmButton = new Guna2Button
+        {
+            Text = "Сохранить",
+            Location = new Point(270, 60),
+            Size = new Size(100, 35),
+            FillColor = Color.FromArgb(45, 140, 240),
+            ForeColor = Color.White
+        };
+
+        string? result = null;
+        confirmButton.Click += (_, _) =>
+        {
+            result = textBox.Text.Trim();
+            form.Close();
+        };
+
+        form.Controls.Add(textBox);
+        form.Controls.Add(confirmButton);
+        form.ShowDialog();
+
+        return result;
+    }
+
+    public async Task DeleteMessage(Guna2Panel panel, MessageInfo message)
+    {
+        if (_currentChat == null) return;
+
+        var result = await _chatApiClient.DeleteMessage(_currentChat.Id, message.Id);
+
+        if (!result.IsSuccess)
+        {
+            _dialogService.ShowError(result.ToMessage());
+            return;
+        }
+
+        _chatPanel.Controls.Remove(panel);
+        _messages?.Remove(message);
     }
 
     private async void btnSndMsg_Click(object sender, EventArgs e)

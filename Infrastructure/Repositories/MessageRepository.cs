@@ -18,14 +18,6 @@ public class MessageRepository(MessengerContext context) : Repository<Message>(c
             .ToListAsync();
     }
 
-    public async Task<int?> GetSenderId(int messageId)
-    {
-        return await _context.Messages
-            .Where(m => m.Id == messageId)
-            .Select(m => (int?)m.SenderId)
-            .FirstOrDefaultAsync();
-    }
-
     public async Task<Message?> GetMessageById(int messageId)
     {
         return await _context.Messages

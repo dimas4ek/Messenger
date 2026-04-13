@@ -13,7 +13,7 @@ public class ChatApiClient(HttpClient httpClient)
         try
         {
             var response =
-                await httpClient.GetAsync($"api/chat/private?userId={currentUserId}&companionId={companionId}");
+                await httpClient.GetAsync($"api/chats/private?userId={currentUserId}&companionId={companionId}");
 
             if (response.IsSuccessStatusCode)
             {
@@ -37,7 +37,7 @@ public class ChatApiClient(HttpClient httpClient)
     {
         try
         {
-            var response = await httpClient.PostAsJsonAsync($"api/chat/{currentChatId}/messages", new SendMessageRequest
+            var response = await httpClient.PostAsJsonAsync($"api/chats/{currentChatId}/messages", new SendMessageRequest
             {
                 SenderId = senderId,
                 Message = message
@@ -61,11 +61,40 @@ public class ChatApiClient(HttpClient httpClient)
         }
     }
 
+    public async Task<ApiResult<MessageResponse>> EditMessage(int chatId, int messageId, string newText)
+    {
+        try
+        {
+            var response = await httpClient.PatchAsJsonAsync($"api/chats/{chatId}/messages/{messageId}", new EditMessageRequest
+            {
+                Message = newText
+            });
+
+            if (response.IsSuccessStatusCode)
+            {
+                var messageResponse = await response.Content.ReadFromJsonAsync<MessageResponse>();
+
+                return messageResponse == null
+                    ? ApiResult<MessageResponse>.Failure(ErrorCode.EmptyResponse)
+                    : ApiResult<MessageResponse>.Success(messageResponse);
+            }
+
+            var errorResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+            return ApiResult<MessageResponse>.Failure(errorResponse?.ErrorCode ?? ErrorCode.UnknownError);
+
+        }
+        catch
+        {
+            return ApiResult<MessageResponse>.Failure(ErrorCode.DatabaseError);
+        }
+    }
+
     public async Task<ApiResult<DeleteResponse>> DeleteMessage(int chatId, int messageId)
     {
         try
         {
-            var response = await httpClient.DeleteAsync($"api/chat/{chatId}/messages/{messageId}");
+            var response = await httpClient.DeleteAsync($"api/chats/{chatId}/messages/{messageId}");
+
             if (response.IsSuccessStatusCode)
             {
                 var deleteResponse = await response.Content.ReadFromJsonAsync<DeleteResponse>();

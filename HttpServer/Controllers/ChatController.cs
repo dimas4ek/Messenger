@@ -52,6 +52,26 @@ public class ChatController(ChatService chatService, IHubContext<ChatHub> hubCon
         });
     }
 
+    [HttpPatch("{chatId:int}/messages/{messageId:int}")]
+    public async Task<ActionResult<MessageResponse>> EditMessage(int chatId, int messageId, EditMessageRequest request)
+    {
+        var result = await chatService.EditMessage(chatId, messageId, request.Message);
+
+        if (!result.IsSuccess)
+            return BadRequest(new ErrorResponse
+            {
+                ErrorCode = result.ErrorCode
+            });
+
+        await hubContext.Clients.Group($"chat:{chatId}")
+            .SendAsync("EditMessage", messageId);
+
+        return Ok(new MessageResponse
+        {
+            Message = result.Value
+        });
+    }
+
     [HttpDelete("{chatId:int}/messages/{messageId:int}")]
     public async Task<ActionResult<DeleteResponse>> DeleteMessage(int chatId, int messageId)
     {
