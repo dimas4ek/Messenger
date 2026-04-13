@@ -1,6 +1,5 @@
-﻿using Application.DTO;
-using Application.Utils;
-using Application.Utils.Mapper;
+﻿using System.Threading.Channels;
+using Application.DTO;
 using Client.ApiClients;
 using Client.Properties;
 using Client.Realtime;
@@ -8,10 +7,6 @@ using Client.Service;
 using Client.Utils;
 using Contracts.DTO.Chat;
 using Guna.UI2.WinForms;
-using System.Diagnostics;
-using System.Text.Json;
-using System.Threading.Channels;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace Client;
 
@@ -23,8 +18,6 @@ public partial class ClientForm : Form
 
     private readonly IDialogService _dialogService;
     private readonly FriendApiClient _friendApiClient;
-
-    private sealed record OutgoingChatMessage(int CurrentChatId, int SenderId, string Text, Guid TempId);
 
     private readonly Channel<OutgoingChatMessage> _messageQueue =
         Channel.CreateBounded<OutgoingChatMessage>(new BoundedChannelOptions(100)
@@ -42,9 +35,9 @@ public partial class ClientForm : Form
     private FlowLayoutPanel _chatPanel;
 
     private UserInfo? _companion;
-    private UserInfo _currentUser;
 
-    private ChatInfo _currentChat;
+    private ChatInfo? _currentChat;
+    private UserInfo _currentUser;
 
     private List<UserInfo> _friendList = [];
     private bool _isFriendTxtBoxOpen;
@@ -77,6 +70,8 @@ public partial class ClientForm : Form
     {
         //todo
     }
+
+    private sealed record OutgoingChatMessage(int CurrentChatId, int SenderId, string Text, Guid TempId);
 
     #region Main Things
 
@@ -130,9 +125,11 @@ public partial class ClientForm : Form
 
     private void OnMessageReceived(MessageResponse response)
     {
-        var message = response.Message;
         if (_currentChat == null) return;
+
+        var message = response.Message;
         if (message.ChatId != _currentChat.Id) return;
+        if (message.Sender.Id == _currentUser.Id) return;
 
         Invoke(() => LoadMessage(message));
     }
@@ -314,9 +311,7 @@ public partial class ClientForm : Form
             _friendList = friendListResult.Value.Friends;
 
             foreach (var friend in _friendList.Where(friend => !ThereIsAlreadyFriend(friend)))
-            {
                 CreateFriendPanel(friend);
-            }
         }
         finally
         {
@@ -413,6 +408,9 @@ public partial class ClientForm : Form
 
         chatPanelGuna.Controls.Clear();
 
+        if (_currentChat != null)
+            await _chatRealtimeClient.LeaveChat(_currentChat.Id);
+
         await LoadDialog();
     }
 
@@ -453,9 +451,7 @@ public partial class ClientForm : Form
         foreach (var friend in _friendList.Where(friend =>
                      friend.Username != _currentUser.Username &&
                      friend.Username.Contains(searchText, StringComparison.OrdinalIgnoreCase)))
-        {
             CreateFriendPanel(friend);
-        }
     }
 
     private void CreateFriendPanel(UserInfo friend)
@@ -519,6 +515,8 @@ public partial class ClientForm : Form
         _currentChat = chatResult.Value.Chat;
 
         foreach (var message in _messages) LoadMessage(message);
+
+        await _chatRealtimeClient.JoinChat(_currentChat.Id);
     }
 
     private void LoadMessage(MessageInfo message)

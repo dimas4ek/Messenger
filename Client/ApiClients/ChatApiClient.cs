@@ -1,6 +1,4 @@
 ﻿using System.Net.Http.Json;
-using Application.DTO;
-using Application.Services;
 using Application.Utils;
 using Client.Utils;
 using Contracts.DTO;

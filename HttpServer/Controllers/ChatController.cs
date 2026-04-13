@@ -46,12 +46,6 @@ public class ChatController(ChatService chatService, IHubContext<ChatHub> hubCon
                 Message = result.Value
             });
 
-        /*await hubContext.Clients.Group($"user:{request.CompanionId}")
-            .SendAsync("ReceiveMessage", new MessageResponse
-            {
-                Message = result.Value
-            });*/
-
         return Ok(new MessageResponse
         {
             Message = result.Value
