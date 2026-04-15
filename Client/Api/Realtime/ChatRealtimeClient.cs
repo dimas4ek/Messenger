@@ -1,10 +1,10 @@
 ﻿using Client.Config;
-using Client.Service;
+using Client.Services;
 using Contracts.DTO.Chat;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Client;
 
-namespace Client.Realtime;
+namespace Client.Api.Realtime;
 
 public class ChatRealtimeClient(RemoteConfig remoteConfig, IDialogService dialogService)
 {

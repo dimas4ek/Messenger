@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using Client.Config;
 
-namespace Client.Service;
+namespace Client.Services;
 
 public class ServerAvailability(RemoteConfig remoteConfig)
 {

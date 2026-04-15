@@ -1,0 +1,154 @@
+﻿using Client.Controllers;
+using Client.Forms.Base;
+using Client.Services;
+using Client.UI;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace Client.Forms;
+
+public partial class LoginForm : BaseForm
+{
+    private readonly LoginController _controller = null!;
+    private readonly LoginAnimator _animator = null!;
+    private LoginSwitch _mode = LoginSwitch.Login;
+
+    public LoginForm() : base()
+    {
+
+    }
+
+    public LoginForm(LoginController controller, IDialogService dialogService) : base(dialogService)
+    {
+        _controller = controller;
+        _animator = new LoginAnimator(this);
+
+        InitializeComponent();
+        InitializeUI();
+    }
+
+    #region Main Things
+
+    private void InitializeUI()
+    {
+        FormBorderStyle = FormBorderStyle.FixedSingle;
+        MaximizeBox = true;
+        txtPassword.PasswordChar = '*';
+
+        Resize += (_, _) =>
+        {
+            if (WindowState != FormWindowState.Minimized)
+                CenterPanel();
+        };
+        Load += async (_, _) => await _animator.StartAsync();
+
+        SetMode(LoginSwitch.Login);
+        CenterPanel();
+    }
+
+    private void CenterPanel()
+    {
+        loginBackPanel.Left = (ClientSize.Width - loginBackPanel.Width) / 2;
+        loginBackPanel.Top = (ClientSize.Height - loginBackPanel.Height) / 2;
+    }
+
+    #endregion
+
+    #region Auth
+
+    private void btnLogin_Click(object sender, EventArgs e) => _ = SafeInvoke(ProcessAuth);
+
+    private void txtPassword_KeyUp(object sender, KeyEventArgs e)
+    {
+        if (e.KeyCode == Keys.Enter)
+            _ = SafeInvoke(ProcessAuth);
+    }
+
+    private void btnRegister_Click(object sender, EventArgs e)
+    {
+        SetMode(_mode == LoginSwitch.Login
+            ? LoginSwitch.Registration
+            : LoginSwitch.Login);
+    }
+
+    private async Task ProcessAuth()
+    {
+        var username = txtUsername.Text.Trim();
+        var password = txtPassword.Text.Trim();
+
+        if (!_controller.ValidateInput(username, password))
+            return;
+
+        ToggleControls(false, btnLogin, btnRegister);
+
+        await SafeInvoke(async () =>
+            {
+                if (_mode == LoginSwitch.Login)
+                    await HandleLogin(username, password);
+                else
+                    await HandleRegistration(username, password);
+            },
+            onFinally: () => ToggleControls(true, btnLogin, btnRegister));
+    }
+
+    private async Task HandleLogin(string username, string password)
+    {
+        await _controller.LoginAsync(username, password);
+        _controller.OpenClientForm();
+        Hide();
+    }
+
+    private async Task HandleRegistration(string username, string password)
+    {
+        await _controller.RegisterAsync(username, password);
+        SetMode(LoginSwitch.Login);
+        ClearInputs();
+    }
+
+    #endregion
+
+    #region Utils
+
+    private void btnLogin_MouseMove(object? sender, MouseEventArgs e) => btnLogin.Cursor = Cursors.Hand;
+
+    private void btnRegister_MouseMove(object? sender, MouseEventArgs e) => btnRegister.Cursor = Cursors.Hand;
+
+    private void SetMode(LoginSwitch mode)
+    {
+        _mode = mode;
+
+        var isLogin = mode == LoginSwitch.Login;
+
+        lblLogin.Text = isLogin ? "Вход" : "Регистрация";
+        lblLogin.Location = isLogin ? new Point(112, 30) : new Point(80, 30);
+
+        btnLogin.Text = isLogin ? "Войти" : "Регистрация";
+
+        lblAccount.Text = isLogin
+            ? "У вас нет аккаунта?\nЗарегистрируйтесь!"
+            : "У вас уже есть аккаунт?\nВойдите!";
+
+        lblAccount.Location = isLogin
+            ? new Point(90, 253)
+            : new Point(80, 253);
+
+        btnRegister.Text = isLogin ? "Регистрация" : "Вход";
+
+        lblAccount.TextAlign = ContentAlignment.MiddleCenter;
+
+        ClearInputs();
+    }
+
+    private void ClearInputs()
+    {
+        txtUsername.Clear();
+        txtPassword.Clear();
+    }
+
+    #endregion
+}
+
+public enum LoginSwitch
+{
+    Login,
+    Registration
+}

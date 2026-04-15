@@ -1,7 +1,9 @@
-using Client.ApiClients;
+using Client.Api.Clients;
+using Client.Api.Realtime;
 using Client.Config;
-using Client.Realtime;
-using Client.Service;
+using Client.Controllers;
+using Client.Forms;
+using Client.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -57,7 +59,14 @@ internal static class Program
         services.AddScoped<IDialogService, DialogService>();
 
         services.AddTransient<LoginForm>();
+        services.AddTransient<VideoPlayerForm>();
         services.AddTransient<ClientForm>();
+
+        services.AddTransient<LoginController>();
+        services.AddTransient<ChatController>();
+        services.AddTransient<FriendController>();
+        services.AddTransient<ProfileController>();
+        //services.AddSingleton<MessageQueueService>();
 
         services.AddSingleton<UserContext>();
 

@@ -1,4 +1,4 @@
-﻿namespace Client.Service;
+﻿namespace Client.Services;
 
 public interface IDialogService
 {

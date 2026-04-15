@@ -4,7 +4,7 @@ using Client.Utils;
 using Contracts.DTO;
 using Contracts.DTO.User;
 
-namespace Client.ApiClients;
+namespace Client.Api.Clients;
 
 public class UserApiClient(HttpClient httpClient)
 {

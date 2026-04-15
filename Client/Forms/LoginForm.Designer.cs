@@ -1,4 +1,6 @@
-﻿namespace Client
+﻿using Client.Forms.Base;
+
+namespace Client.Forms
 {
     partial class LoginForm
     {

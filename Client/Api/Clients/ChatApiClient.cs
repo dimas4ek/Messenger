@@ -4,7 +4,7 @@ using Client.Utils;
 using Contracts.DTO;
 using Contracts.DTO.Chat;
 
-namespace Client.ApiClients;
+namespace Client.Api.Clients;
 
 public class ChatApiClient(HttpClient httpClient)
 {

@@ -1,0 +1,67 @@
+﻿using Client.Properties;
+using Guna.UI2.WinForms;
+using Guna.UI2.WinForms.Suite;
+using System.Resources;
+using static Guna.UI2.WinForms.Suite.Descriptions;
+
+namespace Client.UI;
+
+public static class ProfilePanelFactory
+{
+    public static Guna2Panel Create(string username, int width, int height, Action onClose, EventHandler onAddFriend)
+    {
+        var profilePanel = new Guna2Panel
+        {
+            Size = new Size(width, height),
+            BackColor = Color.FromArgb(23, 33, 43),
+            Location = new Point(0, 0),
+            Dock = DockStyle.Left,
+            Visible = false
+        };
+
+        var profileUsernameLabel = new Label
+        {
+            Parent = profilePanel,
+            Font = new Font(FontFamily.GenericSansSerif, 15.75f),
+            ForeColor = Color.White,
+            Text = username,
+            AutoSize = true
+        };
+        profileUsernameLabel.Location = new Point(
+            (width - profileUsernameLabel.PreferredWidth) / 2, 20);
+
+        var btnCloseProfile = new Guna2ImageButton
+        {
+            Parent = profilePanel,
+            ImageSize = new Size(20, 20),
+            Image = (Image)Resources.ResourceManager.GetObject("btnProfileImage")!,
+            ImageOffset = new Point(0, 0),
+            ImageRotate = 0F,
+            Location = new Point(23, 17),
+            Margin = new Padding(4, 3, 4, 3),
+            Name = "btnOpenProfile",
+            Size = new Size(40, 40),
+            Cursor = Cursors.Hand,
+            Anchor = AnchorStyles.Top | AnchorStyles.Left
+        };
+        btnCloseProfile.CheckedState.ImageSize = new Size(20, 20);
+        btnCloseProfile.HoverState.ImageSize = new Size(20, 20);
+        btnCloseProfile.PressedState.ImageSize = new Size(20, 20);
+        btnCloseProfile.Click += (_, _) => onClose();
+
+        var addFriendButton = new Guna2Button
+        {
+            Parent = profilePanel,
+            Location = new Point(0, 58),
+            Size = new Size(width, 45),
+            FillColor = Color.FromArgb(23, 33, 43),
+            HoverState = { FillColor = Color.FromArgb(35, 46, 60) },
+            Text = "Add Friend",
+            Font = new Font("Segoe UI", 12),
+            TextAlign = HorizontalAlignment.Center
+        };
+        addFriendButton.Click += onAddFriend;
+
+        return profilePanel;
+    }
+}
