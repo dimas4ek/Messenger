@@ -2,10 +2,9 @@
 
 public class OutsideClickFilter(Control menu, Control form, Action onClose) : IMessageFilter
 {
-    private readonly Control _form = form;
-
     private const int WM_LBUTTONDOWN = 0x0201;
     private const int WM_RBUTTONDOWN = 0x0204;
+    private readonly Control _form = form;
 
     public bool PreFilterMessage(ref Message m)
     {
@@ -18,6 +17,5 @@ public class OutsideClickFilter(Control menu, Control form, Action onClose) : IM
         if (menuBounds.Contains(cursorPos)) return false;
         onClose();
         return false;
-
     }
 }

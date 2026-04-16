@@ -1,45 +1,41 @@
 ﻿using Application.DTO;
 using Client.Api.Clients;
-using Client.Api.Realtime;
 using Client.Controllers;
 using Client.Filter;
 using Client.Forms.Base;
 using Client.Forms.Dialogs;
-using Client.Properties;
 using Client.Services;
 using Client.UI;
-using Contracts.DTO.Chat;
 using Guna.UI2.WinForms;
-using LibVLCSharp.Shared;
-using System.Threading.Channels;
 using static Client.Services.MessageQueueService;
 
 namespace Client.Forms;
 
 public partial class ClientForm : BaseForm
 {
+    private readonly ChatApiClient _chatApiClient = null!;
     private readonly ChatController _chatController = null!;
     private readonly FriendController _friendController = null!;
     private readonly ProfileController _profileController = null!;
+    private readonly UserApiClient _userApiClient;
     private readonly UserContext _userContext = null!;
 
-    private MessageQueueService? _messageQueue;
-    private readonly ChatApiClient _chatApiClient = null!;
-
-    private UserInfo _currentUser = null!;
-    private UserInfo? _companion;
+    private Guna2Panel? _activeMenuPanel;
+    private Guna2TextBox _addFriendTxtBox = null!;
 
     private FlowLayoutPanel _chatPanel = null!;
-    private Guna2Panel _profilePanel = null!;
-    private Guna2TextBox _addFriendTxtBox = null!;
+    private UserInfo? _companion;
+
+    private UserInfo _currentUser = null!;
 
     private bool _isFriendTxtBoxOpen;
     private bool _isProfileOpen;
-
-    private Guna2Panel? _activeMenuPanel;
     private OutsideClickFilter? _menuFilter;
 
-    public ClientForm() : base()
+    private MessageQueueService? _messageQueue;
+    private Guna2Panel _profilePanel = null!;
+
+    public ClientForm()
     {
     }
 
@@ -48,13 +44,14 @@ public partial class ClientForm : BaseForm
         ProfileController profileController,
         UserContext userContext,
         IDialogService dialogService,
-        ChatApiClient chatApiClient) : base(dialogService)
+        ChatApiClient chatApiClient, UserApiClient userApiClient) : base(dialogService)
     {
         _chatController = chatController;
         _friendController = friendController;
         _profileController = profileController;
         _userContext = userContext;
         _chatApiClient = chatApiClient;
+        _userApiClient = userApiClient;
 
         InitializeComponent();
 
@@ -196,18 +193,18 @@ public partial class ClientForm : BaseForm
     {
         var panel = FriendPanelFactory.Create(
             friend,
-            onMove: (s, _) =>
+            (s, _) =>
             {
                 if (s is not Control c) return;
 
                 c.Cursor = Cursors.Hand;
-                FriendPanelFactory.SetColor((Guna2Panel)(c is Label l ? l.Parent! : c), 35, 46, 60);
+                ColorHelper.SetPanelColor((Guna2Panel)(c is Label l ? l.Parent! : c), 35, 46, 60);
             },
-            onLeave: (s, _) =>
+            (s, _) =>
             {
-                if (s is Control c) FriendPanelFactory.SetColor((Guna2Panel)(c is Label l ? l.Parent! : c), 23, 33, 43);
+                if (s is Control c) ColorHelper.SetPanelColor((Guna2Panel)(c is Label l ? l.Parent! : c), 23, 33, 43);
             },
-            onClick: (s, e) => _ = SafeInvoke(() => HandleFriendClick(s))
+            (s, e) => _ = SafeInvoke(() => HandleFriendClick(s))
         );
         addedFriendPanel.Controls.Add(panel);
     }
@@ -221,7 +218,7 @@ public partial class ClientForm : BaseForm
             _ => null
         };
 
-        if (user == null || (_companion?.Id == user.Id)) return;
+        if (user == null || _companion?.Id == user.Id) return;
 
         _companion = user;
         lblCompanionUsername.Text = _companion.Username;
@@ -230,7 +227,7 @@ public partial class ClientForm : BaseForm
         await LoadDialogAsync();
     }
 
-    private async void AddFriendTxtBox_KeyDown(object? sender, KeyEventArgs e)
+    private void AddFriendTxtBox_KeyDown(object? sender, KeyEventArgs e)
     {
         if (e.KeyCode != Keys.Enter) return;
         _ = SafeInvoke(async () =>
@@ -352,7 +349,7 @@ public partial class ClientForm : BaseForm
             menuPanel.Hide();
             _ = SafeInvoke(async () =>
             {
-                var dialog = new EditMessageDialog(message.Text);
+                var dialog = new InputDialog("Изменить сообщение", message.Text);
                 await dialog.ShowDialogAsync();
                 if (dialog.Result == null) return;
 
@@ -403,8 +400,10 @@ public partial class ClientForm : BaseForm
         _activeMenuPanel = null;
     }
 
-    private void btnSndMsg_Click(object sender, EventArgs e) =>
+    private void btnSndMsg_Click(object sender, EventArgs e)
+    {
         _ = SafeInvoke(EnqueueMessageAsync);
+    }
 
     private void txtBoxMessage_KeyDown(object sender, KeyEventArgs e)
     {
@@ -442,10 +441,13 @@ public partial class ClientForm : BaseForm
 
     #region Profile
 
-    private void CreateProfilePanel()
+    private async void CreateProfilePanel()
     {
+        btnOpenProfile.HoverState.ImageSize = btnOpenProfile.ImageSize;
+        btnOpenProfile.PressedState.ImageSize = btnOpenProfile.ImageSize;
+
         _profilePanel = ProfilePanelFactory.Create(
-            _currentUser.Username,
+            _currentUser,
             mainPanel.Width + leftPanel.Width,
             Height,
             CloseProfile,
@@ -478,7 +480,10 @@ public partial class ClientForm : BaseForm
         _addFriendTxtBox.Visible = false;
     }
 
-    private void btnOpenProfile_Click(object sender, EventArgs e) => OpenProfile();
+    private void btnOpenProfile_Click(object sender, EventArgs e)
+    {
+        OpenProfile();
+    }
 
     private void OpenProfile()
     {
@@ -508,10 +513,12 @@ public partial class ClientForm : BaseForm
 
     #region Utils
 
-    private Guna2Panel? FindMessagePanel(int messageId) =>
-        _chatPanel.Controls
+    private Guna2Panel? FindMessagePanel(int messageId)
+    {
+        return _chatPanel.Controls
             .OfType<Guna2Panel>()
             .FirstOrDefault(p => p.Tag is MessageInfo m && m.Id == messageId);
+    }
 
     public void btnUpdServers_Click(object sender, EventArgs e)
     {

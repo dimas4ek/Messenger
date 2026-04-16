@@ -13,16 +13,8 @@ public class ChatController
     private readonly ChatRealtimeClient _chatRealtimeClient;
     private readonly IDialogService _dialogService;
 
-    public ChatInfo? CurrentChat { get; private set; }
-    public List<MessageInfo>? Messages { get; private set; } = [];
-
-
-    public event Action<MessageInfo>? MessageLoaded;
-    public event Action<MessageInfo>? MessageReceived;
-    public event Action<MessageInfo>? MessageUpdated;
-    public event Action<int>? MessageDeleted;
-
-    public ChatController(ChatApiClient chatApiClient, ChatRealtimeClient chatRealtimeClient, IDialogService dialogService)
+    public ChatController(ChatApiClient chatApiClient, ChatRealtimeClient chatRealtimeClient,
+        IDialogService dialogService)
     {
         _chatApiClient = chatApiClient;
         _chatRealtimeClient = chatRealtimeClient;
@@ -32,6 +24,15 @@ public class ChatController
         _chatRealtimeClient.MessageUpdated += OnMessageUpdated;
         _chatRealtimeClient.MessageDeleted += OnMessageDeleted;
     }
+
+    public ChatInfo? CurrentChat { get; private set; }
+    public List<MessageInfo>? Messages { get; private set; } = [];
+
+
+    public event Action<MessageInfo>? MessageLoaded;
+    public event Action<MessageInfo>? MessageReceived;
+    public event Action<MessageInfo>? MessageUpdated;
+    public event Action<int>? MessageDeleted;
 
     public async Task LoadDialogAsync(int currentUserId, UserInfo companion)
     {

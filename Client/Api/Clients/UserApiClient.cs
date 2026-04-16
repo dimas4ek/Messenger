@@ -31,4 +31,58 @@ public class UserApiClient(HttpClient httpClient)
             return ApiResult<UserResponse>.Failure(ErrorCode.DatabaseError);
         }
     }
+
+    public async Task<ApiResult<UserResponse>> UpdateUsername(int id, string newUsername)
+    {
+        try
+        {
+            var response = await httpClient.PatchAsJsonAsync($"api/user/{id}/username", new UserUpdateRequest
+            {
+                Username = newUsername
+            });
+
+            if (response.IsSuccessStatusCode)
+            {
+                var userResponse = await response.Content.ReadFromJsonAsync<UserResponse>();
+
+                return userResponse == null
+                    ? ApiResult<UserResponse>.Failure(ErrorCode.EmptyResponse)
+                    : ApiResult<UserResponse>.Success(userResponse);
+            }
+
+            var errorResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+            return ApiResult<UserResponse>.Failure(errorResponse?.ErrorCode ?? ErrorCode.UnknownError);
+        }
+        catch
+        {
+            return ApiResult<UserResponse>.Failure(ErrorCode.DatabaseError);
+        }
+    }
+
+    public async Task<ApiResult<UserResponse>> UpdatePassword(int id, string newPassword)
+    {
+        try
+        {
+            var response = await httpClient.PatchAsJsonAsync($"api/user/{id}/password", new UserUpdateRequest
+            {
+                Password = newPassword
+            });
+
+            if (response.IsSuccessStatusCode)
+            {
+                var userResponse = await response.Content.ReadFromJsonAsync<UserResponse>();
+
+                return userResponse == null
+                    ? ApiResult<UserResponse>.Failure(ErrorCode.EmptyResponse)
+                    : ApiResult<UserResponse>.Success(userResponse);
+            }
+
+            var errorResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+            return ApiResult<UserResponse>.Failure(errorResponse?.ErrorCode ?? ErrorCode.UnknownError);
+        }
+        catch
+        {
+            return ApiResult<UserResponse>.Failure(ErrorCode.DatabaseError);
+        }
+    }
 }

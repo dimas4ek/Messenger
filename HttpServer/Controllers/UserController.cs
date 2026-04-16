@@ -25,4 +25,42 @@ public class UserController(UserService userService) : ControllerBase
             User = result.Value
         });
     }
+
+    [HttpPatch("{id:int}/username")]
+    public async Task<ActionResult<UserResponse>> UpdateUsername(int id, [FromBody] UserUpdateRequest request)
+    {
+        if (request.Username == null) return BadRequest("Username is required");
+
+        var result = await userService.UpdateUsername(id, request.Username);
+
+        if (!result.IsSuccess)
+            return BadRequest(new ErrorResponse
+            {
+                ErrorCode = result.ErrorCode
+            });
+
+        return Ok(new UserResponse
+        {
+            User = result.Value
+        });
+    }
+
+    [HttpPatch("{id:int}/password")]
+    public async Task<ActionResult<UserResponse>> UpdatePassword(int id, [FromBody] UserUpdateRequest request)
+    {
+        if (request.Password == null) return BadRequest("Password is required");
+
+        var result = await userService.UpdatePassword(id, request.Password);
+
+        if (!result.IsSuccess)
+            return BadRequest(new ErrorResponse
+            {
+                ErrorCode = result.ErrorCode
+            });
+
+        return Ok(new UserResponse
+        {
+            User = result.Value
+        });
+    }
 }

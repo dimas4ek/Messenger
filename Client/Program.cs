@@ -30,6 +30,8 @@ internal static class Program
 
         await using var serviceProvider = services.BuildServiceProvider();
 
+        App.Services = serviceProvider;
+
         ApplicationConfiguration.Initialize();
 
         var serverAvailability = serviceProvider.GetRequiredService<ServerAvailability>();

@@ -39,5 +39,8 @@ public class LoginAnimator(Form form)
         }
     }
 
-    public void Stop() => _running = false;
+    public void Stop()
+    {
+        _running = false;
+    }
 }

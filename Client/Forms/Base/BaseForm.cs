@@ -4,7 +4,7 @@ namespace Client.Forms.Base;
 
 public partial class BaseForm : Form
 {
-    protected IDialogService DialogService = null!;
+    protected readonly IDialogService DialogService = null!;
 
     protected BaseForm()
     {

@@ -9,6 +9,7 @@ _ReSharper.Caches/
 riderModule.iml
 .dotnet-home/
 .idea/
+/Client/Client.csproj.DotSettings
 
 *.user
 *.userosscache

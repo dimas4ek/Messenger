@@ -281,7 +281,7 @@
             btnSndMsg.Name = "btnSndMsg";
             btnSndMsg.PressedState.ImageSize = new System.Drawing.Size(32, 32);
             btnSndMsg.ShadowDecoration.CustomizableEdges = customizableEdges21;
-            btnSndMsg.Size = new System.Drawing.Size(62, 65);
+            btnSndMsg.Size = new System.Drawing.Size(62, 0);
             btnSndMsg.TabIndex = 12;
             btnSndMsg.Click += btnSndMsg_Click;
             // 
@@ -295,18 +295,19 @@
             txtBoxMessage.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)((byte)226)), ((int)((byte)226)), ((int)((byte)226)));
             txtBoxMessage.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)((byte)138)), ((int)((byte)138)), ((int)((byte)138)));
             txtBoxMessage.DisabledState.PlaceholderForeColor = System.Drawing.Color.FromArgb(((int)((byte)138)), ((int)((byte)138)), ((int)((byte)138)));
+            txtBoxMessage.Dock = System.Windows.Forms.DockStyle.Bottom;
             txtBoxMessage.FillColor = System.Drawing.Color.FromArgb(((int)((byte)23)), ((int)((byte)33)), ((int)((byte)43)));
             txtBoxMessage.FocusedState.BorderColor = System.Drawing.Color.FromArgb(((int)((byte)94)), ((int)((byte)148)), ((int)((byte)255)));
             txtBoxMessage.Font = new System.Drawing.Font("Segoe UI", 9F);
             txtBoxMessage.ForeColor = System.Drawing.Color.White;
             txtBoxMessage.HoverState.BorderColor = System.Drawing.Color.FromArgb(((int)((byte)94)), ((int)((byte)148)), ((int)((byte)255)));
-            txtBoxMessage.Location = new System.Drawing.Point(-1, 0);
+            txtBoxMessage.Location = new System.Drawing.Point(0, 0);
             txtBoxMessage.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             txtBoxMessage.Name = "txtBoxMessage";
             txtBoxMessage.PlaceholderText = "Введите сообщение...";
             txtBoxMessage.SelectedText = "";
             txtBoxMessage.ShadowDecoration.CustomizableEdges = customizableEdges23;
-            txtBoxMessage.Size = new System.Drawing.Size(1071, 65);
+            txtBoxMessage.Size = new System.Drawing.Size(1139, 65);
             txtBoxMessage.TabIndex = 12;
             txtBoxMessage.KeyDown += txtBoxMessage_KeyDown;
             // 

@@ -2,19 +2,17 @@
 using Client.Forms.Base;
 using Client.Services;
 using Client.UI;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Client.Forms;
 
 public partial class LoginForm : BaseForm
 {
-    private readonly LoginController _controller = null!;
     private readonly LoginAnimator _animator = null!;
+    private readonly LoginController _controller = null!;
     private LoginSwitch _mode = LoginSwitch.Login;
 
-    public LoginForm() : base()
+    public LoginForm()
     {
-
     }
 
     public LoginForm(LoginController controller, IDialogService dialogService) : base(dialogService)
@@ -55,7 +53,10 @@ public partial class LoginForm : BaseForm
 
     #region Auth
 
-    private void btnLogin_Click(object sender, EventArgs e) => _ = SafeInvoke(ProcessAuth);
+    private void btnLogin_Click(object sender, EventArgs e)
+    {
+        _ = SafeInvoke(ProcessAuth);
+    }
 
     private void txtPassword_KeyUp(object sender, KeyEventArgs e)
     {
@@ -87,7 +88,7 @@ public partial class LoginForm : BaseForm
                 else
                     await HandleRegistration(username, password);
             },
-            onFinally: () => ToggleControls(true, btnLogin, btnRegister));
+            () => ToggleControls(true, btnLogin, btnRegister));
     }
 
     private async Task HandleLogin(string username, string password)
@@ -108,9 +109,15 @@ public partial class LoginForm : BaseForm
 
     #region Utils
 
-    private void btnLogin_MouseMove(object? sender, MouseEventArgs e) => btnLogin.Cursor = Cursors.Hand;
+    private void btnLogin_MouseMove(object? sender, MouseEventArgs e)
+    {
+        btnLogin.Cursor = Cursors.Hand;
+    }
 
-    private void btnRegister_MouseMove(object? sender, MouseEventArgs e) => btnRegister.Cursor = Cursors.Hand;
+    private void btnRegister_MouseMove(object? sender, MouseEventArgs e)
+    {
+        btnRegister.Cursor = Cursors.Hand;
+    }
 
     private void SetMode(LoginSwitch mode)
     {

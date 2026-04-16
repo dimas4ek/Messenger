@@ -1,13 +1,13 @@
 <Solution>
-  <Folder Name="/Элементы решения/">
-    <File Path=".dockerignore" />
-    <File Path=".gitignore" />
-    <File Path="Dockerfile" />
-  </Folder>
-  <Project Path="Application/Application.csproj" Id="a067ba63-6566-4994-b502-cea7649d9939" />
-  <Project Path="Client/Client.csproj" />
-  <Project Path="Contracts/Contracts.csproj" Id="052ea16c-84c5-4e8f-9d9b-14a8f3904c07" />
-  <Project Path="Domain/Domain.csproj" Id="3b43c4dc-a90b-49ce-80cf-c8a64fbff9be" />
-  <Project Path="HttpServer/HttpServer.csproj" Id="81b3d200-d359-4298-80a2-1caa6c8f46ca" />
-  <Project Path="Infrastructure/Infrastructure.csproj" Id="d69ab381-703e-46f8-b39b-d84e6b0133d2" />
+    <Folder Name="/Элементы решения/">
+        <File Path=".dockerignore"/>
+        <File Path=".gitignore"/>
+        <File Path="Dockerfile"/>
+    </Folder>
+    <Project Path="Application/Application.csproj" Id="a067ba63-6566-4994-b502-cea7649d9939"/>
+    <Project Path="Client/Client.csproj"/>
+    <Project Path="Contracts/Contracts.csproj" Id="052ea16c-84c5-4e8f-9d9b-14a8f3904c07"/>
+    <Project Path="Domain/Domain.csproj" Id="3b43c4dc-a90b-49ce-80cf-c8a64fbff9be"/>
+    <Project Path="HttpServer/HttpServer.csproj" Id="81b3d200-d359-4298-80a2-1caa6c8f46ca"/>
+    <Project Path="Infrastructure/Infrastructure.csproj" Id="d69ab381-703e-46f8-b39b-d84e6b0133d2"/>
 </Solution>

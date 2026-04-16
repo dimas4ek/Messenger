@@ -65,10 +65,11 @@ public class ChatApiClient(HttpClient httpClient)
     {
         try
         {
-            var response = await httpClient.PatchAsJsonAsync($"api/chat/{chatId}/messages/{messageId}", new EditMessageRequest
-            {
-                Message = newText
-            });
+            var response = await httpClient.PatchAsJsonAsync($"api/chat/{chatId}/messages/{messageId}",
+                new EditMessageRequest
+                {
+                    Message = newText
+                });
 
             if (response.IsSuccessStatusCode)
             {
@@ -81,7 +82,6 @@ public class ChatApiClient(HttpClient httpClient)
 
             var errorResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
             return ApiResult<MessageResponse>.Failure(errorResponse?.ErrorCode ?? ErrorCode.UnknownError);
-
         }
         catch
         {

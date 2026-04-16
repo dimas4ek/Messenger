@@ -3,7 +3,7 @@ using Guna.UI2.WinForms;
 
 namespace Client.UI;
 
-public class FriendPanelFactory
+public static class FriendPanelFactory
 {
     public static Guna2Panel Create(
         UserInfo friend,
@@ -29,19 +29,9 @@ public class FriendPanelFactory
         friendLabel.ForeColor = Color.White;
         friendLabel.MouseMove += onMove;
         friendLabel.MouseLeave += onLeave;
+        friendLabel.MouseClick += onClick;
         friendLabel.Tag = friend;
 
         return friendPanel;
-    }
-
-    public static void SetColor(Guna2Panel panel, int r, int g, int b)
-    {
-        panel.BackColor = Color.FromArgb(r, g, b);
-
-        var label = panel.Controls.OfType<Label>().FirstOrDefault();
-        if (label == null) return;
-
-        label.BackColor = Color.FromArgb(r, g, b);
-        label.ForeColor = Color.White;
     }
 }

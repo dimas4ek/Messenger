@@ -2,33 +2,39 @@
 
 namespace Client.Forms.Dialogs;
 
-public sealed class EditMessageDialog : Form
+public sealed class InputDialog : Form
 {
-    public string? Result { get; private set; }
+    private readonly Guna2TextBox textBox;
 
-    public EditMessageDialog(string currentText)
+    public InputDialog(
+        string title,
+        string initialValue = "",
+        string placeholder = "",
+        bool isPassword = false)
     {
-        Size = new Size(400, 150);
+        Size = new Size(400, 170);
         StartPosition = FormStartPosition.CenterParent;
-        Text = "Изменить сообщение";
+        Text = title;
         BackColor = Color.FromArgb(23, 33, 43);
         FormBorderStyle = FormBorderStyle.FixedDialog;
         MaximizeBox = false;
         MinimizeBox = false;
 
-        var textBox = new Guna2TextBox
+        textBox = new Guna2TextBox
         {
-            Text = currentText,
+            Text = initialValue,
+            PlaceholderText = placeholder,
             Location = new Point(10, 10),
             Size = new Size(360, 40),
             ForeColor = Color.White,
-            FillColor = Color.FromArgb(30, 43, 56)
+            FillColor = Color.FromArgb(30, 43, 56),
+            UseSystemPasswordChar = isPassword
         };
 
         var confirmButton = new Guna2Button
         {
             Text = "Сохранить",
-            Location = new Point(270, 60),
+            Location = new Point(270, 70),
             Size = new Size(100, 35),
             FillColor = Color.FromArgb(45, 140, 240),
             ForeColor = Color.White
@@ -37,10 +43,13 @@ public sealed class EditMessageDialog : Form
         confirmButton.Click += (_, _) =>
         {
             Result = textBox.Text.Trim();
+            DialogResult = DialogResult.OK;
             Close();
         };
 
         Controls.Add(textBox);
         Controls.Add(confirmButton);
     }
+
+    public string? Result { get; private set; }
 }

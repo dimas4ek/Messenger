@@ -10,9 +10,9 @@ public class FriendController(
     UserApiClient userApiClient,
     IDialogService dialogService)
 {
+    private readonly IDialogService _dialogService = dialogService;
     private readonly FriendApiClient _friendApiClient = friendApiClient;
     private readonly UserApiClient _userApiClient = userApiClient;
-    private readonly IDialogService _dialogService = dialogService;
 
     public List<UserInfo> Friends { get; private set; } = [];
 

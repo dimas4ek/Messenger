@@ -1,14 +1,13 @@
-﻿using Client.Properties;
+﻿using Application.DTO;
+using Client.Forms;
+using Client.Properties;
 using Guna.UI2.WinForms;
-using Guna.UI2.WinForms.Suite;
-using System.Resources;
-using static Guna.UI2.WinForms.Suite.Descriptions;
 
 namespace Client.UI;
 
 public static class ProfilePanelFactory
 {
-    public static Guna2Panel Create(string username, int width, int height, Action onClose, EventHandler onAddFriend)
+    public static Guna2Panel Create(UserInfo user, int width, int height, Action onClose, EventHandler onAddFriend)
     {
         var profilePanel = new Guna2Panel
         {
@@ -24,7 +23,7 @@ public static class ProfilePanelFactory
             Parent = profilePanel,
             Font = new Font(FontFamily.GenericSansSerif, 15.75f),
             ForeColor = Color.White,
-            Text = username,
+            Text = user.Username,
             AutoSize = true
         };
         profileUsernameLabel.Location = new Point(
@@ -62,6 +61,32 @@ public static class ProfilePanelFactory
         };
         addFriendButton.Click += onAddFriend;
 
+        profilePanel.Controls.Add(AddSettingsButton(width, user));
+
         return profilePanel;
+    }
+
+    private static Guna2Button AddSettingsButton(int width, UserInfo user)
+    {
+        var settingsButton = new Guna2Button
+        {
+            Size = new Size(width, 50),
+            FillColor = Color.FromArgb(23, 33, 43),
+            HoverState = { FillColor = Color.FromArgb(35, 46, 60) },
+            Dock = DockStyle.Bottom,
+            Visible = true,
+            Text = "Settings",
+            Font = new Font(FontFamily.GenericSansSerif, 15.75f),
+            ForeColor = Color.White,
+            TextAlign = HorizontalAlignment.Center,
+            Cursor = Cursors.Hand
+        };
+        settingsButton.Click += (_, _) =>
+        {
+            var dialog = new ProfileSettingsDialog(user);
+            dialog.ShowDialog();
+        };
+
+        return settingsButton;
     }
 }

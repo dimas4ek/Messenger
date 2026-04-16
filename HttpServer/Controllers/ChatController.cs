@@ -53,7 +53,8 @@ public class ChatController(ChatService chatService, IHubContext<ChatHub> hubCon
     }
 
     [HttpPatch("{chatId:int}/messages/{messageId:int}")]
-    public async Task<ActionResult<MessageResponse>> EditMessage(int chatId, int messageId, [FromBody] EditMessageRequest request)
+    public async Task<ActionResult<MessageResponse>> EditMessage(int chatId, int messageId,
+        [FromBody] EditMessageRequest request)
     {
         var result = await chatService.EditMessage(chatId, messageId, request.Message);
 

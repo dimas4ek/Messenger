@@ -1,15 +1,12 @@
-﻿using Application.DTO;
+﻿using System.Threading.Channels;
+using Application.DTO;
 using Client.Api.Clients;
-using System.Collections;
-using System.Threading.Channels;
 using Client.Utils;
 
 namespace Client.Services;
 
 public class MessageQueueService(ChatApiClient chatApiClient, IDialogService dialogService) : IAsyncDisposable
 {
-    public sealed record OutgoingChatMessage(int CurrentChatId, int SenderId, string Text, Guid TempId);
-
     private readonly Channel<OutgoingChatMessage> _messageQueue =
         Channel.CreateBounded<OutgoingChatMessage>(new BoundedChannelOptions(100)
         {
@@ -20,6 +17,12 @@ public class MessageQueueService(ChatApiClient chatApiClient, IDialogService dia
 
     private CancellationTokenSource? _cts;
 
+    public async ValueTask DisposeAsync()
+    {
+        if (_cts != null) await _cts.CancelAsync();
+        _messageQueue.Writer.TryComplete();
+    }
+
     public event Action<OutgoingChatMessage, MessageInfo>? MessageConfirmed;
 
     public void Start()
@@ -28,8 +31,10 @@ public class MessageQueueService(ChatApiClient chatApiClient, IDialogService dia
         _ = ProcessAsync(_cts.Token);
     }
 
-    public async ValueTask EnqueueAsync(OutgoingChatMessage message) =>
+    public async ValueTask EnqueueAsync(OutgoingChatMessage message)
+    {
         await _messageQueue.Writer.WriteAsync(message);
+    }
 
     private async Task ProcessAsync(CancellationToken token)
     {
@@ -49,9 +54,5 @@ public class MessageQueueService(ChatApiClient chatApiClient, IDialogService dia
         }
     }
 
-    public async ValueTask DisposeAsync()
-    {
-        if (_cts != null) await _cts.CancelAsync();
-        _messageQueue.Writer.TryComplete();
-    }
+    public sealed record OutgoingChatMessage(int CurrentChatId, int SenderId, string Text, Guid TempId);
 }
