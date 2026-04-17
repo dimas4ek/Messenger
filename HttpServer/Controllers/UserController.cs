@@ -1,13 +1,16 @@
 ﻿using Application.Services;
 using Contracts.DTO;
 using Contracts.DTO.User;
+using HttpServer.Hubs;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace HttpServer.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class UserController(UserService userService) : ControllerBase
+public class UserController(UserService userService, FriendService friendService, IHubContext<FriendHub> hubContext)
+    : ControllerBase
 {
     [HttpGet("get")]
     public async Task<ActionResult<UserResponse>> Get([FromQuery(Name = "username")] string username)
@@ -38,6 +41,14 @@ public class UserController(UserService userService) : ControllerBase
             {
                 ErrorCode = result.ErrorCode
             });
+
+        var friendListResult = await friendService.GetFriendList(id);
+        if (!friendListResult.IsSuccess || friendListResult.Value == null) return BadRequest("Friend list is null");
+
+        var friends = friendListResult.Value;
+        foreach (var friend in friends)
+            await hubContext.Clients.Group($"user:{friend.Id}")
+                .SendAsync("FriendUpdated", new UserResponse { User = result.Value });
 
         return Ok(new UserResponse
         {

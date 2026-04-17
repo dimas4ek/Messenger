@@ -11,16 +11,20 @@ namespace Client.Forms;
 public class ProfileSettingsDialog : Form
 {
     private readonly IDialogService _dialogService;
+
+    private readonly Action<UserInfo> _onUserUpdated;
     private readonly UserInfo _user;
     private readonly UserApiClient _userApiClient;
     private Label passwordValueLabel;
     private Label usernameValueLabel;
 
-    public ProfileSettingsDialog(UserInfo user)
+    public ProfileSettingsDialog(UserInfo user, Action<UserInfo> onUserUpdated)
     {
+        _user = user;
+        _onUserUpdated = onUserUpdated;
+
         _dialogService = App.Services.GetRequiredService<IDialogService>();
         _userApiClient = App.Services.GetRequiredService<UserApiClient>();
-        _user = user;
 
         InitializeComponent();
     }
@@ -35,7 +39,6 @@ public class ProfileSettingsDialog : Form
         MaximizeBox = false;
         MinimizeBox = false;
 
-        // 🖼 Аватар
         var avatar = new Guna2CirclePictureBox
         {
             Size = new Size(100, 100),
@@ -46,7 +49,6 @@ public class ProfileSettingsDialog : Form
         };
         Controls.Add(avatar);
 
-        // 👤 USERNAME
         var usernameLabel = new Label
         {
             Text = "Username",
@@ -76,7 +78,6 @@ public class ProfileSettingsDialog : Form
         editUsernameButton.Click += EditUsername;
         Controls.Add(editUsernameButton);
 
-        // 🔒 PASSWORD
         var passwordLabel = new Label
         {
             Text = "Password",
@@ -107,7 +108,6 @@ public class ProfileSettingsDialog : Form
         Controls.Add(editPasswordButton);
     }
 
-    // 👤 Изменение имени
     private async void EditUsername(object? sender, EventArgs e)
     {
         var dialog = new InputDialog(
@@ -126,10 +126,13 @@ public class ProfileSettingsDialog : Form
             return;
         }
 
-        usernameValueLabel.Text = dialog.Result;
+        _user.Username = result.Value.User.Username;
+
+        usernameValueLabel.Text = _user.Username;
+
+        _onUserUpdated?.Invoke(_user);
     }
 
-    // 🔒 Изменение пароля
     private async void EditPassword(object? sender, EventArgs e)
     {
         var dialog = new InputDialog(

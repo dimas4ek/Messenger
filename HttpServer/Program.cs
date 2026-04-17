@@ -29,6 +29,7 @@ public class Program
 
         app.MapControllers();
         app.MapHub<ChatHub>("/chatHub");
+        app.MapHub<FriendHub>("/friendHub");
         app.MapGet("/health", () => Results.Ok("OK"));
 
         app.UseSwagger();

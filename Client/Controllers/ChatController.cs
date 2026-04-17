@@ -26,8 +26,7 @@ public class ChatController
     }
 
     public ChatInfo? CurrentChat { get; private set; }
-    public List<MessageInfo>? Messages { get; private set; } = [];
-
+    private List<MessageInfo>? Messages { get; set; } = [];
 
     public event Action<MessageInfo>? MessageLoaded;
     public event Action<MessageInfo>? MessageReceived;

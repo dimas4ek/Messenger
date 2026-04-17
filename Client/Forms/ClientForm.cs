@@ -17,7 +17,6 @@ public partial class ClientForm : BaseForm
     private readonly ChatController _chatController = null!;
     private readonly FriendController _friendController = null!;
     private readonly ProfileController _profileController = null!;
-    private readonly UserApiClient _userApiClient;
     private readonly UserContext _userContext = null!;
 
     private Guna2Panel? _activeMenuPanel;
@@ -44,14 +43,13 @@ public partial class ClientForm : BaseForm
         ProfileController profileController,
         UserContext userContext,
         IDialogService dialogService,
-        ChatApiClient chatApiClient, UserApiClient userApiClient) : base(dialogService)
+        ChatApiClient chatApiClient) : base(dialogService)
     {
         _chatController = chatController;
         _friendController = friendController;
         _profileController = profileController;
         _userContext = userContext;
         _chatApiClient = chatApiClient;
-        _userApiClient = userApiClient;
 
         InitializeComponent();
 
@@ -61,11 +59,13 @@ public partial class ClientForm : BaseForm
         _chatController.MessageReceived += OnMessageReceived;
         _chatController.MessageUpdated += OnMessageUpdated;
         _chatController.MessageDeleted += OnMessageDeleted;
+
+        _friendController.FriendUpdated += OnFriendUpdated;
     }
 
     #region Load / Close
 
-    public async void ClientForm_Load(object? sender, EventArgs e)
+    private void ClientForm_Load(object? sender, EventArgs e)
     {
         _ = SafeInvoke(async () =>
         {
@@ -75,6 +75,7 @@ public partial class ClientForm : BaseForm
             CreateProfilePanel();
 
             await _chatController.ConnectAsync(_currentUser.Id);
+            await _friendController.ConnectAsync(_currentUser.Id);
 
             var friends = await _friendController.LoadFriendsAsync(_currentUser.Id);
             foreach (var friend in friends)
@@ -87,11 +88,12 @@ public partial class ClientForm : BaseForm
         });
     }
 
-    private async void ClientForm_Close(object sender, FormClosingEventArgs e)
+    private void ClientForm_Close(object sender, FormClosingEventArgs e)
     {
         _ = SafeInvoke(async () =>
         {
             await _chatController.DisconnectAsync();
+            await _friendController.DisconnectAsync();
 
             if (_messageQueue != null)
                 await _messageQueue.DisposeAsync();
@@ -153,7 +155,8 @@ public partial class ClientForm : BaseForm
         if (panel == null) return;
 
         MessagePanelFactory.UpdateText(panel, message.Text);
-        ((MessageInfo)panel.Tag!).Text = message.Text;
+        if (panel.Tag is MessageInfo m)
+            m.Text = message.Text;
     }
 
     private void OnMessageDeleted(int messageId)
@@ -183,6 +186,37 @@ public partial class ClientForm : BaseForm
             message.TempId = item.TempId;
             panel.Tag = message;
         });
+    }
+
+    #endregion
+
+    #region Friend Events
+
+    private void OnFriendAdded(UserInfo user)
+    {
+        if (InvokeRequired)
+        {
+            BeginInvoke(() => OnFriendAdded(user));
+            return;
+        }
+
+        throw new NotImplementedException();
+    }
+
+    private void OnFriendUpdated(UserInfo user)
+    {
+        if (InvokeRequired)
+        {
+            BeginInvoke(() => OnFriendUpdated(user));
+            return;
+        }
+
+        var panel = FindFriendPanel(user.Id);
+        if (panel == null) return;
+
+        FriendPanelFactory.UpdateText(panel, user.Username);
+        if (panel.Tag is UserInfo u)
+            u.Username = user.Username;
     }
 
     #endregion
@@ -245,7 +279,7 @@ public partial class ClientForm : BaseForm
         });
     }
 
-    private async void txtBoxSearch_KeyUp(object sender, KeyEventArgs e)
+    private void txtBoxSearch_KeyUp(object sender, KeyEventArgs e)
     {
         _ = SafeInvoke(() =>
         {
@@ -441,7 +475,7 @@ public partial class ClientForm : BaseForm
 
     #region Profile
 
-    private async void CreateProfilePanel()
+    private void CreateProfilePanel()
     {
         btnOpenProfile.HoverState.ImageSize = btnOpenProfile.ImageSize;
         btnOpenProfile.PressedState.ImageSize = btnOpenProfile.ImageSize;
@@ -451,12 +485,24 @@ public partial class ClientForm : BaseForm
             mainPanel.Width + leftPanel.Width,
             Height,
             CloseProfile,
-            AddFriendButton_Click
+            AddFriendButton_Click,
+            updatedUser =>
+            {
+                _currentUser = updatedUser;
+
+                RefreshProfilePanel();
+            }
         );
 
         Controls.Add(_profilePanel);
 
         _addFriendTxtBox = new Guna2TextBox { Visible = false };
+    }
+
+    private void RefreshProfilePanel()
+    {
+        Controls.Remove(_profilePanel);
+        CreateProfilePanel();
     }
 
     private void AddFriendButton_Click(object? sender, EventArgs e)
@@ -518,6 +564,13 @@ public partial class ClientForm : BaseForm
         return _chatPanel.Controls
             .OfType<Guna2Panel>()
             .FirstOrDefault(p => p.Tag is MessageInfo m && m.Id == messageId);
+    }
+
+    private Guna2Panel? FindFriendPanel(int friendId)
+    {
+        return addedFriendPanel.Controls
+            .OfType<Guna2Panel>()
+            .FirstOrDefault(p => p.Tag is UserInfo u && u.Id == friendId);
     }
 
     public void btnUpdServers_Click(object sender, EventArgs e)

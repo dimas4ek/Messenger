@@ -1,22 +1,36 @@
 ﻿using Application.DTO;
 using Client.Api.Clients;
+using Client.Api.Realtime;
 using Client.Services;
 using Client.Utils;
+using Contracts.DTO.User;
 
 namespace Client.Controllers;
 
-public class FriendController(
-    FriendApiClient friendApiClient,
-    UserApiClient userApiClient,
-    IDialogService dialogService)
+public class FriendController
 {
-    private readonly IDialogService _dialogService = dialogService;
-    private readonly FriendApiClient _friendApiClient = friendApiClient;
-    private readonly UserApiClient _userApiClient = userApiClient;
+    private readonly IDialogService _dialogService;
+    private readonly FriendApiClient _friendApiClient;
+    private readonly FriendRealtimeClient _friendRealtimeClient;
+    private readonly UserApiClient _userApiClient;
+
+    public FriendController(FriendApiClient friendApiClient,
+        UserApiClient userApiClient,
+        IDialogService dialogService, FriendRealtimeClient friendRealtimeClient)
+    {
+        _friendApiClient = friendApiClient;
+        _userApiClient = userApiClient;
+        _dialogService = dialogService;
+        _friendRealtimeClient = friendRealtimeClient;
+
+        _friendRealtimeClient.FriendAdded += OnFriendAdded;
+        _friendRealtimeClient.FriendUpdated += OnFriendUpdated;
+    }
 
     public List<UserInfo> Friends { get; private set; } = [];
 
     public event Action<UserInfo>? FriendAdded;
+    public event Action<UserInfo>? FriendUpdated;
 
     public async Task<List<UserInfo>> LoadFriendsAsync(int userId)
     {
@@ -84,5 +98,25 @@ public class FriendController(
                 f.Username != currentUsername &&
                 f.Username.Contains(query, StringComparison.OrdinalIgnoreCase))
             .ToList();
+    }
+
+    public async Task ConnectAsync(int userId)
+    {
+        await _friendRealtimeClient.Connect(userId);
+    }
+
+    public async Task DisconnectAsync()
+    {
+        await _friendRealtimeClient.Disconnect();
+    }
+
+    private void OnFriendAdded(UserResponse r)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void OnFriendUpdated(UserResponse r)
+    {
+        FriendUpdated?.Invoke(r.User);
     }
 }

@@ -90,5 +90,6 @@ internal static class Program
             });
 
         services.AddSingleton<ChatRealtimeClient>();
+        services.AddSingleton<FriendRealtimeClient>();
     }
 }

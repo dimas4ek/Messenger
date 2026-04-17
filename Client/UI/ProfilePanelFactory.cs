@@ -7,7 +7,8 @@ namespace Client.UI;
 
 public static class ProfilePanelFactory
 {
-    public static Guna2Panel Create(UserInfo user, int width, int height, Action onClose, EventHandler onAddFriend)
+    public static Guna2Panel Create(UserInfo user, int width, int height, Action onClose, EventHandler onAddFriend,
+        Action<UserInfo> onUserUpdated)
     {
         var profilePanel = new Guna2Panel
         {
@@ -61,12 +62,12 @@ public static class ProfilePanelFactory
         };
         addFriendButton.Click += onAddFriend;
 
-        profilePanel.Controls.Add(AddSettingsButton(width, user));
+        profilePanel.Controls.Add(AddSettingsButton(width, user, onUserUpdated));
 
         return profilePanel;
     }
 
-    private static Guna2Button AddSettingsButton(int width, UserInfo user)
+    private static Guna2Button AddSettingsButton(int width, UserInfo user, Action<UserInfo> onUserUpdated)
     {
         var settingsButton = new Guna2Button
         {
@@ -83,7 +84,7 @@ public static class ProfilePanelFactory
         };
         settingsButton.Click += (_, _) =>
         {
-            var dialog = new ProfileSettingsDialog(user);
+            var dialog = new ProfileSettingsDialog(user, onUserUpdated);
             dialog.ShowDialog();
         };
 

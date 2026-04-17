@@ -21,6 +21,7 @@ public static class FriendPanelFactory
         friendPanel.MouseClick += onClick;
 
         var friendLabel = new Label();
+        friendLabel.Name = "friendLabel";
         friendLabel.Parent = friendPanel;
         friendLabel.Text = friend.Username;
         friendLabel.Location = new Point(6, 13);
@@ -33,5 +34,11 @@ public static class FriendPanelFactory
         friendLabel.Tag = friend;
 
         return friendPanel;
+    }
+
+    public static void UpdateText(Guna2Panel panel, string newText)
+    {
+        if (panel.Controls.Find("friendLabel", false).FirstOrDefault() is Label label)
+            label.Text = newText;
     }
 }
