@@ -479,6 +479,8 @@ public partial class ClientForm : BaseForm
     {
         btnOpenProfile.HoverState.ImageSize = btnOpenProfile.ImageSize;
         btnOpenProfile.PressedState.ImageSize = btnOpenProfile.ImageSize;
+        btnOpenProfile.MouseMove += (_, _) => Cursor = Cursors.Hand; 
+        btnOpenProfile.MouseLeave += (_, _) => Cursor = Cursors.Default; 
 
         _profilePanel = ProfilePanelFactory.Create(
             _currentUser,
@@ -501,8 +503,11 @@ public partial class ClientForm : BaseForm
 
     private void RefreshProfilePanel()
     {
-        Controls.Remove(_profilePanel);
-        CreateProfilePanel();
+        var usernameLabel = _profilePanel.Controls
+            .OfType<Label>()
+            .FirstOrDefault(l => l.Name == "usernameLabel")!;
+
+        usernameLabel.Text = _currentUser.Username;
     }
 
     private void AddFriendButton_Click(object? sender, EventArgs e)

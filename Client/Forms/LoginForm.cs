@@ -93,7 +93,8 @@ public partial class LoginForm : BaseForm
 
     private async Task HandleLogin(string username, string password)
     {
-        await _controller.LoginAsync(username, password);
+        var login = await _controller.LoginAsync(username, password);
+        if (!login) return;
         _controller.OpenClientForm();
         Hide();
     }

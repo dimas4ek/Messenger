@@ -22,6 +22,7 @@ public static class ProfilePanelFactory
         var profileUsernameLabel = new Label
         {
             Parent = profilePanel,
+            Name = "usernameLabel",
             Font = new Font(FontFamily.GenericSansSerif, 15.75f),
             ForeColor = Color.White,
             Text = user.Username,
