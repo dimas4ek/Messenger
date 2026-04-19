@@ -267,7 +267,8 @@ public partial class ClientForm : BaseForm
         if (e.KeyCode != Keys.Enter) return;
         _ = SafeInvoke(async () =>
         {
-            await _friendController.AddFriendAsync(
+            _friendController.SendFriendRequest(_currentUser.Id, _currentUser.Username, _addFriendTxtBox.Text);
+            /*await _friendController.AddFriendAsync(
                 _currentUser.Id,
                 _currentUser.Username,
                 _addFriendTxtBox.Text);
@@ -276,7 +277,7 @@ public partial class ClientForm : BaseForm
             foreach (var friend in _friendController.Friends)
                 AddFriendPanel(friend);
 
-            _addFriendTxtBox.Clear();
+            _addFriendTxtBox.Clear();*/
         });
     }
 

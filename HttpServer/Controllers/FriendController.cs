@@ -63,8 +63,26 @@ public class FriendController(FriendService friendService, IHubContext<FriendHub
         });
     }
 
+    [HttpPost("requests")]
+    public async Task<ActionResult<FriendRequestResponse>> SendFriendRequest([FromBody] SendFriendRequest request)
+    {
+        var result = await friendService.AddFriendRequest(request.SenderId, request.ReceiverId);
+
+        if (!result.IsSuccess)
+            return BadRequest(new ErrorResponse
+            {
+                ErrorCode = result.ErrorCode
+            });
+
+        return Ok(new FriendRequestResponse
+        {
+            FriendRequest = result.Value
+        });
+    }
+
     [HttpGet("requests")]
-    public async Task<ActionResult<FriendRequestResponse>> GetFriendRequests([FromQuery(Name = "userId")] int userId)
+    public async Task<ActionResult<FriendRequestListResponse>> GetFriendRequests(
+        [FromQuery(Name = "userId")] int userId)
     {
         var result = await friendService.GetFriendRequests(userId);
 
@@ -74,7 +92,7 @@ public class FriendController(FriendService friendService, IHubContext<FriendHub
                 ErrorCode = result.ErrorCode
             });
 
-        return Ok(new FriendRequestResponse
+        return Ok(new FriendRequestListResponse
         {
             FriendRequests = result.Value
         });

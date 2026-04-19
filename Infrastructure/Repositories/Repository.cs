@@ -19,9 +19,9 @@ public class Repository<T>(MessengerContext context) : IRepository<T>
         return await _dbSet.ToListAsync();
     }
 
-    public async Task Add(T entity)
+    public async Task<T> Add(T entity)
     {
-        await _dbSet.AddAsync(entity);
+        return (await _dbSet.AddAsync(entity)).Entity;
     }
 
     public void Update(T entity)

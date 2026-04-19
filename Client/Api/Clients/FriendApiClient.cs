@@ -8,7 +8,7 @@ namespace Client.Api.Clients;
 
 public class FriendApiClient(HttpClient httpClient)
 {
-    public async Task<ApiResult<FriendResponse>> Add(int currentUserId, int friendId)
+    /*public async Task<ApiResult<FriendResponse>> Add(int currentUserId, int friendId)
     {
         try
         {
@@ -34,7 +34,7 @@ public class FriendApiClient(HttpClient httpClient)
         {
             return ApiResult<FriendResponse>.Failure(ErrorCode.DatabaseError);
         }
-    }
+    }*/
 
     public async Task<ApiResult<FriendListResponse>> GetFriendList(int currentUserId)
     {
@@ -88,7 +88,35 @@ public class FriendApiClient(HttpClient httpClient)
         }
     }
 
-    public async Task<ApiResult<FriendRequestResponse>> GetFriendRequests(int currentUserId)
+    public async Task<ApiResult<FriendRequestListResponse>> SendFriendRequest(int senderId, int receiverId)
+    {
+        try
+        {
+            var response = await httpClient.PostAsJsonAsync("api/friend/requests", new SendFriendRequest
+            {
+                SenderId = senderId,
+                ReceiverId = receiverId
+            });
+
+            if (response.IsSuccessStatusCode)
+            {
+                var friendRequestResponse = await response.Content.ReadFromJsonAsync<FriendRequestListResponse>();
+
+                return friendRequestResponse == null
+                    ? ApiResult<FriendRequestListResponse>.Failure(ErrorCode.EmptyResponse)
+                    : ApiResult<FriendRequestListResponse>.Success(friendRequestResponse);
+            }
+
+            var errorResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+            return ApiResult<FriendRequestListResponse>.Failure(errorResponse?.ErrorCode ?? ErrorCode.UnknownError);
+        }
+        catch
+        {
+            return ApiResult<FriendRequestListResponse>.Failure(ErrorCode.DatabaseError);
+        }
+    }
+
+    public async Task<ApiResult<FriendRequestListResponse>> GetFriendRequests(int currentUserId)
     {
         try
         {
@@ -96,19 +124,19 @@ public class FriendApiClient(HttpClient httpClient)
 
             if (response.IsSuccessStatusCode)
             {
-                var friendRequestResponse = await response.Content.ReadFromJsonAsync<FriendRequestResponse>();
+                var friendRequestResponse = await response.Content.ReadFromJsonAsync<FriendRequestListResponse>();
 
                 return friendRequestResponse == null
-                    ? ApiResult<FriendRequestResponse>.Failure(ErrorCode.EmptyResponse)
-                    : ApiResult<FriendRequestResponse>.Success(friendRequestResponse);
+                    ? ApiResult<FriendRequestListResponse>.Failure(ErrorCode.EmptyResponse)
+                    : ApiResult<FriendRequestListResponse>.Success(friendRequestResponse);
             }
 
             var errorResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return ApiResult<FriendRequestResponse>.Failure(errorResponse?.ErrorCode ?? ErrorCode.UnknownError);
+            return ApiResult<FriendRequestListResponse>.Failure(errorResponse?.ErrorCode ?? ErrorCode.UnknownError);
         }
         catch
         {
-            return ApiResult<FriendRequestResponse>.Failure(ErrorCode.DatabaseError);
+            return ApiResult<FriendRequestListResponse>.Failure(ErrorCode.DatabaseError);
         }
     }
 

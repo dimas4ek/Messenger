@@ -61,6 +61,27 @@ public class FriendService(
             : Result<bool>.Failure(result.ErrorCode);
     }
 
+    public async Task<Result<FriendRequestInfo>> AddFriendRequest(int senderId, int receiverId)
+    {
+        try
+        {
+            var newRequest = new FriendRequest
+            {
+                SenderId = senderId,
+                ReceiverId = receiverId
+            };
+
+            var requestInfo = await friendRequestRepository.Add(newRequest);
+            await friendRequestRepository.Save();
+
+            return Result<FriendRequestInfo>.Success(mapper.Map<FriendRequest, FriendRequestInfo>(requestInfo));
+        }
+        catch
+        {
+            return Result<FriendRequestInfo>.Failure(ErrorCode.DatabaseError);
+        }
+    }
+
     public async Task<Result<List<FriendRequestInfo>>> GetFriendRequests(int currentUserId)
     {
         try

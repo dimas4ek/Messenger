@@ -45,7 +45,7 @@ public class FriendController
         return Friends;
     }
 
-    public async Task AddFriendAsync(int currentUserId, string currentUsername, string friendName)
+    public async Task SendFriendRequest(int currentUserId, string currentUsername, string friendName)
     {
         if (string.IsNullOrWhiteSpace(friendName)) return;
 
@@ -77,16 +77,14 @@ public class FriendController
             return;
         }
 
-        var addResult = await _friendApiClient.Add(currentUserId, friendUser.Id);
-        if (!addResult.IsSuccess)
+        var friendRequestResult = await _friendApiClient.SendFriendRequest(currentUserId, friendUser.Id);
+        if (!friendRequestResult.IsSuccess || friendRequestResult.Value == null)
         {
-            _dialogService.ShowError(addResult.ToMessage());
+            _dialogService.ShowError(friendRequestResult.ToMessage());
             return;
         }
 
-        Friends.Add(friendUser);
-        FriendAdded?.Invoke(friendUser);
-        _dialogService.ShowMessage($"{friendName} has been added to your Friend list!");
+        _dialogService.ShowMessage($"Friend request sent to {friendName}");
     }
 
     public List<UserInfo> Search(string query, string currentUsername)
