@@ -267,17 +267,8 @@ public partial class ClientForm : BaseForm
         if (e.KeyCode != Keys.Enter) return;
         _ = SafeInvoke(async () =>
         {
-            _friendController.SendFriendRequest(_currentUser.Id, _currentUser.Username, _addFriendTxtBox.Text);
-            /*await _friendController.AddFriendAsync(
-                _currentUser.Id,
-                _currentUser.Username,
-                _addFriendTxtBox.Text);
-
-            addedFriendPanel.Controls.Clear();
-            foreach (var friend in _friendController.Friends)
-                AddFriendPanel(friend);
-
-            _addFriendTxtBox.Clear();*/
+            await _friendController.SendFriendRequest(_currentUser.Id, _currentUser.Username, _addFriendTxtBox.Text);
+            _addFriendTxtBox.Clear();
         });
     }
 
@@ -332,7 +323,7 @@ public partial class ClientForm : BaseForm
     {
         if ((e.Button & MouseButtons.Right) == 0) return;
 
-        var panel = (Guna2Panel)sender!;
+        var panel = sender is Label l ? (Guna2Panel)l.Parent! : (Guna2Panel)sender!;
         var message = (MessageInfo)panel.Tag!;
         ShowMessageContextMenu(panel, message, e.Location);
     }
@@ -382,7 +373,8 @@ public partial class ClientForm : BaseForm
 
         editButton.Click += (_, _) =>
         {
-            menuPanel.Hide();
+            CloseActiveContextMenu();
+            //menuPanel.Hide();
             _ = SafeInvoke(async () =>
             {
                 var dialog = new InputDialog("Изменить сообщение", message.Text);
@@ -393,19 +385,20 @@ public partial class ClientForm : BaseForm
                 var panel = FindMessagePanel(message.Id);
                 if (panel != null) MessagePanelFactory.UpdateText(panel, dialog.Result);
             });
-            menuPanel.Dispose();
+            //menuPanel.Dispose();
         };
 
         deleteButton.Click += (_, _) =>
         {
-            menuPanel.Hide();
+            CloseActiveContextMenu();
+            //menuPanel.Hide();
             _ = SafeInvoke(async () =>
             {
                 await _chatController.DeleteAsync(message);
                 var panel = FindMessagePanel(message.Id);
                 if (panel != null) _chatPanel.Controls.Remove(panel);
             });
-            menuPanel.Dispose();
+            //menuPanel.Dispose();
         };
 
         menuPanel.Controls.Add(editButton);

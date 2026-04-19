@@ -22,6 +22,7 @@ public class MessagePanelFactory
         messageLabel.AutoSize = true;
         messageLabel.MaximumSize = new Size(380, 0);
         messageLabel.Location = new Point(0, 20);
+        messageLabel.MouseClick += onRightClick;
 
         var messagePanel = new Guna2Panel();
         messagePanel.BackColor = Color.FromArgb(24, 37, 51);
