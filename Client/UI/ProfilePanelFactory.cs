@@ -1,5 +1,5 @@
 ﻿using Application.DTO;
-using Client.Forms;
+using Client.Forms.Dialogs;
 using Client.Properties;
 using Guna.UI2.WinForms;
 
@@ -7,8 +7,9 @@ namespace Client.UI;
 
 public static class ProfilePanelFactory
 {
-    public static Guna2Panel Create(UserInfo user, int width, int height, Action onClose, EventHandler onAddFriend,
-        Action<UserInfo> onUserUpdated)
+    public static Guna2Panel Create(UserInfo currentUser, int width, int height, Action onClose,
+        EventHandler onAddFriend,
+        Action<UserInfo> onUserUpdated, Action<UserInfo> onFriendAdded)
     {
         var profilePanel = new Guna2Panel
         {
@@ -25,7 +26,7 @@ public static class ProfilePanelFactory
             Name = "usernameLabel",
             Font = new Font(FontFamily.GenericSansSerif, 15.75f),
             ForeColor = Color.White,
-            Text = user.Username,
+            Text = currentUser.Username,
             AutoSize = true
         };
         profileUsernameLabel.Location = new Point(
@@ -61,14 +62,40 @@ public static class ProfilePanelFactory
             Font = new Font("Segoe UI", 12),
             TextAlign = HorizontalAlignment.Center
         };
+
         addFriendButton.Click += onAddFriend;
 
-        profilePanel.Controls.Add(AddSettingsButton(width, user, onUserUpdated));
+        profilePanel.Controls.Add(FriendRequestsButton(width, currentUser, onFriendAdded));
+        profilePanel.Controls.Add(SettingsButton(width, currentUser, onUserUpdated));
 
         return profilePanel;
     }
 
-    private static Guna2Button AddSettingsButton(int width, UserInfo user, Action<UserInfo> onUserUpdated)
+    private static Guna2Button FriendRequestsButton(int width, UserInfo currentUser, Action<UserInfo> onFriendAdded)
+    {
+        var friendRequestsButton = new Guna2Button
+        {
+            Size = new Size(width, 50),
+            FillColor = Color.FromArgb(23, 33, 43),
+            HoverState = { FillColor = Color.FromArgb(35, 46, 60) },
+            Dock = DockStyle.Bottom,
+            Visible = true,
+            Text = "Friend Requests",
+            Font = new Font(FontFamily.GenericSansSerif, 15.75f),
+            ForeColor = Color.White,
+            TextAlign = HorizontalAlignment.Center,
+            Cursor = Cursors.Hand
+        };
+        friendRequestsButton.Click += (_, _) =>
+        {
+            var dialog = new FriendRequestsDialog(currentUser, onFriendAdded);
+            dialog.ShowDialog();
+        };
+
+        return friendRequestsButton;
+    }
+
+    private static Guna2Button SettingsButton(int width, UserInfo currentUser, Action<UserInfo> onUserUpdated)
     {
         var settingsButton = new Guna2Button
         {
@@ -85,7 +112,7 @@ public static class ProfilePanelFactory
         };
         settingsButton.Click += (_, _) =>
         {
-            var dialog = new ProfileSettingsDialog(user, onUserUpdated);
+            var dialog = new ProfileSettingsDialog(currentUser, onUserUpdated);
             dialog.ShowDialog();
         };
 

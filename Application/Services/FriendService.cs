@@ -8,14 +8,15 @@ namespace Application.Services;
 
 public class FriendService(
     IFriendRepository friendRepository,
+    IFriendRequestRepository friendRequestRepository,
     UserService userService,
     IAppMapper mapper)
 {
-    public async Task<Result<UserInfo>> AddFriend(int currentUserId, int friendId)
+    public async Task<Result<UserInfo>> AddFriend(int userId, int friendId)
     {
         try
         {
-            await friendRepository.AddFriend(currentUserId, friendId);
+            await friendRepository.AddFriend(userId, friendId);
 
             await friendRepository.Save();
 
@@ -58,5 +59,63 @@ public class FriendService(
         return result.IsSuccess
             ? Result<bool>.Success(await friendRepository.IsFriends(currentUserId, friendId))
             : Result<bool>.Failure(result.ErrorCode);
+    }
+
+    public async Task<Result<List<FriendRequestInfo>>> GetFriendRequests(int currentUserId)
+    {
+        try
+        {
+            var result = await friendRequestRepository.GetRequestsByUserId(currentUserId);
+
+            var friendRequests = result
+                .Select(mapper.Map<FriendRequest, FriendRequestInfo>)
+                .Where(fr => fr.Receiver.Id == currentUserId)
+                .ToList();
+
+            return Result<List<FriendRequestInfo>>.Success(friendRequests);
+        }
+        catch
+        {
+            return Result<List<FriendRequestInfo>>.Failure(ErrorCode.DatabaseError);
+        }
+    }
+
+    public async Task<Result<FriendRequestInfo>> AcceptFriendRequest(int requestId)
+    {
+        try
+        {
+            var request = await friendRequestRepository.GetByIdWithUsers(requestId);
+            if (request == null) return Result<FriendRequestInfo>.Failure(ErrorCode.FriendRequestNotFound);
+
+            var result = await AddFriend(request.SenderId, request.ReceiverId);
+            if (!result.IsSuccess || result.Value == null) return Result<FriendRequestInfo>.Failure(result.ErrorCode);
+
+            friendRequestRepository.Remove(request);
+            await friendRequestRepository.Save();
+
+            return Result<FriendRequestInfo>.Success(mapper.Map<FriendRequest, FriendRequestInfo>(request));
+        }
+        catch
+        {
+            return Result<FriendRequestInfo>.Failure(ErrorCode.DatabaseError);
+        }
+    }
+
+    public async Task<Result> DeclineFriendRequest(int requestId)
+    {
+        try
+        {
+            var request = await friendRequestRepository.GetById(requestId);
+            if (request == null) return Result.Failure(ErrorCode.FriendRequestNotFound);
+
+            friendRequestRepository.Remove(request);
+            await friendRequestRepository.Save();
+
+            return Result.Success();
+        }
+        catch
+        {
+            return Result.Failure(ErrorCode.DatabaseError);
+        }
     }
 }

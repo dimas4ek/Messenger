@@ -89,6 +89,14 @@ public static class DatabaseInitializer
                                before update on messages
                                for each row
                            execute function update_updated_column_at();
+
+                           create table if not exists friend_requests
+                           (
+                               id           int primary key generated always as identity,
+                               sender_id    int not null references users(id) on delete cascade,
+                               receiver_id  int not null references users(id) on delete cascade,
+                               created_at   timestamp with time zone default current_timestamp
+                           );
                            """;
 
         await db.Database.ExecuteSqlRawAsync(sql);

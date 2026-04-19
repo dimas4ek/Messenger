@@ -5,13 +5,13 @@ namespace Application.Utils.Mapper;
 
 public class UserMapper : IMapper<User, UserInfo>
 {
-    public UserInfo Map(User user)
+    public UserInfo Map(User friendRequest)
     {
         return new UserInfo
         {
-            Id = user.Id,
-            Username = user.Username,
-            Status = user.Status
+            Id = friendRequest.Id,
+            Username = friendRequest.Username,
+            Status = friendRequest.Status
         };
     }
 }

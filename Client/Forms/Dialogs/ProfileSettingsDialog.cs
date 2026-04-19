@@ -1,26 +1,25 @@
 ﻿using Application.DTO;
 using Client.Api.Clients;
-using Client.Forms.Dialogs;
 using Client.Services;
 using Client.Utils;
 using Guna.UI2.WinForms;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Client.Forms;
+namespace Client.Forms.Dialogs;
 
 public class ProfileSettingsDialog : Form
 {
+    private readonly UserInfo _currentUser;
     private readonly IDialogService _dialogService;
 
     private readonly Action<UserInfo> _onUserUpdated;
-    private readonly UserInfo _user;
     private readonly UserApiClient _userApiClient;
-    private Label passwordValueLabel;
-    private Label usernameValueLabel;
+    private Label? _passwordValueLabel;
+    private Label? _usernameValueLabel;
 
-    public ProfileSettingsDialog(UserInfo user, Action<UserInfo> onUserUpdated)
+    public ProfileSettingsDialog(UserInfo currentUser, Action<UserInfo> onUserUpdated)
     {
-        _user = user;
+        _currentUser = currentUser;
         _onUserUpdated = onUserUpdated;
 
         _dialogService = App.Services.GetRequiredService<IDialogService>();
@@ -58,15 +57,15 @@ public class ProfileSettingsDialog : Form
         };
         Controls.Add(usernameLabel);
 
-        usernameValueLabel = new Label
+        _usernameValueLabel = new Label
         {
-            Text = _user.Username,
+            Text = _currentUser.Username,
             ForeColor = Color.White,
             Location = new Point(30, 175),
             AutoSize = true,
             Font = new Font("Segoe UI", 11, FontStyle.Bold)
         };
-        Controls.Add(usernameValueLabel);
+        Controls.Add(_usernameValueLabel);
 
         var editUsernameButton = new Guna2Button
         {
@@ -87,7 +86,7 @@ public class ProfileSettingsDialog : Form
         };
         Controls.Add(passwordLabel);
 
-        passwordValueLabel = new Label
+        _passwordValueLabel = new Label
         {
             Text = "********",
             ForeColor = Color.White,
@@ -95,7 +94,7 @@ public class ProfileSettingsDialog : Form
             AutoSize = true,
             Font = new Font("Segoe UI", 11, FontStyle.Bold)
         };
-        Controls.Add(passwordValueLabel);
+        Controls.Add(_passwordValueLabel);
 
         var editPasswordButton = new Guna2Button
         {
@@ -112,13 +111,13 @@ public class ProfileSettingsDialog : Form
     {
         var dialog = new InputDialog(
             "Изменить имя",
-            _user.Username,
+            _currentUser.Username,
             "Введите новое имя");
 
         if (await dialog.ShowDialogAsync() != DialogResult.OK ||
             string.IsNullOrWhiteSpace(dialog.Result)) return;
 
-        var result = await _userApiClient.UpdateUsername(_user.Id, dialog.Result);
+        var result = await _userApiClient.UpdateUsername(_currentUser.Id, dialog.Result);
 
         if (!result.IsSuccess || result.Value == null)
         {
@@ -126,11 +125,11 @@ public class ProfileSettingsDialog : Form
             return;
         }
 
-        _user.Username = result.Value.User.Username;
+        _currentUser.Username = result.Value.User.Username;
 
-        usernameValueLabel.Text = _user.Username;
+        _usernameValueLabel?.Text = _currentUser.Username;
 
-        _onUserUpdated?.Invoke(_user);
+        _onUserUpdated(_currentUser);
     }
 
     private async void EditPassword(object? sender, EventArgs e)
@@ -144,14 +143,8 @@ public class ProfileSettingsDialog : Form
         if (await dialog.ShowDialogAsync() != DialogResult.OK ||
             string.IsNullOrWhiteSpace(dialog.Result)) return;
 
-        var result = await _userApiClient.UpdatePassword(_user.Id, dialog.Result);
+        var result = await _userApiClient.UpdatePassword(_currentUser.Id, dialog.Result);
 
-        if (!result.IsSuccess || result.Value == null)
-        {
-            _dialogService.ShowError(result.ToMessage());
-            return;
-        }
-
-        usernameValueLabel.Text = "******";
+        if (!result.IsSuccess || result.Value == null) _dialogService.ShowError(result.ToMessage());
     }
 }

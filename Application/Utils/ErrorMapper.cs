@@ -8,6 +8,7 @@ public static class ErrorMapper
         {
             ErrorCode.UserNotFound => "Пользователь не найден",
             ErrorCode.ChatNotFound => "Чат не найден",
+            ErrorCode.FriendRequestNotFound => "Запрос не найден",
             ErrorCode.InvalidPassword => "Неверный пароль",
             ErrorCode.UsernameTaken => "Имя уже занято",
             ErrorCode.NotAuthenticated => "Пользователь не аутентифицирован",

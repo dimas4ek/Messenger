@@ -14,6 +14,7 @@ public enum ErrorCode
     // Database
     UserNotFound,
     ChatNotFound,
+    FriendRequestNotFound,
     InvalidUsername,
     MessageNotFound,
     DatabaseError,

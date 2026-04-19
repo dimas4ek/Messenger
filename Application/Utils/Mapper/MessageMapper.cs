@@ -5,17 +5,17 @@ namespace Application.Utils.Mapper;
 
 public class MessageMapper(IAppMapper mapper) : IMapper<Message, MessageInfo>
 {
-    public MessageInfo Map(Message message)
+    public MessageInfo Map(Message friendRequest)
     {
         return new MessageInfo
         {
-            Id = message.Id,
-            Text = message.MessageText,
-            Sender = mapper.Map<User, UserInfo>(message.Sender),
-            ChatId = message.ChatId,
-            CreatedAt = message.CreatedAt,
-            IsEdited = message.IsEdited,
-            IsRead = message.IsRead
+            Id = friendRequest.Id,
+            Text = friendRequest.MessageText,
+            Sender = mapper.Map<User, UserInfo>(friendRequest.Sender),
+            ChatId = friendRequest.ChatId,
+            CreatedAt = friendRequest.CreatedAt,
+            IsEdited = friendRequest.IsEdited,
+            IsRead = friendRequest.IsRead
         };
     }
 }

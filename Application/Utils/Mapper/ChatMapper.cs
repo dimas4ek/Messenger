@@ -6,20 +6,20 @@ namespace Application.Utils.Mapper;
 
 public class ChatMapper(IAppMapper mapper) : IMapper<Chat, ChatInfo>
 {
-    public ChatInfo Map(Chat chat)
+    public ChatInfo Map(Chat friendRequest)
     {
         return new ChatInfo
         {
-            Id = chat.Id,
+            Id = friendRequest.Id,
             Type = ChatType.Private,
-            Messages = chat.Messages
+            Messages = friendRequest.Messages
                 .Select(mapper.Map<Message, MessageInfo>)
                 .ToList(),
-            Participants = chat.Participants
+            Participants = friendRequest.Participants
                 .Select(mapper.Map<ChatParticipant, ChatParticipantInfo>)
                 .ToList(),
-            CreatedAt = chat.CreatedAt,
-            UpdatedAt = chat.UpdatedAt
+            CreatedAt = friendRequest.CreatedAt,
+            UpdatedAt = friendRequest.UpdatedAt
         };
     }
 }

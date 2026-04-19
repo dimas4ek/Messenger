@@ -112,7 +112,7 @@ public class FriendController
 
     private void OnFriendAdded(UserResponse r)
     {
-        throw new NotImplementedException();
+        FriendAdded?.Invoke(r.User);
     }
 
     private void OnFriendUpdated(UserResponse r)

@@ -87,4 +87,57 @@ public class FriendApiClient(HttpClient httpClient)
             return ApiResult<AlreadyFriendsResponse>.Failure(ErrorCode.DatabaseError);
         }
     }
+
+    public async Task<ApiResult<FriendRequestResponse>> GetFriendRequests(int currentUserId)
+    {
+        try
+        {
+            var response = await httpClient.GetAsync($"api/friend/requests?userId={currentUserId}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var friendRequestResponse = await response.Content.ReadFromJsonAsync<FriendRequestResponse>();
+
+                return friendRequestResponse == null
+                    ? ApiResult<FriendRequestResponse>.Failure(ErrorCode.EmptyResponse)
+                    : ApiResult<FriendRequestResponse>.Success(friendRequestResponse);
+            }
+
+            var errorResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+            return ApiResult<FriendRequestResponse>.Failure(errorResponse?.ErrorCode ?? ErrorCode.UnknownError);
+        }
+        catch
+        {
+            return ApiResult<FriendRequestResponse>.Failure(ErrorCode.DatabaseError);
+        }
+    }
+
+    public async Task<ApiResult<FriendRequestActionResponse>> FriendRequestAction(int requestId, bool acceptRequest)
+    {
+        try
+        {
+            var response =
+                await httpClient.PostAsync($"api/friend/requests/{requestId}/{(acceptRequest ? "accept" : "decline")}",
+                    null);
+
+            if (response.IsSuccessStatusCode)
+            {
+                if (!acceptRequest)
+                    return ApiResult<FriendRequestActionResponse>.Success(null!);
+                var friendRequestActionResponse =
+                    await response.Content.ReadFromJsonAsync<FriendRequestActionResponse>();
+
+                return friendRequestActionResponse == null
+                    ? ApiResult<FriendRequestActionResponse>.Failure(ErrorCode.EmptyResponse)
+                    : ApiResult<FriendRequestActionResponse>.Success(friendRequestActionResponse);
+            }
+
+            var errorResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+            return ApiResult<FriendRequestActionResponse>.Failure(errorResponse?.ErrorCode ?? ErrorCode.UnknownError);
+        }
+        catch
+        {
+            return ApiResult<FriendRequestActionResponse>.Failure(ErrorCode.DatabaseError);
+        }
+    }
 }

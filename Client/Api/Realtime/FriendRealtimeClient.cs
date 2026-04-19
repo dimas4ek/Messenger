@@ -24,8 +24,8 @@ public class FriendRealtimeClient(RemoteConfig remoteConfig, IDialogService dial
                 .WithAutomaticReconnect()
                 .Build();
 
-            _connection.On<UserResponse>("FriendAdded", message => FriendAdded?.Invoke(message));
-            _connection.On<UserResponse>("FriendUpdated", message => FriendUpdated?.Invoke(message));
+            _connection.On<UserResponse>("FriendAdded", user => FriendAdded?.Invoke(user));
+            _connection.On<UserResponse>("FriendUpdated", user => FriendUpdated?.Invoke(user));
 
             try
             {

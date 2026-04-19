@@ -61,6 +61,7 @@ public partial class ClientForm : BaseForm
         _chatController.MessageDeleted += OnMessageDeleted;
 
         _friendController.FriendUpdated += OnFriendUpdated;
+        _friendController.FriendAdded += OnFriendAdded;
     }
 
     #region Load / Close
@@ -200,7 +201,7 @@ public partial class ClientForm : BaseForm
             return;
         }
 
-        throw new NotImplementedException();
+        AddFriendPanel(user);
     }
 
     private void OnFriendUpdated(UserInfo user)
@@ -479,8 +480,8 @@ public partial class ClientForm : BaseForm
     {
         btnOpenProfile.HoverState.ImageSize = btnOpenProfile.ImageSize;
         btnOpenProfile.PressedState.ImageSize = btnOpenProfile.ImageSize;
-        btnOpenProfile.MouseMove += (_, _) => Cursor = Cursors.Hand; 
-        btnOpenProfile.MouseLeave += (_, _) => Cursor = Cursors.Default; 
+        btnOpenProfile.MouseMove += (_, _) => Cursor = Cursors.Hand;
+        btnOpenProfile.MouseLeave += (_, _) => Cursor = Cursors.Default;
 
         _profilePanel = ProfilePanelFactory.Create(
             _currentUser,
@@ -493,7 +494,8 @@ public partial class ClientForm : BaseForm
                 _currentUser = updatedUser;
 
                 RefreshProfilePanel();
-            }
+            },
+            AddFriendPanel
         );
 
         Controls.Add(_profilePanel);

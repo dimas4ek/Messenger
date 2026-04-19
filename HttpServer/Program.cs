@@ -71,6 +71,7 @@ public class Program
         services.AddScoped<IChatRepository, ChatRepository>();
         services.AddScoped<IMessageRepository, MessageRepository>();
         services.AddScoped<IFriendRepository, FriendRepository>();
+        services.AddScoped<IFriendRequestRepository, FriendRequestRepository>();
 
         services.AddScoped<IAppMapper, AppMapper>();
 
@@ -78,6 +79,7 @@ public class Program
         services.AddScoped<IMapper<Message, MessageInfo>, MessageMapper>();
         services.AddScoped<IMapper<Chat, ChatInfo>, ChatMapper>();
         services.AddScoped<IMapper<ChatParticipant, ChatParticipantInfo>, ParticipantMapper>();
+        services.AddScoped<IMapper<FriendRequest, FriendRequestInfo>, FriendRequestMapper>();
 
         services.AddScoped<AuthService>();
         services.AddScoped<FriendService>();
