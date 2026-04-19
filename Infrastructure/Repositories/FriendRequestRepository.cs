@@ -10,10 +10,11 @@ public class FriendRequestRepository(MessengerContext context)
 {
     private readonly MessengerContext _context = context;
 
-    public Task<List<FriendRequest>> GetRequestsByUserId(int userId)
+    public async Task<List<FriendRequest>> GetRequestsByUserId(int userId)
     {
-        return _context.FriendRequests
+        return await _context.FriendRequests
             .Include(fr => fr.Sender)
+            .Include(fr => fr.Receiver)
             .Where(fr => fr.ReceiverId == userId)
             .OrderBy(fr => fr.CreatedAt)
             .ToListAsync();

@@ -64,7 +64,7 @@ public class FriendController(FriendService friendService, IHubContext<FriendHub
     }
 
     [HttpPost("requests")]
-    public async Task<ActionResult<FriendRequestResponse>> SendFriendRequest([FromBody] SendFriendRequest request)
+    public async Task<ActionResult<FriendRequestListResponse>> SendFriendRequest([FromBody] SendFriendRequest request)
     {
         var result = await friendService.AddFriendRequest(request.SenderId, request.ReceiverId);
 

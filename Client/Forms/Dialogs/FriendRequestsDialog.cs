@@ -1,6 +1,6 @@
-﻿using Application.DTO;
+﻿using System.Diagnostics;
+using Application.DTO;
 using Client.Api.Clients;
-using Client.Forms.Base;
 using Client.Services;
 using Client.UI;
 using Client.Utils;
@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Client.Forms.Dialogs;
 
-public class FriendRequestsDialog : BaseForm
+public class FriendRequestsDialog : Form
 {
     private readonly UserInfo _currentUser;
     private readonly IDialogService _dialogService;
@@ -25,6 +25,7 @@ public class FriendRequestsDialog : BaseForm
         _dialogService = App.Services.GetRequiredService<IDialogService>();
         _friendApiClient = App.Services.GetRequiredService<FriendApiClient>();
 
+        Debug.WriteLine("FriendRequestsDialog");
         InitializeComponent();
     }
 
@@ -42,7 +43,10 @@ public class FriendRequestsDialog : BaseForm
         if (!result.IsSuccess || result.Value == null) return;
 
         foreach (var request in result.Value.FriendRequests)
+        {
+            Debug.WriteLine("Friend request: " + request.Id);
             AddFriendRequestPanel(request);
+        }
     }
 
     private void AddFriendRequestPanel(FriendRequestInfo request)
@@ -59,8 +63,10 @@ public class FriendRequestsDialog : BaseForm
                 if (s is Control c)
                     ColorHelper.SetPanelColor((Guna2Panel)(c is Label l ? l.Parent! : c), 23, 33, 43);
             },
-            (s, e) => _ = SafeInvoke(() => HandleFriendRequestAction(s, true)),
-            (s, e) => _ = SafeInvoke(() => HandleFriendRequestAction(s, false))
+            (s, e) => HandleFriendRequestAction(s, true),
+            (s, e) => HandleFriendRequestAction(s, false)
+            /*(s, e) => _ = SafeInvoke(() => HandleFriendRequestAction(s, true)),
+            (s, e) => _ = SafeInvoke(() => HandleFriendRequestAction(s, false))*/
         );
 
         Controls.Add(panel);

@@ -90,7 +90,6 @@ public class FriendService(
 
             var friendRequests = result
                 .Select(mapper.Map<FriendRequest, FriendRequestInfo>)
-                .Where(fr => fr.Receiver.Id == currentUserId)
                 .ToList();
 
             return Result<List<FriendRequestInfo>>.Success(friendRequests);
