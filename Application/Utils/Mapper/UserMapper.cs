@@ -3,15 +3,16 @@ using Domain.Entities;
 
 namespace Application.Utils.Mapper;
 
-public class UserMapper : IMapper<User, UserInfo>
+public class UserMapper(IAppMapper mapper) : IMapper<User, UserInfo>
 {
-    public UserInfo Map(User friendRequest)
+    public UserInfo Map(User user)
     {
         return new UserInfo
         {
-            Id = friendRequest.Id,
-            Username = friendRequest.Username,
-            Status = friendRequest.Status
+            Id = user.Id,
+            Username = user.Username,
+            Status = user.Status,
+            Avatar = user.Avatar != null ? mapper.Map<Image, ImageInfo>(user.Avatar) : null
         };
     }
 }

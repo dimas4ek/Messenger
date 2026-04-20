@@ -21,10 +21,20 @@ internal static class Program
 
         var services = new ServiceCollection();
 
+        var isDevelopment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") == "Development"
+                            || Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
+
         var remoteConfig = new RemoteConfig
         {
             ApiBaseUrl = configuration["Api:BaseUrl"]!
         };
+        
+        /*var remoteConfig = new RemoteConfig
+        {
+            ApiBaseUrl = isDevelopment
+                ? configuration["Api:DevBaseUrl"]!
+                : configuration["Api:BaseUrl"]!
+        };*/
 
         ConfigureClientServices(services, remoteConfig);
 

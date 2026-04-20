@@ -8,6 +8,7 @@ using HttpServer.Hubs;
 using Infrastructure.Database;
 using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace HttpServer;
 
@@ -46,9 +47,36 @@ public class Program
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
 
+        /*var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+        if (string.IsNullOrWhiteSpace(connectionString))
+            throw new InvalidOperationException("Connection string 'DefaultConnection' was not found.");
+
+        var dataSource = new NpgsqlDataSourceBuilder(connectionString)
+            .MapEnum<UserStatus>("user_status")
+            .MapEnum<ChatParticipationRole>("chat_participation_role")
+            .MapEnum<ChatType>("chat_type")
+            .MapEnum<ImageContentType>("image_content_type")
+            .Build();
+
+        services.AddSingleton(dataSource);
+
+        services.AddDbContext<MessengerContext>((serviceProvider, options) =>
+        {
+            var ds = serviceProvider.GetRequiredService<NpgsqlDataSource>();
+            options.UseNpgsql(ds);
+
+            if (builder.Environment.IsDevelopment())
+            {
+                options.LogTo(Console.WriteLine, LogLevel.Information);
+                options.EnableSensitiveDataLogging();
+            }
+        });*/
+
         services.AddDbContext<MessengerContext>(options =>
         {
-            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+            var connectionString =
+                builder.Configuration.GetConnectionString("DefaultConnection");
 
             if (string.IsNullOrWhiteSpace(connectionString))
                 throw new InvalidOperationException("Connection string 'DefaultConnection' was not found.");
@@ -58,6 +86,7 @@ public class Program
                 npgsqlOptions.MapEnum<UserStatus>("user_status");
                 npgsqlOptions.MapEnum<ChatParticipationRole>("chat_participation_role");
                 npgsqlOptions.MapEnum<ChatType>("chat_type");
+                npgsqlOptions.MapEnum<ImageContentType>("image_content_type");
             });
 
             if (builder.Environment.IsDevelopment())
@@ -72,6 +101,7 @@ public class Program
         services.AddScoped<IMessageRepository, MessageRepository>();
         services.AddScoped<IFriendRepository, FriendRepository>();
         services.AddScoped<IFriendRequestRepository, FriendRequestRepository>();
+        services.AddScoped<IImageRepository, ImageRepository>();
 
         services.AddScoped<IAppMapper, AppMapper>();
 
@@ -80,6 +110,7 @@ public class Program
         services.AddScoped<IMapper<Chat, ChatInfo>, ChatMapper>();
         services.AddScoped<IMapper<ChatParticipant, ChatParticipantInfo>, ParticipantMapper>();
         services.AddScoped<IMapper<FriendRequest, FriendRequestInfo>, FriendRequestMapper>();
+        services.AddScoped<IMapper<Image, ImageInfo>, ImageMapper>();
 
         services.AddScoped<AuthService>();
         services.AddScoped<FriendService>();

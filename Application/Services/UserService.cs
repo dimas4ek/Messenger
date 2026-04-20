@@ -3,10 +3,11 @@ using Application.Interfaces;
 using Application.Utils;
 using Application.Utils.Mapper;
 using Domain.Entities;
+using Domain.Enums;
 
 namespace Application.Services;
 
-public class UserService(IUserRepository userRepository, IAppMapper mapper)
+public class UserService(IUserRepository userRepository, IImageRepository imageRepository, IAppMapper mapper)
 {
     public async Task<Result<UserInfo>> GetUserByUsername(string username)
     {
@@ -53,6 +54,29 @@ public class UserService(IUserRepository userRepository, IAppMapper mapper)
         return await UpdateUserEntity(
             userResult.Value!,
             u => u.Password = BCrypt.Net.BCrypt.HashPassword(newPassword));
+    }
+
+    public async Task<Result<ImageInfo>> ChangeImage(int userId, string imageName, byte[] bytes,
+        ImageContentType contentType)
+    {
+        var userResult = await GetUserEntity(userId);
+
+        if (!userResult.IsSuccess)
+            return Result<ImageInfo>.Failure(userResult.ErrorCode);
+
+        var image = new Image
+        {
+            Name = imageName,
+            Data = bytes,
+            ContentType = contentType
+        };
+
+        var imageInfo = await imageRepository.Add(image);
+        await imageRepository.Save();
+
+        await UpdateUserEntity(userResult.Value!, u => u.Avatar = imageInfo);
+
+        return Result<ImageInfo>.Success(mapper.Map<Image, ImageInfo>(imageInfo));
     }
 
     private async Task<Result<UserInfo>> UpdateUserEntity(

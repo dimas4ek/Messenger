@@ -1,5 +1,7 @@
 ﻿using Application.DTO;
+using Application.Utils;
 using Client.Api.Clients;
+using Client.Properties;
 using Client.Services;
 using Client.Utils;
 using Guna.UI2.WinForms;
@@ -14,6 +16,8 @@ public class ProfileSettingsDialog : Form
 
     private readonly Action<UserInfo> _onUserUpdated;
     private readonly UserApiClient _userApiClient;
+
+    private Guna2CirclePictureBox _avatar;
     private Label? _passwordValueLabel;
     private Label? _usernameValueLabel;
 
@@ -38,15 +42,16 @@ public class ProfileSettingsDialog : Form
         MaximizeBox = false;
         MinimizeBox = false;
 
-        var avatar = new Guna2CirclePictureBox
+        _avatar = new Guna2CirclePictureBox
         {
             Size = new Size(100, 100),
             Location = new Point((Width - 100) / 2 - 10, 20),
             SizeMode = PictureBoxSizeMode.Zoom,
-            //Image = Properties.Resources.default_avatar,
+            Image = GetAvatar(),
             BackColor = Color.Transparent
         };
-        Controls.Add(avatar);
+        _avatar.MouseClick += ChangeAvatar;
+        Controls.Add(_avatar);
 
         var usernameLabel = new Label
         {
@@ -146,5 +151,42 @@ public class ProfileSettingsDialog : Form
         var result = await _userApiClient.UpdatePassword(_currentUser.Id, dialog.Result);
 
         if (!result.IsSuccess || result.Value == null) _dialogService.ShowError(result.ToMessage());
+    }
+
+    private async void ChangeAvatar(object? sender, MouseEventArgs e)
+    {
+        using var dialog = new OpenFileDialog();
+        dialog.Filter = "Images|*.jpg;*.jpeg;*.png;*.gif;*.bmp;*.webp";
+        dialog.Title = "Выберите изображение";
+
+        if (dialog.ShowDialog() != DialogResult.OK) return;
+
+        var imageBytes = await File.ReadAllBytesAsync(dialog.FileName);
+        var name = Path.GetFileNameWithoutExtension(dialog.FileName);
+        var contentType = ImageContentTypeExtensions.FromExtension(dialog.FileName);
+
+        var result = await _userApiClient.ChangeAvatar(_currentUser.Id, name, imageBytes, contentType);
+
+        if (!result.IsSuccess || result.Value == null)
+        {
+            _dialogService.ShowError(result.ToMessage());
+            return;
+        }
+
+        _avatar.Image = Image.FromFile(dialog.FileName);
+        _avatar.SizeMode = PictureBoxSizeMode.Zoom;
+
+        _currentUser.Avatar = result.Value.Image;
+    }
+
+    private Image GetAvatar()
+    {
+        if (_currentUser.Avatar?.Data != null)
+        {
+            using var ms = new MemoryStream(_currentUser.Avatar.Data);
+            return Image.FromStream(ms);
+        }
+
+        return Resources.DefaultAvatar;
     }
 }

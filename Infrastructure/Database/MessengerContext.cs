@@ -13,16 +13,22 @@ public class MessengerContext : DbContext
     public MessengerContext(DbContextOptions<MessengerContext> options) : base(options)
     {
     }
-
+    
     public DbSet<User> Users => Set<User>();
     public DbSet<Chat> Chats => Set<Chat>();
     public DbSet<ChatParticipant> ChatParticipants => Set<ChatParticipant>();
     public DbSet<Message> Messages => Set<Message>();
     public DbSet<Friendship> Friends => Set<Friendship>();
     public DbSet<FriendRequest> FriendRequests => Set<FriendRequest>();
+    public DbSet<Image> Images => Set<Image>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        /*modelBuilder.HasPostgresEnum<UserStatus>();
+        modelBuilder.HasPostgresEnum<ChatParticipationRole>();
+        modelBuilder.HasPostgresEnum<ChatType>();
+        modelBuilder.HasPostgresEnum<ImageContentType>();*/
+
         modelBuilder.Entity<User>(entity =>
         {
             entity.HasKey(u => u.Id);
@@ -30,7 +36,13 @@ public class MessengerContext : DbContext
             entity.Property(u => u.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(u => u.Status)
                 .HasColumnType("user_status")
+                //.HasConversion<int>()
                 .HasDefaultValue(UserStatus.Offline);
+
+            entity.HasOne(u => u.Avatar)
+                .WithOne()
+                .HasForeignKey<User>(u => u.AvatarId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<Chat>(entity =>
@@ -38,6 +50,7 @@ public class MessengerContext : DbContext
             entity.HasKey(c => c.Id);
             entity.Property(c => c.Type)
                 .HasColumnType("chat_type")
+                //.HasConversion<int>()
                 .HasDefaultValue(ChatType.Private);
             entity.Property(c => c.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(c => c.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
@@ -48,6 +61,7 @@ public class MessengerContext : DbContext
             entity.HasKey(p => new { p.ChatId, p.ParticipantId });
             entity.Property(p => p.Role)
                 .HasColumnType("chat_participation_role")
+                //.HasConversion<int>()
                 .HasDefaultValue(ChatParticipationRole.Member);
             entity.Property(p => p.JoinedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -88,17 +102,18 @@ public class MessengerContext : DbContext
             entity.HasOne(fl => fl.User)
                 .WithMany(fl => fl.Friends)
                 .HasForeignKey(fl => fl.UserId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(fl => fl.Friend)
                 .WithMany(fl => fl.AddedByFriends)
                 .HasForeignKey(fl => fl.FriendId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<FriendRequest>(entity =>
         {
             entity.HasKey(fr => fr.Id);
+            entity.Property(fr => fr.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             entity.HasOne(fr => fr.Sender)
                 .WithMany()
@@ -109,7 +124,14 @@ public class MessengerContext : DbContext
                 .WithMany()
                 .HasForeignKey(fr => fr.ReceiverId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
 
+        modelBuilder.Entity<Image>(entity =>
+        {
+            entity.HasKey(i => i.Id);
+            entity.Property(i => i.ContentType)
+                .HasColumnType("image_content_type");
+            //.HasConversion<int>();
             entity.Property(fr => fr.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
         });
 

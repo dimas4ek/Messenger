@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace Infrastructure.Database;
 
@@ -8,7 +9,7 @@ public static class DatabaseInitializer
     {
         const string sql = """
                            create or replace function update_updated_column_at()
-                           returns trigger as
+                               returns trigger as
                            $$
                            begin
                                NEW.updated_at = current_timestamp;
@@ -16,89 +17,119 @@ public static class DatabaseInitializer
                            end;
                            $$ language plpgsql;
 
-                           do $$
-                           begin
-                               if not exists (select 1 from pg_type where typname = 'chat_type') then
-                                   create type chat_type as enum ('private', 'group');
-                               end if;
+                           do
+                           $$
+                               begin
+                                   if not exists (select 1 from pg_type where typname = 'chat_type') then
+                                       create type chat_type as enum ('private', 'group');
+                                   end if;
 
-                               if not exists (select 1 from pg_type where typname = 'chat_participation_role') then
-                                   create type chat_participation_role as enum ('member', 'admin');
-                               end if;
+                                   if not exists (select 1 from pg_type where typname = 'chat_participation_role') then
+                                       create type chat_participation_role as enum ('member', 'admin');
+                                   end if;
 
-                               if not exists (select 1 from pg_type where typname = 'user_status') then
-                                   create type user_status as enum ('offline', 'online');
-                               end if;
-                           end
+                                   if not exists (select 1 from pg_type where typname = 'user_status') then
+                                       create type user_status as enum ('offline', 'online');
+                                   end if;
+
+                                   if not exists (select 1 from pg_type where typname = 'image_content_type') then
+                                       create type image_content_type as enum (
+                                           'image/jpeg',
+                                           'image/png',
+                                           'image/gif',
+                                           'image/webp',
+                                           'image/bmp',
+                                           'image/svg+xml',
+                                           'image/tiff',
+                                           'image/ico'
+                                           );
+                                   end if;
+                               end
                            $$;
+
+                           create table if not exists images
+                           (
+                               id           int primary key generated always as identity,
+                               name         varchar(255)       not null,
+                               content_type image_content_type not null,
+                               data         bytea              not null,
+                               created_at   timestamp with time zone default current_timestamp
+                           );
 
                            create table if not exists users
                            (
-                               id int primary key generated always as identity,
-                               username varchar(255) not null unique,
-                               password varchar(255) not null,
-                               status user_status default 'offline',
-                               created_at timestamp with time zone default current_timestamp
+                               id         int primary key generated always as identity,
+                               username   varchar(255) not null unique,
+                               password   varchar(255) not null,
+                               status     user_status              default 'offline',
+                               created_at timestamp with time zone default current_timestamp,
+                               avatar_id  int          references images (id) on delete set null
                            );
 
                            create table if not exists chats
                            (
-                               id int primary key generated always as identity,
-                               type chat_type default 'private',
-                               name varchar(255) null,
+                               id         int primary key generated always as identity,
+                               type       chat_type                default 'private',
+                               name       varchar(255) null,
                                created_at timestamp with time zone default current_timestamp,
                                updated_at timestamp with time zone default current_timestamp
                            );
 
                            create table if not exists messages
                            (
-                               id int primary key generated always as identity,
-                               chat_id int not null references chats(id) on delete cascade,
-                               sender_id int not null references users(id) on delete cascade,
+                               id           int primary key generated always as identity,
+                               chat_id      int  not null references chats (id) on delete cascade,
+                               sender_id    int  not null references users (id) on delete cascade,
                                message_text text not null,
-                               is_edited bool default false,
-                               is_read bool default false,
-                               created_at timestamp with time zone default current_timestamp,
-                               updated_at timestamp with time zone default current_timestamp
+                               is_edited    bool                     default false,
+                               is_read      bool                     default false,
+                               created_at   timestamp with time zone default current_timestamp,
+                               updated_at   timestamp with time zone default current_timestamp
                            );
 
                            create table if not exists chat_participants
                            (
-                               chat_id int not null references chats(id) on delete cascade,
-                               participant_id int not null references users(id) on delete cascade,
-                               role chat_participation_role default 'member',
-                               joined_at timestamp with time zone default current_timestamp,
+                               chat_id        int not null references chats (id) on delete cascade,
+                               participant_id int not null references users (id) on delete cascade,
+                               role           chat_participation_role  default 'member',
+                               joined_at      timestamp with time zone default current_timestamp,
                                primary key (chat_id, participant_id)
                            );
 
                            create table if not exists friend_list
                            (
-                               user_id int not null references users(id) on delete cascade,
-                               friend_id int not null references users(id) on delete cascade,
+                               user_id   int not null references users (id) on delete cascade,
+                               friend_id int not null references users (id) on delete cascade,
                                primary key (user_id, friend_id)
+                           );
+
+                           create table if not exists friend_requests
+                           (
+                               id          int primary key generated always as identity,
+                               sender_id   int not null references users (id) on delete cascade,
+                               receiver_id int not null references users (id) on delete cascade,
+                               created_at  timestamp with time zone default current_timestamp
                            );
 
                            drop trigger if exists update_chats_updated_at on chats;
                            create trigger update_chats_updated_at
-                               before update on chats
+                               before update
+                               on chats
                                for each row
                            execute function update_updated_column_at();
 
                            drop trigger if exists update_messages_updated_at on messages;
                            create trigger update_messages_updated_at
-                               before update on messages
+                               before update
+                               on messages
                                for each row
                            execute function update_updated_column_at();
-
-                           create table if not exists friend_requests
-                           (
-                               id           int primary key generated always as identity,
-                               sender_id    int not null references users(id) on delete cascade,
-                               receiver_id  int not null references users(id) on delete cascade,
-                               created_at   timestamp with time zone default current_timestamp
-                           );
                            """;
 
         await db.Database.ExecuteSqlRawAsync(sql);
+
+        /*var conn = (NpgsqlConnection)db.Database.GetDbConnection();
+        await conn.OpenAsync();
+        await conn.ReloadTypesAsync();*/
     }
 }

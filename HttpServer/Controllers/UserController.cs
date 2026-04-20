@@ -1,5 +1,6 @@
 ﻿using Application.Services;
 using Contracts.DTO;
+using Contracts.DTO.Image;
 using Contracts.DTO.User;
 using HttpServer.Hubs;
 using Microsoft.AspNetCore.Mvc;
@@ -72,6 +73,23 @@ public class UserController(UserService userService, FriendService friendService
         return Ok(new UserResponse
         {
             User = result.Value
+        });
+    }
+
+    [HttpPatch("{id:int}")]
+    public async Task<ActionResult<ImageResponse>> ChangeImage(int id, [FromBody] ImageRequest request)
+    {
+        var result = await userService.ChangeImage(id, request.Name, request.Bytes, request.ContentType);
+
+        if (!result.IsSuccess)
+            return BadRequest(new ErrorResponse
+            {
+                ErrorCode = result.ErrorCode
+            });
+
+        return Ok(new ImageResponse
+        {
+            Image = result.Value
         });
     }
 }

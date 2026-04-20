@@ -314,12 +314,12 @@ public partial class ClientForm : BaseForm
 
     private void LoadMessageUI(MessageInfo message)
     {
-        var panel = MessagePanelFactory.Create(message, MessagePanel_MouseClick);
+        var panel = MessagePanelFactory.Create(message, Message_MouseClick);
         _chatPanel.Controls.Add(panel);
         _chatPanel.ScrollControlIntoView(panel);
     }
 
-    private void MessagePanel_MouseClick(object? sender, MouseEventArgs e)
+    private void Message_MouseClick(object? sender, MouseEventArgs e)
     {
         if ((e.Button & MouseButtons.Right) == 0) return;
 

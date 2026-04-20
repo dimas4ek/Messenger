@@ -11,11 +11,14 @@ public class User
 
     [Column("username")] [MaxLength(255)] public required string Username { get; set; }
 
-    [Column("password")] [MaxLength(255)] public string Password { get; set; }
+    [Column("password")] [MaxLength(255)] public required string Password { get; set; }
 
     [Column("status")] public UserStatus Status { get; set; }
 
     [Column("created_at")] public DateTime CreatedAt { get; set; }
+
+    [Column("avatar_id")] public int? AvatarId { get; set; }
+    public Image? Avatar { get; set; }
 
     public ICollection<ChatParticipant> Participations { get; set; }
     public ICollection<Message> SentMessages { get; set; }

@@ -5,14 +5,14 @@ namespace Application.Utils.Mapper;
 
 public class ParticipantMapper : IMapper<ChatParticipant, ChatParticipantInfo>
 {
-    public ChatParticipantInfo Map(ChatParticipant friendRequest)
+    public ChatParticipantInfo Map(ChatParticipant participant)
     {
         return new ChatParticipantInfo
         {
-            ChatId = friendRequest.ChatId,
-            UserId = friendRequest.ParticipantId,
-            Role = friendRequest.Role,
-            JoinedAt = friendRequest.JoinedAt
+            ChatId = participant.ChatId,
+            UserId = participant.ParticipantId,
+            Role = participant.Role,
+            JoinedAt = participant.JoinedAt
         };
     }
 }

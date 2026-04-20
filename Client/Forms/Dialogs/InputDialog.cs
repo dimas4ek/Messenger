@@ -4,8 +4,6 @@ namespace Client.Forms.Dialogs;
 
 public sealed class InputDialog : Form
 {
-    private readonly Guna2TextBox textBox;
-
     public InputDialog(
         string title,
         string initialValue = "",
@@ -20,7 +18,7 @@ public sealed class InputDialog : Form
         MaximizeBox = false;
         MinimizeBox = false;
 
-        textBox = new Guna2TextBox
+        var textBox = new Guna2TextBox
         {
             Text = initialValue,
             PlaceholderText = placeholder,
