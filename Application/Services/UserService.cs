@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Application.DTO;
+﻿using Application.DTO;
 using Application.Interfaces;
 using Application.Utils;
 using Application.Utils.Mapper;
@@ -57,13 +56,13 @@ public class UserService(IUserRepository userRepository, IImageRepository imageR
             u => u.Password = BCrypt.Net.BCrypt.HashPassword(newPassword));
     }
 
-    public async Task<Result<ImageInfo>> ChangeImage(int userId, string imageName, byte[] bytes,
+    public async Task<Result<UserInfo>> ChangeImage(int userId, string imageName, byte[] bytes,
         ImageContentType contentType)
     {
         var userResult = await GetUserEntity(userId);
 
         if (!userResult.IsSuccess)
-            return Result<ImageInfo>.Failure(userResult.ErrorCode);
+            return Result<UserInfo>.Failure(userResult.ErrorCode);
 
         var image = new Image
         {
@@ -72,20 +71,10 @@ public class UserService(IUserRepository userRepository, IImageRepository imageR
             ContentType = contentType
         };
 
-        Debug.WriteLine("image");
-        Debug.WriteLine(image.Name);
-        Debug.WriteLine(image.ContentType);
-
         var imageInfo = await imageRepository.Add(image);
         await imageRepository.Save();
 
-        Debug.WriteLine("imageinfo");
-        Debug.WriteLine(imageInfo.Name);
-        Debug.WriteLine(imageInfo.ContentType);
-
-        await UpdateUserEntity(userResult.Value!, u => u.Avatar = imageInfo);
-
-        return Result<ImageInfo>.Success(mapper.Map<Image, ImageInfo>(imageInfo));
+        return await UpdateUserEntity(userResult.Value!, u => u.Avatar = imageInfo);
     }
 
     private async Task<Result<UserInfo>> UpdateUserEntity(

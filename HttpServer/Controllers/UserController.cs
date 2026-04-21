@@ -1,6 +1,6 @@
-﻿using System.Diagnostics;
-using Application.Services;
+﻿using Application.Services;
 using Contracts.DTO;
+using Contracts.DTO.Friend.Event;
 using Contracts.DTO.Image;
 using Contracts.DTO.User;
 using HttpServer.Hubs;
@@ -44,13 +44,7 @@ public class UserController(UserService userService, FriendService friendService
                 ErrorCode = result.ErrorCode
             });
 
-        var friendListResult = await friendService.GetFriendList(id);
-        if (!friendListResult.IsSuccess || friendListResult.Value == null) return BadRequest("Friend list is null");
-
-        var friends = friendListResult.Value;
-        foreach (var friend in friends)
-            await hubContext.Clients.Group($"user:{friend.Id}")
-                .SendAsync("FriendUpdated", new UserResponse { User = result.Value });
+        await NotifyFriends(id, new FriendUpdatedEvent { User = result.Value, UsernameChanged = true });
 
         return Ok(new UserResponse
         {
@@ -77,11 +71,9 @@ public class UserController(UserService userService, FriendService friendService
         });
     }
 
-    [HttpPatch("{id:int}")]
-    public async Task<ActionResult<ImageResponse>> ChangeImage(int id, [FromBody] ImageRequest request)
+    [HttpPatch("{id:int}/avatar")]
+    public async Task<ActionResult<UserResponse>> ChangeImage(int id, [FromBody] ImageRequest request)
     {
-        Debug.WriteLine($"controller name: {request.Name}");
-
         var result = await userService.ChangeImage(id, request.Name, request.Bytes, request.ContentType);
 
         if (!result.IsSuccess)
@@ -90,9 +82,21 @@ public class UserController(UserService userService, FriendService friendService
                 ErrorCode = result.ErrorCode
             });
 
-        return Ok(new ImageResponse
+        await NotifyFriends(id, new FriendUpdatedEvent { User = result.Value, AvatarChanged = true });
+
+        return Ok(new UserResponse
         {
-            Image = result.Value
+            User = result.Value
         });
+    }
+
+    private async Task NotifyFriends(int userId, FriendUpdatedEvent friendEvent)
+    {
+        var friendListResult = await friendService.GetFriendList(userId);
+        if (!friendListResult.IsSuccess || friendListResult.Value == null) return;
+
+        foreach (var friend in friendListResult.Value)
+            await hubContext.Clients.Group($"user:{friend.Id}")
+                .SendAsync("FriendUpdated", friendEvent);
     }
 }

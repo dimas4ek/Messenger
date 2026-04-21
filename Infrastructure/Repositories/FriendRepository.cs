@@ -20,6 +20,7 @@ public class FriendRepository(MessengerContext context)
     {
         return await _context.Friends
             .Include(f => f.Friend)
+            .ThenInclude(f => f.Avatar)
             .Where(f => f.UserId == userId)
             .ToListAsync();
     }

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using Application.Utils;
 using Client.Utils;
 using Contracts.DTO;
@@ -89,13 +88,12 @@ public class UserApiClient(HttpClient httpClient)
         }
     }
 
-    public async Task<ApiResult<ImageResponse>> ChangeAvatar(int userId, string name, byte[] imageBytes,
+    public async Task<ApiResult<UserResponse>> ChangeAvatar(int userId, string name, byte[] imageBytes,
         ImageContentType contentType)
     {
         try
         {
-            Debug.WriteLine($"changeavatar name: {name}");
-            var response = await httpClient.PatchAsJsonAsync($"api/user/{userId}", new ImageRequest
+            var response = await httpClient.PatchAsJsonAsync($"api/user/{userId}/avatar", new ImageRequest
             {
                 Name = name,
                 Bytes = imageBytes,
@@ -104,19 +102,19 @@ public class UserApiClient(HttpClient httpClient)
 
             if (response.IsSuccessStatusCode)
             {
-                var imageResponse = await response.Content.ReadFromJsonAsync<ImageResponse>();
+                var imageResponse = await response.Content.ReadFromJsonAsync<UserResponse>();
 
                 return imageResponse == null
-                    ? ApiResult<ImageResponse>.Failure(ErrorCode.EmptyResponse)
-                    : ApiResult<ImageResponse>.Success(imageResponse);
+                    ? ApiResult<UserResponse>.Failure(ErrorCode.EmptyResponse)
+                    : ApiResult<UserResponse>.Success(imageResponse);
             }
 
             var errorResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return ApiResult<ImageResponse>.Failure(errorResponse?.ErrorCode ?? ErrorCode.UnknownError);
+            return ApiResult<UserResponse>.Failure(errorResponse?.ErrorCode ?? ErrorCode.UnknownError);
         }
         catch
         {
-            return ApiResult<ImageResponse>.Failure(ErrorCode.DatabaseError);
+            return ApiResult<UserResponse>.Failure(ErrorCode.DatabaseError);
         }
     }
 }

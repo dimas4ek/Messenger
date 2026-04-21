@@ -3,6 +3,7 @@ using Client.Api.Clients;
 using Client.Api.Realtime;
 using Client.Services;
 using Client.Utils;
+using Contracts.DTO.Friend.Event;
 using Contracts.DTO.User;
 
 namespace Client.Controllers;
@@ -30,7 +31,7 @@ public class FriendController
     public List<UserInfo> Friends { get; private set; } = [];
 
     public event Action<UserInfo>? FriendAdded;
-    public event Action<UserInfo>? FriendUpdated;
+    public event Action<FriendUpdatedEvent>? FriendUpdated;
 
     public async Task<List<UserInfo>> LoadFriendsAsync(int userId)
     {
@@ -113,8 +114,8 @@ public class FriendController
         FriendAdded?.Invoke(r.User);
     }
 
-    private void OnFriendUpdated(UserResponse r)
+    private void OnFriendUpdated(FriendUpdatedEvent e)
     {
-        FriendUpdated?.Invoke(r.User);
+        FriendUpdated?.Invoke(e);
     }
 }

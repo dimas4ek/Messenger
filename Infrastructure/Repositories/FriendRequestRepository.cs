@@ -24,7 +24,9 @@ public class FriendRequestRepository(MessengerContext context)
     {
         return await _context.FriendRequests
             .Include(fr => fr.Sender)
+            .ThenInclude(s => s.Avatar)
             .Include(fr => fr.Receiver)
+            .ThenInclude(r => r.Avatar)
             .FirstOrDefaultAsync(fr => fr.Id == requestId);
     }
 }

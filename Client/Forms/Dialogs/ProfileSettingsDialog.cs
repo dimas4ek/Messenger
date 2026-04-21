@@ -191,7 +191,9 @@ public class ProfileSettingsDialog : Form
 
         var result = await _userApiClient.ChangeAvatar(_currentUser.Id, name, imageBytes, contentType);
 
-        if (!result.IsSuccess || result.Value == null)
+        var resultValue = result.Value;
+
+        if (!result.IsSuccess || resultValue == null)
         {
             _dialogService.ShowError(result.ToMessage());
             return;
@@ -199,7 +201,7 @@ public class ProfileSettingsDialog : Form
 
         _avatar.Image = Image.FromFile(filePath);
         _avatar.SizeMode = PictureBoxSizeMode.Zoom;
-        _currentUser.Avatar = result.Value.Image;
+        _currentUser.Avatar = resultValue.User.Avatar;
     }
 
     private Image GetAvatar()

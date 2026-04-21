@@ -6,6 +6,7 @@ using Client.Forms.Base;
 using Client.Forms.Dialogs;
 using Client.Services;
 using Client.UI;
+using Contracts.DTO.Friend.Event;
 using Guna.UI2.WinForms;
 using static Client.Services.MessageQueueService;
 
@@ -202,20 +203,28 @@ public partial class ClientForm : BaseForm
         AddFriendPanel(user);
     }
 
-    private void OnFriendUpdated(UserInfo user)
+    private void OnFriendUpdated(FriendUpdatedEvent e)
     {
         if (InvokeRequired)
         {
-            BeginInvoke(() => OnFriendUpdated(user));
+            BeginInvoke(() => OnFriendUpdated(e));
             return;
         }
 
-        var panel = FindFriendPanel(user.Id);
+        var panel = FindFriendPanel(e.User.Id);
         if (panel == null) return;
 
-        FriendPanelFactory.UpdateText(panel, user.Username);
+        if (e.UsernameChanged)
+            FriendPanelFactory.UpdateText(panel, e.User.Username);
+
+        if (e.AvatarChanged)
+            FriendPanelFactory.UpdateAvatar(panel, e.User.Avatar!);
+
         if (panel.Tag is UserInfo u)
-            u.Username = user.Username;
+        {
+            if (e.UsernameChanged) u.Username = e.User.Username;
+            if (e.AvatarChanged) u.Avatar = e.User.Avatar;
+        }
     }
 
     #endregion
@@ -274,12 +283,12 @@ public partial class ClientForm : BaseForm
     {
         _ = SafeInvoke(() =>
         {
-            var results = string.IsNullOrWhiteSpace(txtBoxSearch.Text)
+            var friends = string.IsNullOrWhiteSpace(txtBoxSearch.Text)
                 ? _friendController.Friends
                 : _friendController.Search(txtBoxSearch.Text, _currentUser.Username);
 
             addedFriendPanel.Controls.Clear();
-            foreach (var friend in results)
+            foreach (var friend in friends)
                 AddFriendPanel(friend);
             return Task.CompletedTask;
         });
