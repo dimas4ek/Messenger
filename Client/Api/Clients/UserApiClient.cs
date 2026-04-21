@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Json;
+﻿using System.Diagnostics;
+using System.Net.Http.Json;
 using Application.Utils;
 using Client.Utils;
 using Contracts.DTO;
@@ -93,6 +94,7 @@ public class UserApiClient(HttpClient httpClient)
     {
         try
         {
+            Debug.WriteLine($"changeavatar name: {name}");
             var response = await httpClient.PatchAsJsonAsync($"api/user/{userId}", new ImageRequest
             {
                 Name = name,

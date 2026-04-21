@@ -8,7 +8,6 @@ using HttpServer.Hubs;
 using Infrastructure.Database;
 using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
 namespace HttpServer;
 
@@ -59,12 +58,9 @@ public class Program
             .MapEnum<ImageContentType>("image_content_type")
             .Build();
 
-        services.AddSingleton(dataSource);
-
-        services.AddDbContext<MessengerContext>((serviceProvider, options) =>
+        services.AddDbContext<MessengerContext>(options =>
         {
-            var ds = serviceProvider.GetRequiredService<NpgsqlDataSource>();
-            options.UseNpgsql(ds);
+            options.UseNpgsql(dataSource);
 
             if (builder.Environment.IsDevelopment())
             {

@@ -50,7 +50,7 @@ public class ProfileSettingsDialog : Form
             Image = GetAvatar(),
             BackColor = Color.Transparent
         };
-        _avatar.MouseClick += ChangeAvatar;
+        _avatar.Click += ChangeAvatar;
         Controls.Add(_avatar);
 
         var usernameLabel = new Label
@@ -153,17 +153,41 @@ public class ProfileSettingsDialog : Form
         if (!result.IsSuccess || result.Value == null) _dialogService.ShowError(result.ToMessage());
     }
 
-    private async void ChangeAvatar(object? sender, MouseEventArgs e)
+
+    // Открывает системный диалог выбора файла изображения
+    // в отдельном STA-потоке и возвращает путь к выбранному файлу.
+    //
+    // Почему используется StaTaskScheduler:
+    // OpenFileDialog требует поток с ApartmentState.STA.
+    // Если вызвать диалог из обычного Task.Run / ThreadPool,
+    // поток будет MTA и диалог может завершиться ошибкой.
+    //
+    // Почему используется Task.Factory.StartNew:
+    // Позволяет указать собственный TaskScheduler,
+    // чтобы задача выполнилась именно в STA-потоке.
+    //
+    // Результат:
+    // - путь к выбранному файлу, если пользователь нажал OK
+    // - null, если пользователь отменил выбор
+    private async void ChangeAvatar(object? sender, EventArgs e)
     {
-        using var dialog = new OpenFileDialog();
-        dialog.Filter = "Images|*.jpg;*.jpeg;*.png;*.gif;*.bmp;*.webp";
-        dialog.Title = "Выберите изображение";
+        var filePath = await Task.Factory.StartNew(() =>
+            {
+                using var dialog = new OpenFileDialog();
+                dialog.Filter = "Images|*.jpg;*.jpeg;*.png;*.gif;*.bmp;*.webp";
+                dialog.Title = "Выберите изображение";
 
-        if (dialog.ShowDialog() != DialogResult.OK) return;
+                return dialog.ShowDialog() == DialogResult.OK ? dialog.FileName : null;
+            },
+            CancellationToken.None,
+            TaskCreationOptions.None,
+            new StaTaskScheduler());
 
-        var imageBytes = await File.ReadAllBytesAsync(dialog.FileName);
-        var name = Path.GetFileNameWithoutExtension(dialog.FileName);
-        var contentType = ImageContentTypeExtensions.FromExtension(dialog.FileName);
+        if (filePath == null) return;
+
+        var imageBytes = await File.ReadAllBytesAsync(filePath);
+        var name = Path.GetFileNameWithoutExtension(filePath);
+        var contentType = ImageContentTypeExtensions.FromExtension(filePath);
 
         var result = await _userApiClient.ChangeAvatar(_currentUser.Id, name, imageBytes, contentType);
 
@@ -173,20 +197,16 @@ public class ProfileSettingsDialog : Form
             return;
         }
 
-        _avatar.Image = Image.FromFile(dialog.FileName);
+        _avatar.Image = Image.FromFile(filePath);
         _avatar.SizeMode = PictureBoxSizeMode.Zoom;
-
         _currentUser.Avatar = result.Value.Image;
     }
 
     private Image GetAvatar()
     {
-        if (_currentUser.Avatar?.Data != null)
-        {
-            using var ms = new MemoryStream(_currentUser.Avatar.Data);
-            return Image.FromStream(ms);
-        }
+        if (_currentUser.Avatar?.Data == null) return Resources.DefaultAvatar;
 
-        return Resources.DefaultAvatar;
+        using var ms = new MemoryStream(_currentUser.Avatar.Data);
+        return Image.FromStream(ms);
     }
 }

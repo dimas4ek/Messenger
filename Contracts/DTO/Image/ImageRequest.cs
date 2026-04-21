@@ -5,7 +5,7 @@ namespace Contracts.DTO.Image;
 
 public class ImageRequest
 {
-    [JsonPropertyName("contentType")] public ImageContentType ContentType;
-    [JsonPropertyName("name")] public string Name;
+    [JsonPropertyName("name")] public string Name { get; set; }
     [JsonPropertyName("bytes")] public byte[] Bytes { get; set; }
+    [JsonPropertyName("contentType")] public ImageContentType ContentType { get; set; }
 }

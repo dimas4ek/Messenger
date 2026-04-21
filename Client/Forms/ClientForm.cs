@@ -68,13 +68,13 @@ public partial class ClientForm : BaseForm
 
     private void ClientForm_Load(object? sender, EventArgs e)
     {
+        _currentUser = _userContext.CurrentUser ?? throw new Exception("Пользователь не авторизован");
+
+        DoImportantThings();
+        CreateProfilePanel();
+
         _ = SafeInvoke(async () =>
         {
-            _currentUser = _userContext.CurrentUser ?? throw new Exception("Пользователь не авторизован");
-
-            DoImportantThings();
-            CreateProfilePanel();
-
             await _chatController.ConnectAsync(_currentUser.Id);
             await _friendController.ConnectAsync(_currentUser.Id);
 
@@ -126,8 +126,6 @@ public partial class ClientForm : BaseForm
             BeginInvoke(() => OnMessageLoaded(message));
             return;
         }
-
-        //if (message.Sender.Id == _currentUser.Id) return;
 
         LoadMessageUI(message);
     }
@@ -385,20 +383,17 @@ public partial class ClientForm : BaseForm
                 var panel = FindMessagePanel(message.Id);
                 if (panel != null) MessagePanelFactory.UpdateText(panel, dialog.Result);
             });
-            //menuPanel.Dispose();
         };
 
         deleteButton.Click += (_, _) =>
         {
             CloseActiveContextMenu();
-            //menuPanel.Hide();
             _ = SafeInvoke(async () =>
             {
                 await _chatController.DeleteAsync(message);
                 var panel = FindMessagePanel(message.Id);
                 if (panel != null) _chatPanel.Controls.Remove(panel);
             });
-            //menuPanel.Dispose();
         };
 
         menuPanel.Controls.Add(editButton);

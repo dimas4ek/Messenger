@@ -13,6 +13,7 @@ public class UserRepository(MessengerContext context) : Repository<User>(context
     {
         return await _context.Users
             .Where(u => u.Username == username)
+            .Include(u => u.Avatar)
             .FirstOrDefaultAsync();
     }
 

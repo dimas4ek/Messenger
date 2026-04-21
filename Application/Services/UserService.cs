@@ -1,4 +1,5 @@
-﻿using Application.DTO;
+﻿using System.Diagnostics;
+using Application.DTO;
 using Application.Interfaces;
 using Application.Utils;
 using Application.Utils.Mapper;
@@ -71,8 +72,16 @@ public class UserService(IUserRepository userRepository, IImageRepository imageR
             ContentType = contentType
         };
 
+        Debug.WriteLine("image");
+        Debug.WriteLine(image.Name);
+        Debug.WriteLine(image.ContentType);
+
         var imageInfo = await imageRepository.Add(image);
         await imageRepository.Save();
+
+        Debug.WriteLine("imageinfo");
+        Debug.WriteLine(imageInfo.Name);
+        Debug.WriteLine(imageInfo.ContentType);
 
         await UpdateUserEntity(userResult.Value!, u => u.Avatar = imageInfo);
 

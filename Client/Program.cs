@@ -12,7 +12,12 @@ namespace Client;
 internal static class Program
 {
     [STAThread]
-    private static async Task Main()
+    public static void Main(string[] args)
+    {
+        MainAsync().GetAwaiter().GetResult();
+    }
+
+    private static async Task MainAsync()
     {
         var configuration = new ConfigurationBuilder()
             .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
@@ -24,17 +29,17 @@ internal static class Program
         var isDevelopment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") == "Development"
                             || Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
 
-        var remoteConfig = new RemoteConfig
+        /*var remoteConfig = new RemoteConfig
         {
             ApiBaseUrl = configuration["Api:BaseUrl"]!
-        };
-        
-        /*var remoteConfig = new RemoteConfig
+        };*/
+
+        var remoteConfig = new RemoteConfig
         {
             ApiBaseUrl = isDevelopment
                 ? configuration["Api:DevBaseUrl"]!
                 : configuration["Api:BaseUrl"]!
-        };*/
+        };
 
         ConfigureClientServices(services, remoteConfig);
 

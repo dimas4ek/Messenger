@@ -1,4 +1,5 @@
-﻿using Application.Services;
+﻿using System.Diagnostics;
+using Application.Services;
 using Contracts.DTO;
 using Contracts.DTO.Image;
 using Contracts.DTO.User;
@@ -79,6 +80,8 @@ public class UserController(UserService userService, FriendService friendService
     [HttpPatch("{id:int}")]
     public async Task<ActionResult<ImageResponse>> ChangeImage(int id, [FromBody] ImageRequest request)
     {
+        Debug.WriteLine($"controller name: {request.Name}");
+
         var result = await userService.ChangeImage(id, request.Name, request.Bytes, request.ContentType);
 
         if (!result.IsSuccess)

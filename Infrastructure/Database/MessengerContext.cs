@@ -13,7 +13,7 @@ public class MessengerContext : DbContext
     public MessengerContext(DbContextOptions<MessengerContext> options) : base(options)
     {
     }
-    
+
     public DbSet<User> Users => Set<User>();
     public DbSet<Chat> Chats => Set<Chat>();
     public DbSet<ChatParticipant> ChatParticipants => Set<ChatParticipant>();
@@ -24,10 +24,10 @@ public class MessengerContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        /*modelBuilder.HasPostgresEnum<UserStatus>();
+        modelBuilder.HasPostgresEnum<UserStatus>();
         modelBuilder.HasPostgresEnum<ChatParticipationRole>();
         modelBuilder.HasPostgresEnum<ChatType>();
-        modelBuilder.HasPostgresEnum<ImageContentType>();*/
+        modelBuilder.HasPostgresEnum<ImageContentType>();
 
         modelBuilder.Entity<User>(entity =>
         {
@@ -128,10 +128,11 @@ public class MessengerContext : DbContext
 
         modelBuilder.Entity<Image>(entity =>
         {
+            entity.ToTable("images");
             entity.HasKey(i => i.Id);
             entity.Property(i => i.ContentType)
+                .HasColumnName("content_type")
                 .HasColumnType("image_content_type");
-            //.HasConversion<int>();
             entity.Property(fr => fr.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
         });
 
