@@ -1,4 +1,4 @@
-﻿namespace Client.UI;
+﻿namespace Client.UI.Utils;
 
 public class LoginAnimator(Form form)
 {

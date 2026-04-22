@@ -1,13 +1,18 @@
 ﻿using Application.Services;
 using Contracts.DTO;
 using Contracts.DTO.Auth;
+using Contracts.DTO.Friend.Event;
+using Contracts.DTO.User;
+using HttpServer.Hubs;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace HttpServer.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class AuthController(AuthService authService) : ControllerBase
+public class AuthController(AuthService authService, FriendService friendService, IHubContext<FriendHub> hubContext)
+    : ControllerBase
 {
     [HttpPost("login")]
     public async Task<ActionResult<AuthResponse>> Login([FromBody] AuthRequest request)
@@ -19,6 +24,8 @@ public class AuthController(AuthService authService) : ControllerBase
             {
                 ErrorCode = result.ErrorCode
             });
+
+        await NotifyFriends(result.Value.Id, new FriendStatusEvent { User = result.Value, StatusChanged = true });
 
         return Ok(new AuthResponse
         {
@@ -44,7 +51,7 @@ public class AuthController(AuthService authService) : ControllerBase
     }
 
     [HttpPost("logout")]
-    public async Task<ActionResult<LogoutResponse>> Logout([FromBody] LogoutRequest request)
+    public async Task<ActionResult<UserResponse>> Logout([FromBody] LogoutRequest request)
     {
         var result = await authService.LogoutUser(request.UserId);
 
@@ -54,9 +61,22 @@ public class AuthController(AuthService authService) : ControllerBase
                 ErrorCode = result.ErrorCode
             });
 
-        return Ok(new LogoutResponse
+        await NotifyFriends(result.Value.Id, new FriendStatusEvent { User = result.Value, StatusChanged = true });
+
+
+        return Ok(new UserResponse
         {
-            Success = result.Value
+            User = result.Value
         });
+    }
+
+    private async Task NotifyFriends(int userId, FriendStatusEvent friendEvent)
+    {
+        var friendListResult = await friendService.GetFriendList(userId);
+        if (!friendListResult.IsSuccess || friendListResult.Value == null) return;
+
+        foreach (var friend in friendListResult.Value)
+            await hubContext.Clients.Group($"user:{friend.Id}")
+                .SendAsync("FriendStatus", friendEvent);
     }
 }

@@ -5,7 +5,8 @@ using Client.Filter;
 using Client.Forms.Base;
 using Client.Forms.Dialogs;
 using Client.Services;
-using Client.UI;
+using Client.UI.Factory;
+using Client.UI.Utils;
 using Contracts.DTO.Friend.Event;
 using Guna.UI2.WinForms;
 using static Client.Services.MessageQueueService;
@@ -61,8 +62,9 @@ public partial class ClientForm : BaseForm
         _chatController.MessageUpdated += OnMessageUpdated;
         _chatController.MessageDeleted += OnMessageDeleted;
 
-        _friendController.FriendUpdated += OnFriendUpdated;
         _friendController.FriendAdded += OnFriendAdded;
+        _friendController.FriendUpdated += OnFriendUpdated;
+        _friendController.FriendStatus += OnFriendStatus;
     }
 
     #region Load / Close
@@ -88,6 +90,8 @@ public partial class ClientForm : BaseForm
             _messageQueue.MessageConfirmed += OnMessageConfirmed;
             _messageQueue.Start();
         });
+
+        DoubleBuffered = true;
     }
 
     private void ClientForm_Close(object sender, FormClosingEventArgs e)
@@ -220,11 +224,25 @@ public partial class ClientForm : BaseForm
         if (e.AvatarChanged)
             FriendPanelFactory.UpdateAvatar(panel, e.User.Avatar!);
 
-        if (panel.Tag is UserInfo u)
+        if (panel.Tag is not UserInfo u) return;
+
+        if (e.UsernameChanged) u.Username = e.User.Username;
+        if (e.AvatarChanged) u.Avatar = e.User.Avatar;
+    }
+
+    private void OnFriendStatus(FriendStatusEvent e)
+    {
+        if (InvokeRequired)
         {
-            if (e.UsernameChanged) u.Username = e.User.Username;
-            if (e.AvatarChanged) u.Avatar = e.User.Avatar;
+            BeginInvoke(() => OnFriendStatus(e));
+            return;
         }
+
+        var panel = FindFriendPanel(e.User.Id);
+        if (panel == null) return;
+
+        if (e.StatusChanged)
+            FriendPanelFactory.UpdateStatus(panel, e.User.Status);
     }
 
     #endregion
@@ -235,28 +253,26 @@ public partial class ClientForm : BaseForm
     {
         var panel = FriendPanelFactory.Create(
             friend,
-            (s, _) =>
-            {
-                if (s is not Control c) return;
-
-                c.Cursor = Cursors.Hand;
-                ColorHelper.SetPanelColor((Guna2Panel)(c is Label l ? l.Parent! : c), 35, 46, 60);
-            },
-            (s, _) =>
-            {
-                if (s is Control c) ColorHelper.SetPanelColor((Guna2Panel)(c is Label l ? l.Parent! : c), 23, 33, 43);
-            },
+            (s, _) => OnFriendPanelMove(s, p => ColorHelper.SetPanelColor(p, 35, 46, 60)),
+            (s, _) => OnFriendPanelMove(s, p => ColorHelper.SetPanelColor(p, 23, 33, 43)),
             (s, e) => _ = SafeInvoke(() => HandleFriendClick(s))
         );
         addedFriendPanel.Controls.Add(panel);
+    }
+
+    private static void OnFriendPanelMove(object? s, Action<Guna2Panel>? onPanel = null)
+    {
+        if (s is not Control c) return;
+        c.Cursor = Cursors.Hand;
+        var panel = c as Guna2Panel ?? c.Parent as Guna2Panel;
+        if (panel != null) onPanel?.Invoke(panel);
     }
 
     private async Task HandleFriendClick(object? sender)
     {
         var user = sender switch
         {
-            Guna2Panel p => p.Tag as UserInfo,
-            Label l => l.Tag as UserInfo,
+            Control c => c.Tag as UserInfo,
             _ => null
         };
 
@@ -381,7 +397,6 @@ public partial class ClientForm : BaseForm
         editButton.Click += (_, _) =>
         {
             CloseActiveContextMenu();
-            //menuPanel.Hide();
             _ = SafeInvoke(async () =>
             {
                 var dialog = new InputDialog("Изменить сообщение", message.Text);

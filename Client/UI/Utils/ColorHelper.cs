@@ -1,8 +1,8 @@
 ﻿using Guna.UI2.WinForms;
 
-namespace Client.UI;
+namespace Client.UI.Utils;
 
-public class ColorHelper
+public static class ColorHelper
 {
     public static void SetPanelColor(Guna2Panel panel, int r, int g, int b)
     {

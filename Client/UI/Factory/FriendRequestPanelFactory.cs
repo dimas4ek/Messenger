@@ -1,7 +1,7 @@
 ﻿using Application.DTO;
 using Guna.UI2.WinForms;
 
-namespace Client.UI;
+namespace Client.UI.Factory;
 
 public static class FriendRequestPanelFactory
 {

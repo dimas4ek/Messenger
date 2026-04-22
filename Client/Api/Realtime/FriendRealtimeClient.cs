@@ -13,6 +13,7 @@ public class FriendRealtimeClient(RemoteConfig remoteConfig, IDialogService dial
 
     public event Action<UserResponse>? FriendAdded;
     public event Action<FriendUpdatedEvent>? FriendUpdated;
+    public event Action<FriendStatusEvent>? FriendStatus;
 
     public async Task Connect(int currentUserId)
     {
@@ -27,6 +28,7 @@ public class FriendRealtimeClient(RemoteConfig remoteConfig, IDialogService dial
 
             _connection.On<UserResponse>("FriendAdded", user => FriendAdded?.Invoke(user));
             _connection.On<FriendUpdatedEvent>("FriendUpdated", e => FriendUpdated?.Invoke(e));
+            _connection.On<FriendStatusEvent>("FriendStatus", e => FriendStatus?.Invoke(e));
 
             try
             {

@@ -1,7 +1,7 @@
 ﻿using Client.Controllers;
 using Client.Forms.Base;
 using Client.Services;
-using Client.UI;
+using Client.UI.Utils;
 
 namespace Client.Forms;
 

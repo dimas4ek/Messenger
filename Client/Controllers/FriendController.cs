@@ -26,12 +26,14 @@ public class FriendController
 
         _friendRealtimeClient.FriendAdded += OnFriendAdded;
         _friendRealtimeClient.FriendUpdated += OnFriendUpdated;
+        _friendRealtimeClient.FriendStatus += OnFriendStatus;
     }
 
     public List<UserInfo> Friends { get; private set; } = [];
 
     public event Action<UserInfo>? FriendAdded;
     public event Action<FriendUpdatedEvent>? FriendUpdated;
+    public event Action<FriendStatusEvent>? FriendStatus;
 
     public async Task<List<UserInfo>> LoadFriendsAsync(int userId)
     {
@@ -117,5 +119,10 @@ public class FriendController
     private void OnFriendUpdated(FriendUpdatedEvent e)
     {
         FriendUpdated?.Invoke(e);
+    }
+
+    private void OnFriendStatus(FriendStatusEvent e)
+    {
+        FriendStatus?.Invoke(e);
     }
 }

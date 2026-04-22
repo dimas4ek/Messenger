@@ -17,7 +17,7 @@ public class ProfileSettingsDialog : Form
     private readonly Action<UserInfo> _onUserUpdated;
     private readonly UserApiClient _userApiClient;
 
-    private Guna2CirclePictureBox _avatar;
+    private Guna2CirclePictureBox? _avatar;
     private Label? _passwordValueLabel;
     private Label? _usernameValueLabel;
 
@@ -46,7 +46,7 @@ public class ProfileSettingsDialog : Form
         {
             Size = new Size(100, 100),
             Location = new Point((Width - 100) / 2 - 10, 20),
-            SizeMode = PictureBoxSizeMode.Zoom,
+            SizeMode = PictureBoxSizeMode.StretchImage,
             Image = GetAvatar(),
             BackColor = Color.Transparent
         };
@@ -199,8 +199,8 @@ public class ProfileSettingsDialog : Form
             return;
         }
 
-        _avatar.Image = Image.FromFile(filePath);
-        _avatar.SizeMode = PictureBoxSizeMode.Zoom;
+        _avatar?.Image = Image.FromFile(filePath);
+        _avatar?.SizeMode = PictureBoxSizeMode.Zoom;
         _currentUser.Avatar = resultValue.User.Avatar;
     }
 

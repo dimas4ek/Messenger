@@ -1,8 +1,10 @@
 ﻿using Application.DTO;
 using Client.Properties;
+using Client.UI.Utils;
+using Domain.Enums;
 using Guna.UI2.WinForms;
 
-namespace Client.UI;
+namespace Client.UI.Factory;
 
 public static class FriendPanelFactory
 {
@@ -17,20 +19,30 @@ public static class FriendPanelFactory
         friendPanel.BackColor = Color.FromArgb(23, 33, 43);
         friendPanel.Dock = DockStyle.Top;
         friendPanel.Tag = friend;
-        friendPanel.MouseMove += onMove;
-        friendPanel.MouseLeave += onLeave;
-        friendPanel.MouseClick += onClick;
 
         var avatar = new Guna2CirclePictureBox
         {
             Size = new Size(50, 50),
             Name = "avatarImage",
             Location = new Point(6, 10),
-            SizeMode = PictureBoxSizeMode.Zoom,
+            SizeMode = PictureBoxSizeMode.StretchImage,
             Image = GetAvatar(friend),
-            BackColor = Color.Transparent
+            BackColor = Color.Transparent,
+            Tag = friend
         };
         friendPanel.Controls.Add(avatar);
+
+        var statusDot = new CirclePanel
+        {
+            Size = new Size(14, 14),
+            Name = "statusDot",
+            Location = new Point(avatar.Right - 14, avatar.Bottom - 14),
+            BackColor = friend.Status == UserStatus.Online ? Color.Green : Color.Gray,
+            Tag = friend
+        };
+
+        friendPanel.Controls.Add(statusDot);
+        statusDot.BringToFront();
 
         var friendLabel = new Label();
         friendLabel.Name = "friendLabel";
@@ -40,10 +52,14 @@ public static class FriendPanelFactory
         friendLabel.Font = new Font(FontFamily.GenericSansSerif, 12);
         friendLabel.BackColor = Color.FromArgb(23, 33, 43);
         friendLabel.ForeColor = Color.White;
-        friendLabel.MouseMove += onMove;
-        friendLabel.MouseLeave += onLeave;
-        friendLabel.MouseClick += onClick;
         friendLabel.Tag = friend;
+
+        friendPanel.MouseMove += onMove;
+        friendPanel.MouseLeave += onLeave;
+        friendPanel.MouseClick += onClick;
+
+        PropagateMouseEvents(avatar, onMove, onLeave, onClick);
+        PropagateMouseEvents(friendLabel, onMove, onLeave, onClick);
 
         return friendPanel;
     }
@@ -60,11 +76,25 @@ public static class FriendPanelFactory
             pictureBox.Image = Image.FromStream(new MemoryStream(avatar.Data));
     }
 
+    public static void UpdateStatus(Guna2Panel panel, UserStatus status)
+    {
+        if (panel.Controls.Find("statusDot", false).FirstOrDefault() is CirclePanel circlePanel)
+            circlePanel.BackColor = status == UserStatus.Online ? Color.Green : Color.Gray;
+    }
+
     private static Image GetAvatar(UserInfo friend)
     {
         if (friend.Avatar?.Data == null) return Resources.DefaultAvatar;
 
         using var ms = new MemoryStream(friend.Avatar.Data);
         return Image.FromStream(ms);
+    }
+
+    private static void PropagateMouseEvents(Control control, MouseEventHandler onMove, EventHandler onLeave,
+        MouseEventHandler onClick)
+    {
+        control.MouseMove += onMove;
+        control.MouseLeave += onLeave;
+        control.MouseClick += onClick;
     }
 }

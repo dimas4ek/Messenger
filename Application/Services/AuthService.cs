@@ -64,22 +64,24 @@ public class AuthService(IUserRepository userRepository, IAppMapper mapper)
         }
     }
 
-    public async Task<Result<bool>> LogoutUser(int userId)
+    public async Task<Result<UserInfo>> LogoutUser(int userId)
     {
         try
         {
             var user = await userRepository.GetById(userId);
 
-            if (user == null) return Result<bool>.Failure(ErrorCode.UserNotFound);
+            if (user == null) return Result<UserInfo>.Failure(ErrorCode.UserNotFound);
 
             user.Status = UserStatus.Offline;
             await userRepository.Save();
 
-            return Result<bool>.Success(true);
+            var userDto = MapToUserInfo(user);
+
+            return Result<UserInfo>.Success(userDto);
         }
         catch
         {
-            return Result<bool>.Failure(ErrorCode.DatabaseError);
+            return Result<UserInfo>.Failure(ErrorCode.DatabaseError);
         }
     }
 
