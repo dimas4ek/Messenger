@@ -112,6 +112,7 @@ public class Program
         services.AddScoped<FriendService>();
         services.AddScoped<ChatService>();
         services.AddScoped<UserService>();
+        services.AddScoped<ImageService>();
 
         //services.AddScoped<UserContext>();
     }

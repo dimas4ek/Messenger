@@ -1,7 +1,7 @@
 ﻿using Application.Services;
 using Contracts.DTO;
 using Contracts.DTO.Friend;
-using Contracts.DTO.User;
+using Contracts.DTO.Friend.Event;
 using HttpServer.Hubs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -10,25 +10,9 @@ namespace HttpServer.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class FriendController(FriendService friendService, IHubContext<FriendHub> hubContext) : ControllerBase
+public class FriendController(FriendService friendService, ChatService chatService, IHubContext<FriendHub> hubContext)
+    : ControllerBase
 {
-    [HttpPost("add")]
-    public async Task<ActionResult<FriendResponse>> Add([FromBody] AddFriendRequest request)
-    {
-        var result = await friendService.AddFriend(request.UserId, request.FriendId);
-
-        if (!result.IsSuccess)
-            return BadRequest(new ErrorResponse
-            {
-                ErrorCode = result.ErrorCode
-            });
-
-        return Ok(new FriendResponse
-        {
-            Friend = result.Value
-        });
-    }
-
     [HttpGet("list")]
     public async Task<ActionResult<FriendListResponse>> GetFriendList([FromQuery(Name = "userId")] int userId)
     {
@@ -101,22 +85,51 @@ public class FriendController(FriendService friendService, IHubContext<FriendHub
     [HttpPost("requests/{requestId:int}/accept")]
     public async Task<ActionResult<FriendRequestActionResponse>> AcceptFriendRequest(int requestId)
     {
-        var result = await friendService.AcceptFriendRequest(requestId);
+        var friendRequestResult = await friendService.AcceptFriendRequest(requestId);
 
-        if (!result.IsSuccess)
+        if (!friendRequestResult.IsSuccess)
             return BadRequest(new ErrorResponse
             {
-                ErrorCode = result.ErrorCode
+                ErrorCode = friendRequestResult.ErrorCode
             });
 
-        var friendRequest = result.Value;
+        var friendRequest = friendRequestResult.Value;
+
+        var createdChatResult = await chatService.CreatePrivateChat(friendRequest.Receiver.Id, friendRequest.Sender.Id);
+
+        if (!createdChatResult.IsSuccess)
+            return BadRequest(new ErrorResponse
+            {
+                ErrorCode = createdChatResult.ErrorCode
+            });
+
+        var chatId = createdChatResult.Value.Id;
+
+        var chatForFriendResult = await chatService.LoadChat(chatId, friendRequest.Sender.Id);
+        if (!chatForFriendResult.IsSuccess)
+            return BadRequest(new ErrorResponse
+            {
+                ErrorCode = chatForFriendResult.ErrorCode
+            });
+
+        var chatForMeResult = await chatService.LoadChat(chatId, friendRequest.Receiver.Id);
+        if (!chatForMeResult.IsSuccess)
+            return BadRequest(new ErrorResponse
+            {
+                ErrorCode = chatForMeResult.ErrorCode
+            });
 
         await hubContext.Clients.Group($"user:{friendRequest.Sender.Id}")
-            .SendAsync("FriendAdded", new UserResponse { User = friendRequest.Receiver });
+            .SendAsync("FriendAdded",
+                new FriendAddedEvent
+                {
+                    Friend = friendRequest.Receiver, FriendChat = chatForFriendResult.Value
+                });
 
         return Ok(new FriendRequestActionResponse
         {
-            AddedFriend = friendRequest.Sender
+            Friend = friendRequest.Sender,
+            CreatedChat = chatForMeResult.Value
         });
     }
 

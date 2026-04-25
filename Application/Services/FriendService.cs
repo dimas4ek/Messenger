@@ -107,9 +107,6 @@ public class FriendService(
             var request = await friendRequestRepository.GetByIdWithUsers(requestId);
             if (request == null) return Result<FriendRequestInfo>.Failure(ErrorCode.FriendRequestNotFound);
 
-            var result = await AddFriend(request.SenderId, request.ReceiverId);
-            if (!result.IsSuccess || result.Value == null) return Result<FriendRequestInfo>.Failure(result.ErrorCode);
-
             friendRequestRepository.Remove(request);
             await friendRequestRepository.Save();
 

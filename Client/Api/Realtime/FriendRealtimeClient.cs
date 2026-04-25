@@ -1,7 +1,6 @@
 ﻿using Client.Config;
 using Client.Services;
 using Contracts.DTO.Friend.Event;
-using Contracts.DTO.User;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Client;
 
@@ -11,7 +10,7 @@ public class FriendRealtimeClient(RemoteConfig remoteConfig, IDialogService dial
 {
     private HubConnection? _connection;
 
-    public event Action<UserResponse>? FriendAdded;
+    public event Action<FriendAddedEvent>? FriendAdded;
     public event Action<FriendUpdatedEvent>? FriendUpdated;
     public event Action<FriendStatusEvent>? FriendStatus;
 
@@ -26,7 +25,7 @@ public class FriendRealtimeClient(RemoteConfig remoteConfig, IDialogService dial
                 .WithAutomaticReconnect()
                 .Build();
 
-            _connection.On<UserResponse>("FriendAdded", user => FriendAdded?.Invoke(user));
+            _connection.On<FriendAddedEvent>("FriendAdded", e => FriendAdded?.Invoke(e));
             _connection.On<FriendUpdatedEvent>("FriendUpdated", e => FriendUpdated?.Invoke(e));
             _connection.On<FriendStatusEvent>("FriendStatus", e => FriendStatus?.Invoke(e));
 

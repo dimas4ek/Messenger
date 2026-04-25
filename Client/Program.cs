@@ -92,6 +92,7 @@ internal static class Program
         services.AddHttpClient<AuthApiClient>(client => client.BaseAddress = new Uri(apiBaseUrl));
         services.AddHttpClient<FriendApiClient>(client => client.BaseAddress = new Uri(apiBaseUrl));
         services.AddHttpClient<UserApiClient>(client => client.BaseAddress = new Uri(apiBaseUrl));
+        services.AddHttpClient<UtilsApiClient>(client => client.BaseAddress = new Uri(apiBaseUrl));
         services.AddHttpClient<ChatApiClient>(client =>
             {
                 client.BaseAddress = new Uri(apiBaseUrl);

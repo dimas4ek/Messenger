@@ -5,5 +5,6 @@ namespace Contracts.DTO.Friend;
 
 public class FriendRequestActionResponse
 {
-    [JsonPropertyName("addedFriend")] public UserInfo AddedFriend { get; set; }
+    [JsonPropertyName("friend")] public UserInfo Friend { get; set; }
+    [JsonPropertyName("createdChat")] public ChatInfo CreatedChat { get; set; }
 }

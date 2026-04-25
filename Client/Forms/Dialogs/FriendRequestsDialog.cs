@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Application.DTO;
+﻿using Application.DTO;
 using Client.Api.Clients;
 using Client.Forms.Base;
 using Client.Services;
@@ -17,17 +16,19 @@ public class FriendRequestsDialog : BaseForm
     private readonly IDialogService _dialogService;
     private readonly FriendApiClient _friendApiClient;
 
-    private readonly Action<UserInfo> _onFriendAdded;
+    private readonly List<UserInfo> _friends;
 
-    public FriendRequestsDialog(UserInfo currentUser, Action<UserInfo> onFriendAdded)
+    private readonly Action<ChatInfo> _onFriendAdded;
+
+    public FriendRequestsDialog(UserInfo currentUser, List<UserInfo> friends, Action<ChatInfo> onFriendAdded)
     {
         _currentUser = currentUser;
+        _friends = friends;
         _onFriendAdded = onFriendAdded;
 
         _dialogService = App.Services.GetRequiredService<IDialogService>();
         _friendApiClient = App.Services.GetRequiredService<FriendApiClient>();
 
-        Debug.WriteLine("FriendRequestsDialog");
         InitializeComponent();
     }
 
@@ -81,8 +82,11 @@ public class FriendRequestsDialog : BaseForm
             return;
         }
 
-        if (accept && result.Value?.AddedFriend != null)
-            _onFriendAdded(result.Value.AddedFriend);
+        if (accept && result.Value?.CreatedChat != null)
+        {
+            _onFriendAdded(result.Value.CreatedChat);
+            _friends.Add(result.Value.Friend);
+        }
 
         RemoveRequestPanel(request);
     }

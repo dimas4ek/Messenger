@@ -4,7 +4,6 @@ using Client.Api.Realtime;
 using Client.Services;
 using Client.Utils;
 using Contracts.DTO.Friend.Event;
-using Contracts.DTO.User;
 
 namespace Client.Controllers;
 
@@ -31,21 +30,20 @@ public class FriendController
 
     public List<UserInfo> Friends { get; private set; } = [];
 
-    public event Action<UserInfo>? FriendAdded;
+    public event Action<FriendAddedEvent>? FriendAdded;
     public event Action<FriendUpdatedEvent>? FriendUpdated;
     public event Action<FriendStatusEvent>? FriendStatus;
 
-    public async Task<List<UserInfo>> LoadFriendsAsync(int userId)
+    public async Task LoadFriends(int userId)
     {
         var result = await _friendApiClient.GetFriendList(userId);
         if (!result.IsSuccess || result.Value == null)
         {
             _dialogService.ShowError(result.ToMessage());
-            return [];
+            return;
         }
 
         Friends = result.Value.Friends;
-        return Friends;
     }
 
     public async Task SendFriendRequest(int currentUserId, string currentUsername, string friendName)
@@ -90,17 +88,6 @@ public class FriendController
         _dialogService.ShowMessage($"Friend request sent to {friendName}");
     }
 
-    public List<UserInfo> Search(string query, string currentUsername)
-    {
-        if (string.IsNullOrWhiteSpace(query)) return Friends;
-
-        return Friends
-            .Where(f =>
-                f.Username != currentUsername &&
-                f.Username.Contains(query, StringComparison.OrdinalIgnoreCase))
-            .ToList();
-    }
-
     public async Task ConnectAsync(int userId)
     {
         await _friendRealtimeClient.Connect(userId);
@@ -111,9 +98,9 @@ public class FriendController
         await _friendRealtimeClient.Disconnect();
     }
 
-    private void OnFriendAdded(UserResponse r)
+    private void OnFriendAdded(FriendAddedEvent e)
     {
-        FriendAdded?.Invoke(r.User);
+        FriendAdded?.Invoke(e);
     }
 
     private void OnFriendUpdated(FriendUpdatedEvent e)

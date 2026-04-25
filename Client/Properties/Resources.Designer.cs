@@ -62,9 +62,9 @@ namespace Client.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap btnProfileImage {
+        internal static System.Drawing.Bitmap CreateGroupChatImage {
             get {
-                object obj = ResourceManager.GetObject("btnProfileImage", resourceCulture);
+                object obj = ResourceManager.GetObject("CreateGroupChatImage", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -72,9 +72,9 @@ namespace Client.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap DefaultAvatar {
+        internal static System.Drawing.Bitmap DefaultAvatarImage {
             get {
-                object obj = ResourceManager.GetObject("DefaultAvatar", resourceCulture);
+                object obj = ResourceManager.GetObject("DefaultAvatarImage", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -82,9 +82,29 @@ namespace Client.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap rayan {
+        internal static System.Drawing.Bitmap FriendRequestsImage {
             get {
-                object obj = ResourceManager.GetObject("rayan", resourceCulture);
+                object obj = ResourceManager.GetObject("FriendRequestsImage", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap ProfileButtonImage {
+            get {
+                object obj = ResourceManager.GetObject("ProfileButtonImage", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap RayanGif {
+            get {
+                object obj = ResourceManager.GetObject("RayanGif", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

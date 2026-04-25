@@ -1,6 +1,7 @@
 ﻿using Client.Config;
 using Client.Services;
 using Contracts.DTO.Chat;
+using Contracts.DTO.Chat.Event;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Client;
 
@@ -9,6 +10,8 @@ namespace Client.Api.Realtime;
 public class ChatRealtimeClient(RemoteConfig remoteConfig, IDialogService dialogService)
 {
     private HubConnection? _connection;
+
+    public event Action<GroupChatCreatedEvent>? GroupChatCreated;
 
     public event Action<MessageResponse>? MessageReceived;
     public event Action<MessageResponse>? MessageUpdated;
@@ -24,6 +27,8 @@ public class ChatRealtimeClient(RemoteConfig remoteConfig, IDialogService dialog
                 .WithUrl(hubUrl, options => { options.Transports = HttpTransportType.WebSockets; })
                 .WithAutomaticReconnect()
                 .Build();
+
+            _connection.On<GroupChatCreatedEvent>("GroupChatCreated", e => GroupChatCreated?.Invoke(e));
 
             _connection.On<MessageResponse>("ReceiveMessage", message => MessageReceived?.Invoke(message));
             _connection.On<MessageResponse>("EditMessage", message => MessageUpdated?.Invoke(message));

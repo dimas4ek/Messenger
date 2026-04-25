@@ -13,10 +13,13 @@ public class Chat
 
     [Column("name")] [MaxLength(255)] public string? Name { get; set; } // null для приватных чатов
 
+    [Column("image_id")] public int? ImageId { get; set; }
+
     [Column("created_at")] public DateTime CreatedAt { get; set; }
 
     [Column("updated_at")] public DateTime UpdatedAt { get; set; }
 
+    public Image? Image { get; set; }
     public ICollection<ChatParticipant> Participants { get; set; } = new List<ChatParticipant>();
     public ICollection<Message> Messages { get; set; } = new List<Message>();
 }

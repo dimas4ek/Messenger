@@ -9,7 +9,7 @@ public static class ProfilePanelFactory
 {
     public static Guna2Panel Create(UserInfo currentUser, int width, int height, Action onClose,
         EventHandler onAddFriend,
-        Action<UserInfo> onUserUpdated, Action<UserInfo> onFriendAdded)
+        Action<UserInfo> onUserUpdated)
     {
         var profilePanel = new Guna2Panel
         {
@@ -36,13 +36,13 @@ public static class ProfilePanelFactory
         {
             Parent = profilePanel,
             ImageSize = new Size(20, 20),
-            Image = (Image)Resources.ResourceManager.GetObject("btnProfileImage")!,
+            Image = (Image)Resources.ResourceManager.GetObject("ProfileButtonImage")!,
             ImageOffset = new Point(0, 0),
             ImageRotate = 0F,
-            Location = new Point(23, 17),
+            Location = new Point(0, 0),
             Margin = new Padding(4, 3, 4, 3),
             Name = "btnOpenProfile",
-            Size = new Size(40, 40),
+            Size = new Size(89, 67),
             Cursor = Cursors.Hand,
             Anchor = AnchorStyles.Top | AnchorStyles.Left
         };
@@ -65,34 +65,9 @@ public static class ProfilePanelFactory
 
         addFriendButton.Click += onAddFriend;
 
-        profilePanel.Controls.Add(FriendRequestsButton(width, currentUser, onFriendAdded));
         profilePanel.Controls.Add(SettingsButton(width, currentUser, onUserUpdated));
 
         return profilePanel;
-    }
-
-    private static Guna2Button FriendRequestsButton(int width, UserInfo currentUser, Action<UserInfo> onFriendAdded)
-    {
-        var friendRequestsButton = new Guna2Button
-        {
-            Size = new Size(width, 50),
-            FillColor = Color.FromArgb(23, 33, 43),
-            HoverState = { FillColor = Color.FromArgb(35, 46, 60) },
-            Dock = DockStyle.Bottom,
-            Visible = true,
-            Text = "Friend Requests",
-            Font = new Font(FontFamily.GenericSansSerif, 15.75f),
-            ForeColor = Color.White,
-            TextAlign = HorizontalAlignment.Center,
-            Cursor = Cursors.Hand
-        };
-        friendRequestsButton.Click += (_, _) =>
-        {
-            var dialog = new FriendRequestsDialog(currentUser, onFriendAdded);
-            dialog.ShowDialog();
-        };
-
-        return friendRequestsButton;
     }
 
     private static Guna2Button SettingsButton(int width, UserInfo currentUser, Action<UserInfo> onUserUpdated)

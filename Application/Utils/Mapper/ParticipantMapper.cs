@@ -3,7 +3,7 @@ using Domain.Entities;
 
 namespace Application.Utils.Mapper;
 
-public class ParticipantMapper : IMapper<ChatParticipant, ChatParticipantInfo>
+public class ParticipantMapper(IAppMapper mapper) : IMapper<ChatParticipant, ChatParticipantInfo>
 {
     public ChatParticipantInfo Map(ChatParticipant participant)
     {
@@ -12,7 +12,8 @@ public class ParticipantMapper : IMapper<ChatParticipant, ChatParticipantInfo>
             ChatId = participant.ChatId,
             UserId = participant.ParticipantId,
             Role = participant.Role,
-            JoinedAt = participant.JoinedAt
+            JoinedAt = participant.JoinedAt,
+            User = mapper.Map<User, UserInfo>(participant.Participant)
         };
     }
 }

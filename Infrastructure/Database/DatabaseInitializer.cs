@@ -61,8 +61,8 @@ public static class DatabaseInitializer
                                username   varchar(255) not null unique,
                                password   varchar(255) not null,
                                status     user_status              default 'offline',
-                               created_at timestamp with time zone default current_timestamp,
-                               avatar_id  int          references images (id) on delete set null
+                               avatar_id  int          references images (id) on delete set null,
+                               created_at timestamp with time zone default current_timestamp
                            );
 
                            create table if not exists chats
@@ -70,6 +70,7 @@ public static class DatabaseInitializer
                                id         int primary key generated always as identity,
                                type       chat_type                default 'private',
                                name       varchar(255) null,
+                               image_id  int          references images (id) on delete set null,
                                created_at timestamp with time zone default current_timestamp,
                                updated_at timestamp with time zone default current_timestamp
                            );

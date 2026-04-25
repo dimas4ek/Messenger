@@ -7,7 +7,9 @@ using Client.Forms.Dialogs;
 using Client.Services;
 using Client.UI.Factory;
 using Client.UI.Utils;
+using Contracts.DTO.Chat.Event;
 using Contracts.DTO.Friend.Event;
+using Domain.Enums;
 using Guna.UI2.WinForms;
 using static Client.Services.MessageQueueService;
 
@@ -23,9 +25,9 @@ public partial class ClientForm : BaseForm
 
     private Guna2Panel? _activeMenuPanel;
     private Guna2TextBox _addFriendTxtBox = null!;
+    private ChatInfo? _chat;
 
     private FlowLayoutPanel _chatPanel = null!;
-    private UserInfo? _companion;
 
     private UserInfo _currentUser = null!;
 
@@ -57,6 +59,8 @@ public partial class ClientForm : BaseForm
 
         Load += ClientForm_Load;
 
+        _chatController.GroupChatCreated += OnGroupChatCreated;
+
         _chatController.MessageLoaded += OnMessageLoaded;
         _chatController.MessageReceived += OnMessageReceived;
         _chatController.MessageUpdated += OnMessageUpdated;
@@ -74,6 +78,7 @@ public partial class ClientForm : BaseForm
         _currentUser = _userContext.CurrentUser ?? throw new Exception("Пользователь не авторизован");
 
         DoImportantThings();
+        SetupButtons(btnOpenProfile, btnFriendRequests, btnCreateGroupChat);
         CreateProfilePanel();
 
         _ = SafeInvoke(async () =>
@@ -81,9 +86,11 @@ public partial class ClientForm : BaseForm
             await _chatController.ConnectAsync(_currentUser.Id);
             await _friendController.ConnectAsync(_currentUser.Id);
 
-            var friends = await _friendController.LoadFriendsAsync(_currentUser.Id);
-            foreach (var friend in friends)
-                AddFriendPanel(friend);
+            await _friendController.LoadFriends(_currentUser.Id);
+            await _chatController.LoadChats(_currentUser.Id);
+
+            foreach (var chat in _chatController.Chats)
+                AddChatPanel(chat);
             lblLoadingChats.Visible = false;
 
             _messageQueue = new MessageQueueService(_chatApiClient, DialogService);
@@ -113,16 +120,38 @@ public partial class ClientForm : BaseForm
     private void DoImportantThings()
     {
         availableServers.Visible = false;
-        companionPanel.Visible = false;
+        chatTopPanel.Visible = false;
         txtBoxMessage.Visible = false;
         txtBoxPanel.Visible = false;
         btnSndMsg.Visible = false;
         btnUpdServers.Visible = false;
     }
 
+    private void SetupButtons(params Guna2ImageButton[] buttons)
+    {
+        foreach (var button in buttons)
+        {
+            button.HoverState.ImageSize = button.ImageSize;
+            button.PressedState.ImageSize = button.ImageSize;
+            button.MouseMove += (_, _) => Cursor = Cursors.Hand;
+            button.MouseLeave += (_, _) => Cursor = Cursors.Default;
+        }
+    }
+
     #endregion
 
     #region Chat Events
+
+    private void OnGroupChatCreated(GroupChatCreatedEvent e)
+    {
+        if (InvokeRequired)
+        {
+            BeginInvoke(() => OnGroupChatCreated(e));
+            return;
+        }
+
+        AddChatPanel(e.Chat);
+    }
 
     private void OnMessageLoaded(MessageInfo message)
     {
@@ -196,15 +225,16 @@ public partial class ClientForm : BaseForm
 
     #region Friend Events
 
-    private void OnFriendAdded(UserInfo user)
+    private void OnFriendAdded(FriendAddedEvent e)
     {
         if (InvokeRequired)
         {
-            BeginInvoke(() => OnFriendAdded(user));
+            BeginInvoke(() => OnFriendAdded(e));
             return;
         }
 
-        AddFriendPanel(user);
+        _friendController.Friends.Add(e.Friend);
+        AddChatPanel(e.FriendChat);
     }
 
     private void OnFriendUpdated(FriendUpdatedEvent e)
@@ -215,19 +245,25 @@ public partial class ClientForm : BaseForm
             return;
         }
 
-        var panel = FindFriendPanel(e.User.Id);
+        var user = e.User;
+
+        var friend = _friendController.Friends.FirstOrDefault(f => f.Id == user.Id);
+        if (friend == null) return;
+
+        if (e.UsernameChanged) friend.Username = user.Username;
+        if (e.AvatarChanged) friend.Avatar = user.Avatar;
+
+
+        var panel = FindPrivateChatPanel(user.Id);
         if (panel == null) return;
 
-        if (e.UsernameChanged)
-            FriendPanelFactory.UpdateText(panel, e.User.Username);
+        if (e.UsernameChanged) ChatPanelFactory.UpdateText(panel, friend.Username);
+        if (e.AvatarChanged) ChatPanelFactory.UpdateAvatar(panel, friend.Avatar!);
 
-        if (e.AvatarChanged)
-            FriendPanelFactory.UpdateAvatar(panel, e.User.Avatar!);
+        if (panel.Tag is not ChatInfo chat) return;
 
-        if (panel.Tag is not UserInfo u) return;
-
-        if (e.UsernameChanged) u.Username = e.User.Username;
-        if (e.AvatarChanged) u.Avatar = e.User.Avatar;
+        if (e.UsernameChanged) chat.Name = friend.Username;
+        if (e.AvatarChanged) chat.Image = friend.Avatar;
     }
 
     private void OnFriendStatus(FriendStatusEvent e)
@@ -238,18 +274,18 @@ public partial class ClientForm : BaseForm
             return;
         }
 
-        var panel = FindFriendPanel(e.User.Id);
+        var panel = FindPrivateChatPanel(e.User.Id);
         if (panel == null) return;
 
         if (e.StatusChanged)
-            FriendPanelFactory.UpdateStatus(panel, e.User.Status);
+            ChatPanelFactory.UpdateStatus(panel, e.User.Status);
     }
 
     #endregion
 
     #region Friends
 
-    private void AddFriendPanel(UserInfo friend)
+    /*private void AddFriendPanel(UserInfo friend)
     {
         var panel = FriendPanelFactory.Create(
             friend,
@@ -258,7 +294,7 @@ public partial class ClientForm : BaseForm
             (s, e) => _ = SafeInvoke(() => HandleFriendClick(s))
         );
         addedFriendPanel.Controls.Add(panel);
-    }
+    }*/
 
     private static void OnFriendPanelMove(object? s, Action<Guna2Panel>? onPanel = null)
     {
@@ -268,7 +304,7 @@ public partial class ClientForm : BaseForm
         if (panel != null) onPanel?.Invoke(panel);
     }
 
-    private async Task HandleFriendClick(object? sender)
+    /*private async Task HandleFriendClick(object? sender)
     {
         var user = sender switch
         {
@@ -279,11 +315,13 @@ public partial class ClientForm : BaseForm
         if (user == null || _companion?.Id == user.Id) return;
 
         _companion = user;
-        lblCompanionUsername.Text = _companion.Username;
+        lblLoadedChat.Text = _companion.Username;
         chatPanelGuna.Controls.Clear();
 
+        _currentChatType = ChatType.Private;
+
         await LoadDialogAsync();
-    }
+    }*/
 
     private void AddFriendTxtBox_KeyDown(object? sender, KeyEventArgs e)
     {
@@ -299,20 +337,61 @@ public partial class ClientForm : BaseForm
     {
         _ = SafeInvoke(() =>
         {
-            var friends = string.IsNullOrWhiteSpace(txtBoxSearch.Text)
-                ? _friendController.Friends
-                : _friendController.Search(txtBoxSearch.Text, _currentUser.Username);
+            var chats = string.IsNullOrWhiteSpace(txtBoxSearch.Text)
+                ? _chatController.Chats
+                : _chatController.Search(txtBoxSearch.Text);
 
-            addedFriendPanel.Controls.Clear();
-            foreach (var friend in friends)
-                AddFriendPanel(friend);
+            chatsPanel.Controls.Clear();
+            foreach (var chat in chats)
+                AddChatPanel(chat);
             return Task.CompletedTask;
         });
+    }
+
+    private void BtnFriendRequestsClick(object sender, EventArgs e)
+    {
+        var dialog = new FriendRequestsDialog(_currentUser, _friendController.Friends, AddChatPanel);
+        dialog.ShowDialog();
     }
 
     #endregion
 
     #region Chat
+
+    private void BtnCreateGroupChat_Click(object sender, EventArgs e)
+    {
+        var dialog = new CreateGroupChatDialog(_currentUser, _friendController.Friends, AddChatPanel);
+        dialog.ShowDialog();
+    }
+
+    private void AddChatPanel(ChatInfo chat)
+    {
+        var panel = ChatPanelFactory.Create(
+            chat,
+            _currentUser.Id,
+            (s, _) => OnFriendPanelMove(s, p => ColorHelper.SetPanelColor(p, 35, 46, 60)),
+            (s, _) => OnFriendPanelMove(s, p => ColorHelper.SetPanelColor(p, 23, 33, 43)),
+            (s, e) => _ = SafeInvoke(() => HandleChatClick(s))
+        );
+        chatsPanel.Controls.Add(panel);
+    }
+
+    private async Task HandleChatClick(object? sender)
+    {
+        var chat = sender switch
+        {
+            Control c => c.Tag as ChatInfo,
+            _ => null
+        };
+
+        if (chat == null || _chat?.Id == chat.Id) return;
+
+        _chat = chat;
+        lblLoadedChat.Text = _chat.Name;
+        chatPanelGuna.Controls.Clear();
+
+        await LoadDialogAsync();
+    }
 
     private async Task LoadDialogAsync()
     {
@@ -325,14 +404,29 @@ public partial class ClientForm : BaseForm
             AutoScroll = true
         };
 
-        companionPanel.Visible = true;
+        chatTopPanel.Visible = true;
         btnSndMsg.Visible = true;
         txtBoxMessage.Visible = true;
         txtBoxPanel.Visible = true;
 
-        if (_companion == null) return;
+        if (_chat == null) return;
+        await _chatController.LoadChat(_currentUser.Id, _chat.Id);
 
-        await _chatController.LoadDialogAsync(_currentUser.Id, _companion);
+        /*switch (_currentChatType)
+        {
+            case ChatType.Group when _chat == null:
+                return;
+            case ChatType.Group:
+                await _chatController.LoadChat(_currentUser.Id, _chat.Id, ChatType.Group);
+                break;
+            case ChatType.Private when _companion == null:
+                return;
+            case ChatType.Private:
+                await _chatController.LoadChat(_currentUser.Id, _companion.Id, ChatType.Private);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }*/
     }
 
     private void LoadMessageUI(MessageInfo message)
@@ -403,7 +497,7 @@ public partial class ClientForm : BaseForm
                 await dialog.ShowDialogAsync();
                 if (dialog.Result == null) return;
 
-                await _chatController.EditAsync(message, dialog.Result);
+                await _chatController.EditMessage(message, dialog.Result);
                 var panel = FindMessagePanel(message.Id);
                 if (panel != null) MessagePanelFactory.UpdateText(panel, dialog.Result);
             });
@@ -414,7 +508,7 @@ public partial class ClientForm : BaseForm
             CloseActiveContextMenu();
             _ = SafeInvoke(async () =>
             {
-                await _chatController.DeleteAsync(message);
+                await _chatController.DeleteMessage(message);
                 var panel = FindMessagePanel(message.Id);
                 if (panel != null) _chatPanel.Controls.Remove(panel);
             });
@@ -464,7 +558,17 @@ public partial class ClientForm : BaseForm
     private async Task EnqueueMessageAsync()
     {
         var text = txtBoxMessage.Text.Trim();
-        if (string.IsNullOrWhiteSpace(text) || _companion == null || _chatController.CurrentChat == null) return;
+
+        if (string.IsNullOrWhiteSpace(text)) return;
+        if (_chatController.CurrentChat == null) return;
+        /*switch (_currentChatType)
+        {
+            case ChatType.Group when _chat == null:
+            case ChatType.Private when _companion == null:
+                return;
+        }*/
+
+        if (_chat == null) return;
 
         txtBoxMessage.Clear();
 
@@ -491,11 +595,6 @@ public partial class ClientForm : BaseForm
 
     private void CreateProfilePanel()
     {
-        btnOpenProfile.HoverState.ImageSize = btnOpenProfile.ImageSize;
-        btnOpenProfile.PressedState.ImageSize = btnOpenProfile.ImageSize;
-        btnOpenProfile.MouseMove += (_, _) => Cursor = Cursors.Hand;
-        btnOpenProfile.MouseLeave += (_, _) => Cursor = Cursors.Default;
-
         _profilePanel = ProfilePanelFactory.Create(
             _currentUser,
             mainPanel.Width + leftPanel.Width,
@@ -507,8 +606,7 @@ public partial class ClientForm : BaseForm
                 _currentUser = updatedUser;
 
                 RefreshProfilePanel();
-            },
-            AddFriendPanel
+            }
         );
 
         Controls.Add(_profilePanel);
@@ -557,7 +655,7 @@ public partial class ClientForm : BaseForm
         _isProfileOpen = true;
         _profilePanel.Visible = true;
         leftPanel.Visible = false;
-        addedFriendPanel.Visible = false;
+        chatsPanel.Visible = false;
         mainPanel.Visible = false;
         searchPanel.Visible = false;
         txtBoxSearch.Visible = false;
@@ -569,7 +667,7 @@ public partial class ClientForm : BaseForm
         _isProfileOpen = false;
         _profilePanel.Visible = false;
         leftPanel.Visible = true;
-        addedFriendPanel.Visible = true;
+        chatsPanel.Visible = true;
         mainPanel.Visible = true;
         searchPanel.Visible = true;
         txtBoxSearch.Visible = true;
@@ -586,11 +684,12 @@ public partial class ClientForm : BaseForm
             .FirstOrDefault(p => p.Tag is MessageInfo m && m.Id == messageId);
     }
 
-    private Guna2Panel? FindFriendPanel(int friendId)
+    private Guna2Panel? FindPrivateChatPanel(int friendId)
     {
-        return addedFriendPanel.Controls
+        return chatsPanel.Controls
             .OfType<Guna2Panel>()
-            .FirstOrDefault(p => p.Tag is UserInfo u && u.Id == friendId);
+            .FirstOrDefault(p => p.Tag is ChatInfo { Type: ChatType.Private } c &&
+                                 c.Participants.Any(cp => cp.UserId == friendId));
     }
 
     public void btnUpdServers_Click(object sender, EventArgs e)

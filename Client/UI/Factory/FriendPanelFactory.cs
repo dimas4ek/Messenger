@@ -84,7 +84,7 @@ public static class FriendPanelFactory
 
     private static Image GetAvatar(UserInfo friend)
     {
-        if (friend.Avatar?.Data == null) return Resources.DefaultAvatar;
+        if (friend.Avatar?.Data == null) return Resources.DefaultAvatarImage;
 
         using var ms = new MemoryStream(friend.Avatar.Data);
         return Image.FromStream(ms);

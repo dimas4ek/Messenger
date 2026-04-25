@@ -4,6 +4,7 @@ using Client.Api.Realtime;
 using Client.Services;
 using Client.Utils;
 using Contracts.DTO.Chat;
+using Contracts.DTO.Chat.Event;
 
 namespace Client.Controllers;
 
@@ -20,25 +21,42 @@ public class ChatController
         _chatRealtimeClient = chatRealtimeClient;
         _dialogService = dialogService;
 
+        _chatRealtimeClient.GroupChatCreated += OnGroupChatCreated;
+
         _chatRealtimeClient.MessageReceived += OnMessageReceived;
         _chatRealtimeClient.MessageUpdated += OnMessageUpdated;
         _chatRealtimeClient.MessageDeleted += OnMessageDeleted;
     }
 
+    public List<ChatInfo> Chats { get; private set; } = [];
     public ChatInfo? CurrentChat { get; private set; }
     private List<MessageInfo>? Messages { get; set; } = [];
+
+    public event Action<GroupChatCreatedEvent>? GroupChatCreated;
 
     public event Action<MessageInfo>? MessageLoaded;
     public event Action<MessageInfo>? MessageReceived;
     public event Action<MessageInfo>? MessageUpdated;
     public event Action<int>? MessageDeleted;
 
-    public async Task LoadDialogAsync(int currentUserId, UserInfo companion)
+    public async Task LoadChats(int userId)
+    {
+        var result = await _chatApiClient.GetChatList(userId);
+        if (!result.IsSuccess || result.Value == null)
+        {
+            _dialogService.ShowError(result.ToMessage());
+            return;
+        }
+
+        Chats = result.Value.Chats;
+    }
+
+    public async Task LoadChat(int currentUserId, int chatId)
     {
         if (CurrentChat != null)
             await _chatRealtimeClient.LeaveChat(CurrentChat.Id);
 
-        var result = await _chatApiClient.LoadPrivateChat(currentUserId, companion.Id);
+        var result = await _chatApiClient.LoadChat(currentUserId, chatId);
         if (!result.IsSuccess || result.Value == null)
         {
             _dialogService.ShowError(result.ToMessage());
@@ -54,7 +72,7 @@ public class ChatController
         await _chatRealtimeClient.JoinChat(CurrentChat.Id);
     }
 
-    public async Task EditAsync(MessageInfo message, string newText)
+    public async Task EditMessage(MessageInfo message, string newText)
     {
         if (CurrentChat == null) return;
 
@@ -69,7 +87,7 @@ public class ChatController
         MessageUpdated?.Invoke(message);
     }
 
-    public async Task DeleteAsync(MessageInfo message)
+    public async Task DeleteMessage(MessageInfo message)
     {
         if (CurrentChat == null) return;
 
@@ -84,6 +102,15 @@ public class ChatController
         MessageDeleted?.Invoke(message.Id);
     }
 
+    public List<ChatInfo> Search(string query)
+    {
+        if (string.IsNullOrWhiteSpace(query)) return Chats;
+
+        return Chats
+            .Where(c => c.Name.Contains(query, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
     public async Task ConnectAsync(int userId)
     {
         await _chatRealtimeClient.Connect(userId);
@@ -92,6 +119,11 @@ public class ChatController
     public async Task DisconnectAsync()
     {
         await _chatRealtimeClient.Disconnect();
+    }
+
+    private void OnGroupChatCreated(GroupChatCreatedEvent e)
+    {
+        GroupChatCreated?.Invoke(e);
     }
 
     private void OnMessageReceived(MessageResponse r)

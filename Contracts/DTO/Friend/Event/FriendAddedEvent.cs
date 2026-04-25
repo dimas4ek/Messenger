@@ -2,9 +2,8 @@
 
 namespace Contracts.DTO.Friend.Event;
 
-public class FriendStatusEvent
+public class FriendAddedEvent
 {
-    public UserInfo User { get; set; }
+    public UserInfo Friend { get; set; }
     public ChatInfo FriendChat { get; set; }
-    public bool StatusChanged { get; set; }
 }

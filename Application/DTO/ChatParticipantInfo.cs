@@ -8,4 +8,5 @@ public class ChatParticipantInfo
     public int UserId { get; set; }
     public ChatParticipationRole Role { get; set; }
     public DateTime JoinedAt { get; set; }
+    public UserInfo User { get; set; }
 }

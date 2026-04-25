@@ -206,7 +206,7 @@ public class ProfileSettingsDialog : Form
 
     private Image GetAvatar()
     {
-        if (_currentUser.Avatar?.Data == null) return Resources.DefaultAvatar;
+        if (_currentUser.Avatar?.Data == null) return Resources.DefaultAvatarImage;
 
         using var ms = new MemoryStream(_currentUser.Avatar.Data);
         return Image.FromStream(ms);

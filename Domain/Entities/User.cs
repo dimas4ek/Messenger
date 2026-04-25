@@ -9,9 +9,9 @@ public class User
 {
     [Key] [Column("id")] public int Id { get; set; }
 
-    [Column("username")] [MaxLength(255)] public required string Username { get; set; }
+    [Column("username")] [MaxLength(255)] public string Username { get; set; }
 
-    [Column("password")] [MaxLength(255)] public required string Password { get; set; }
+    [Column("password")] [MaxLength(255)] public string Password { get; set; }
 
     [Column("status")] public UserStatus Status { get; set; }
 
