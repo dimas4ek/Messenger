@@ -120,6 +120,7 @@
             // 
             // chatsPanel
             // 
+            chatsPanel.AutoScroll = true;
             chatsPanel.Controls.Add(guna2PictureBox1);
             chatsPanel.Controls.Add(lblLoadingChats);
             chatsPanel.CustomizableEdges = customizableEdges5;
@@ -144,6 +145,7 @@
             guna2PictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             guna2PictureBox1.TabIndex = 14;
             guna2PictureBox1.TabStop = false;
+            guna2PictureBox1.Visible = false;
             // 
             // lblLoadingChats
             // 

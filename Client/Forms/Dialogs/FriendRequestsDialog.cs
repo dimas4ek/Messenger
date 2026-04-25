@@ -10,9 +10,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Client.Forms.Dialogs;
 
-public class FriendRequestsDialog : BaseForm
+public partial class FriendRequestsDialog : BaseForm
 {
-    private readonly UserInfo _currentUser;
     private readonly IDialogService _dialogService;
     private readonly FriendApiClient _friendApiClient;
 
@@ -22,7 +21,6 @@ public class FriendRequestsDialog : BaseForm
 
     public FriendRequestsDialog(UserInfo currentUser, List<UserInfo> friends, Action<ChatInfo> onFriendAdded)
     {
-        _currentUser = currentUser;
         _friends = friends;
         _onFriendAdded = onFriendAdded;
 
@@ -30,23 +28,15 @@ public class FriendRequestsDialog : BaseForm
         _friendApiClient = App.Services.GetRequiredService<FriendApiClient>();
 
         InitializeComponent();
-    }
 
-    private async void InitializeComponent()
-    {
-        Size = new Size(400, 420);
-        StartPosition = FormStartPosition.CenterParent;
-        Text = "Friend Requests";
-        BackColor = Color.FromArgb(23, 33, 43);
-        FormBorderStyle = FormBorderStyle.FixedDialog;
-        MaximizeBox = false;
-        MinimizeBox = false;
+        Load += async (_, _) =>
+        {
+            var result = await _friendApiClient.GetFriendRequests(currentUser.Id);
+            if (!result.IsSuccess || result.Value == null) return;
 
-        var result = await _friendApiClient.GetFriendRequests(_currentUser.Id);
-        if (!result.IsSuccess || result.Value == null) return;
-
-        foreach (var request in result.Value.FriendRequests)
-            AddFriendRequestPanel(request);
+            foreach (var request in result.Value.FriendRequests)
+                AddFriendRequestPanel(request);
+        };
     }
 
     private void AddFriendRequestPanel(FriendRequestInfo request)

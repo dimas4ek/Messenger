@@ -14,6 +14,7 @@ public static class FriendSelectPanelFactory
         var panel = new Guna2Panel();
         panel.Size = new Size(330, 60);
         panel.BackColor = Color.FromArgb(23, 33, 43);
+        panel.Dock = DockStyle.Top;
         panel.Tag = friend;
         panel.MouseMove += onMove;
         panel.MouseLeave += onLeave;

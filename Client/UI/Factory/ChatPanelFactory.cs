@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Application.DTO;
+﻿using Application.DTO;
 using Client.Properties;
 using Client.UI.Utils;
 using Domain.Enums;
@@ -33,10 +32,6 @@ public static class ChatPanelFactory
             Tag = chat
         };
         chatPanel.Controls.Add(chatImage);
-
-        Debug.WriteLine(chat.Name);
-        Debug.WriteLine(chat.Type);
-        Debug.WriteLine(chat.Participants.Count);
 
         if (chat.Type == ChatType.Private)
         {
