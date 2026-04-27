@@ -4,7 +4,7 @@ namespace Contracts.DTO.Auth;
 
 public class AuthRequest
 {
-    [JsonPropertyName("username")] public string Username { get; set; } = string.Empty;
+    [JsonPropertyName("username")] public string Username { get; init; } = string.Empty;
 
-    [JsonPropertyName("password")] public string Password { get; set; } = string.Empty;
+    [JsonPropertyName("password")] public string Password { get; init; } = string.Empty;
 }

@@ -5,5 +5,5 @@ namespace Contracts.DTO.Auth;
 
 public class AuthResponse
 {
-    [JsonPropertyName("user")] public UserInfo? User { get; set; }
+    [JsonPropertyName("user")] public UserInfo? User { get; init; }
 }

@@ -5,5 +5,5 @@ namespace Contracts.DTO.Chat;
 
 public class MessageResponse
 {
-    [JsonPropertyName("message")] public MessageInfo Message { get; set; }
+    [JsonPropertyName("message")] public required MessageInfo Message { get; init; }
 }

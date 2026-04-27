@@ -5,5 +5,5 @@ namespace Contracts.DTO.Friend;
 
 public class FriendRequestListResponse
 {
-    [JsonPropertyName("friendRequests")] public List<FriendRequestInfo> FriendRequests { get; set; }
+    [JsonPropertyName("friendRequests")] public required List<FriendRequestInfo> FriendRequests { get; init; }
 }

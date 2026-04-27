@@ -1,8 +1,7 @@
 ﻿using Application.Services;
 using Contracts.DTO;
 using Contracts.DTO.Auth;
-using Contracts.DTO.Friend.Event;
-using Contracts.DTO.User;
+using Contracts.DTO.Event;
 using HttpServer.Hubs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -51,7 +50,7 @@ public class AuthController(AuthService authService, FriendService friendService
     }
 
     [HttpPost("logout")]
-    public async Task<ActionResult<UserResponse>> Logout([FromBody] LogoutRequest request)
+    public async Task<ActionResult<LogoutResponse>> Logout([FromBody] LogoutRequest request)
     {
         var result = await authService.LogoutUser(request.UserId);
 
@@ -63,10 +62,9 @@ public class AuthController(AuthService authService, FriendService friendService
 
         await NotifyFriends(result.Value.Id, new FriendStatusEvent { User = result.Value, StatusChanged = true });
 
-
-        return Ok(new UserResponse
+        return Ok(new LogoutResponse
         {
-            User = result.Value
+            Success = true
         });
     }
 

@@ -34,7 +34,7 @@ public partial class CreateGroupChatDialog : Form
 
         InitializeComponent();
 
-        Load += (sender, args) =>
+        Load += (_, _) =>
         {
             groupImage.Image = GetImage();
             groupImage.Click += AddGroupImage;

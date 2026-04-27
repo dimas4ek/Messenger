@@ -4,8 +4,8 @@ namespace Contracts.DTO.Chat;
 
 public class GroupChatRequest
 {
-    [JsonPropertyName("name")] public string Name { get; set; }
-    [JsonPropertyName("imageId")] public int? ImageId { get; set; }
-    [JsonPropertyName("creatorId")] public int CreatorId { get; set; }
-    [JsonPropertyName("addedUserIds")] public IEnumerable<int> AddedUserIds { get; set; }
+    [JsonPropertyName("name")] public required string Name { get; init; }
+    [JsonPropertyName("imageId")] public int? ImageId { get; init; }
+    [JsonPropertyName("creatorId")] public int CreatorId { get; init; }
+    [JsonPropertyName("addedUserIds")] public required IEnumerable<int> AddedUserIds { get; init; }
 }

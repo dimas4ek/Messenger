@@ -99,8 +99,6 @@ public class ChatService(
         await chatRepository.Save();
 
         var newChatDto = mapper.Map<Chat, ChatInfo>(newChat);
-        //newChatDto.Messages = [];
-        //newChatDto.Participants = mapper.MapList<ChatParticipant, ChatParticipantInfo>(participants.ToList());
 
         return Result<ChatInfo>.Success(newChatDto);
     }

@@ -5,5 +5,5 @@ namespace Contracts.DTO;
 
 public class ErrorResponse
 {
-    [JsonPropertyName("errorCode")] public ErrorCode ErrorCode { get; set; }
+    [JsonPropertyName("errorCode")] public ErrorCode ErrorCode { get; init; }
 }

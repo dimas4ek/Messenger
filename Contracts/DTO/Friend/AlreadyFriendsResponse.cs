@@ -4,5 +4,5 @@ namespace Contracts.DTO.Friend;
 
 public class AlreadyFriendsResponse
 {
-    [JsonPropertyName("isFriends")] public bool IsFriends { get; set; }
+    [JsonPropertyName("isFriends")] public bool IsFriends { get; init; }
 }

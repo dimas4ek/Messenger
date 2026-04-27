@@ -5,5 +5,5 @@ namespace Contracts.DTO.User;
 
 public class UserResponse
 {
-    [JsonPropertyName("user")] public UserInfo User { get; set; }
+    [JsonPropertyName("user")] public required UserInfo User { get; init; }
 }

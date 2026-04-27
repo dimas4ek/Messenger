@@ -4,7 +4,7 @@ using Client.Api.Realtime;
 using Client.Services;
 using Client.Utils;
 using Contracts.DTO.Chat;
-using Contracts.DTO.Chat.Event;
+using Contracts.DTO.Event;
 
 namespace Client.Controllers;
 

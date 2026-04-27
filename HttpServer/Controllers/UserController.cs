@@ -1,6 +1,6 @@
 ﻿using Application.Services;
 using Contracts.DTO;
-using Contracts.DTO.Friend.Event;
+using Contracts.DTO.Event;
 using Contracts.DTO.Image;
 using Contracts.DTO.User;
 using HttpServer.Hubs;

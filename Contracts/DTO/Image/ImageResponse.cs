@@ -5,5 +5,5 @@ namespace Contracts.DTO.Image;
 
 public class ImageResponse
 {
-    [JsonPropertyName("image")] public ImageInfo Image { get; set; }
+    [JsonPropertyName("image")] public required ImageInfo Image { get; init; }
 }

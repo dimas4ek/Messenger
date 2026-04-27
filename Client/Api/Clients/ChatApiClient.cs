@@ -35,7 +35,7 @@ public class ChatApiClient(HttpClient httpClient) : ApiClientBase(httpClient)
         return PostAsync<MessageResponse>($"api/chat/{currentChatId}/messages", new SendMessageRequest
         {
             SenderId = senderId,
-            Message = message
+            Text = message
         });
     }
 

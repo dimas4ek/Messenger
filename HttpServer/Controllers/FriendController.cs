@@ -1,7 +1,7 @@
 ﻿using Application.Services;
 using Contracts.DTO;
+using Contracts.DTO.Event;
 using Contracts.DTO.Friend;
-using Contracts.DTO.Friend.Event;
 using HttpServer.Hubs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;

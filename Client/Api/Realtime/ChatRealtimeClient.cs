@@ -1,7 +1,7 @@
 ﻿using Client.Config;
 using Client.Services;
 using Contracts.DTO.Chat;
-using Contracts.DTO.Chat.Event;
+using Contracts.DTO.Event;
 using Microsoft.AspNetCore.SignalR.Client;
 
 namespace Client.Api.Realtime;

@@ -4,5 +4,5 @@ namespace Contracts.DTO.Auth;
 
 public class LogoutRequest
 {
-    [JsonPropertyName("userId")] public int UserId { get; set; }
+    [JsonPropertyName("userId")] public int UserId { get; init; }
 }

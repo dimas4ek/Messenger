@@ -1,6 +1,8 @@
-﻿namespace Contracts.DTO.Chat;
+﻿using System.Text.Json.Serialization;
+
+namespace Contracts.DTO.Chat;
 
 public class EditMessageRequest
 {
-    public string Message { get; set; }
+    [JsonPropertyName("message")] public required string Message { get; init; }
 }

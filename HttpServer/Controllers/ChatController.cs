@@ -1,7 +1,7 @@
 ﻿using Application.Services;
 using Contracts.DTO;
 using Contracts.DTO.Chat;
-using Contracts.DTO.Chat.Event;
+using Contracts.DTO.Event;
 using HttpServer.Hubs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -98,7 +98,7 @@ public class ChatController(ChatService chatService, IHubContext<ChatHub> hubCon
     [HttpPost("{chatId:int}/messages")]
     public async Task<ActionResult<MessageResponse>> SendMessage(int chatId, [FromBody] SendMessageRequest request)
     {
-        var result = await chatService.SaveMessage(chatId, request.SenderId, request.Message);
+        var result = await chatService.SaveMessage(chatId, request.SenderId, request.Text);
 
         if (!result.IsSuccess)
             return BadRequest(new ErrorResponse

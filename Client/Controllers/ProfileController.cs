@@ -13,8 +13,11 @@ public class ProfileController(AuthApiClient authApiClient, IDialogService dialo
 
         var result = await authApiClient.Logout(currentUser.Id);
         if (!result.IsSuccess || result.Value == null)
+        {
             dialogService.ShowError(result.ToMessage());
+            return;
+        }
 
-        userContext.Clear();
+        if (result.Value.Success) userContext.Clear();
     }
 }

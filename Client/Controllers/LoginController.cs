@@ -47,19 +47,17 @@ public class LoginController(
         return true;
     }
 
-    public async Task<bool> RegisterAsync(string username, string password)
+    public async Task RegisterAsync(string username, string password)
     {
         var result = await authApiClient.Register(username, password);
 
         if (!result.IsSuccess)
         {
             dialogService.ShowError(result.ToMessage());
-            return false;
+            return;
         }
 
         dialogService.ShowMessage("Регистрация успешна! Теперь можете войти.");
-
-        return true;
     }
 
     public void OpenClientForm()

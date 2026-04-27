@@ -4,9 +4,9 @@ namespace Client.Utils;
 
 public class ApiResult<T>
 {
-    public bool IsSuccess { get; init; }
-    public ErrorCode ErrorCode { get; init; }
-    public T? Value { get; init; }
+    public bool IsSuccess { get; private init; }
+    public ErrorCode ErrorCode { get; private init; }
+    public T? Value { get; private init; }
 
     public static ApiResult<T> Success(T value)
     {

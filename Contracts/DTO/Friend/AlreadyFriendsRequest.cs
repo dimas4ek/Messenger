@@ -4,7 +4,7 @@ namespace Contracts.DTO.Friend;
 
 public class AlreadyFriendsRequest
 {
-    [JsonPropertyName("userId")] public int UserId { get; set; }
+    [JsonPropertyName("userId")] public int UserId { get; init; }
 
-    [JsonPropertyName("friendId")] public int FriendId { get; set; }
+    [JsonPropertyName("friendId")] public int FriendId { get; init; }
 }
