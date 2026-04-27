@@ -1,41 +1,19 @@
-﻿using System.Net.Http.Json;
-using Application.Utils;
-using Client.Utils;
-using Contracts.DTO;
+﻿using Client.Utils;
 using Contracts.DTO.Image;
 using Domain.Enums;
 
 namespace Client.Api.Clients;
 
-public class UtilsApiClient(HttpClient httpClient)
+public class UtilsApiClient(HttpClient httpClient) : ApiClientBase(httpClient)
 {
-    public async Task<ApiResult<ImageResponse>> AddImage(string name, byte[] imageBytes,
+    public Task<ApiResult<ImageResponse>> AddImage(string name, byte[] imageBytes,
         ImageContentType contentType)
     {
-        try
+        return PostAsync<ImageResponse>("api/utils/image", new ImageRequest
         {
-            var response = await httpClient.PostAsJsonAsync("api/utils/image", new ImageRequest
-            {
-                Name = name,
-                Bytes = imageBytes,
-                ContentType = contentType
-            });
-
-            if (response.IsSuccessStatusCode)
-            {
-                var imageResponse = await response.Content.ReadFromJsonAsync<ImageResponse>();
-
-                return imageResponse == null
-                    ? ApiResult<ImageResponse>.Failure(ErrorCode.EmptyResponse)
-                    : ApiResult<ImageResponse>.Success(imageResponse);
-            }
-
-            var errorResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            return ApiResult<ImageResponse>.Failure(errorResponse?.ErrorCode ?? ErrorCode.UnknownError);
-        }
-        catch
-        {
-            return ApiResult<ImageResponse>.Failure(ErrorCode.DatabaseError);
-        }
+            Name = name,
+            Bytes = imageBytes,
+            ContentType = contentType
+        });
     }
 }

@@ -63,12 +63,12 @@
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges32 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             guna2Panel1 = new Guna.UI2.WinForms.Guna2Panel();
             mainPanel = new Guna.UI2.WinForms.Guna2Panel();
-            chatsPanel = new Guna.UI2.WinForms.Guna2Panel();
-            guna2PictureBox1 = new Guna.UI2.WinForms.Guna2PictureBox();
+            chatListPanel = new Guna.UI2.WinForms.Guna2Panel();
+            rayanImage = new Guna.UI2.WinForms.Guna2PictureBox();
             lblLoadingChats = new System.Windows.Forms.Label();
             searchPanel = new Guna.UI2.WinForms.Guna2Panel();
             txtBoxSearch = new Guna.UI2.WinForms.Guna2TextBox();
-            chatPanelGuna = new Guna.UI2.WinForms.Guna2Panel();
+            dialogPanel = new Guna.UI2.WinForms.Guna2Panel();
             guna2Panel8 = new Guna.UI2.WinForms.Guna2Panel();
             guna2Panel5 = new Guna.UI2.WinForms.Guna2Panel();
             chatTopPanel = new Guna.UI2.WinForms.Guna2Panel();
@@ -83,8 +83,8 @@
             availableServers = new System.Windows.Forms.Label();
             btnUpdServers = new Guna.UI2.WinForms.Guna2Button();
             mainPanel.SuspendLayout();
-            chatsPanel.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)guna2PictureBox1).BeginInit();
+            chatListPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)rayanImage).BeginInit();
             searchPanel.SuspendLayout();
             chatTopPanel.SuspendLayout();
             txtBoxPanel.SuspendLayout();
@@ -107,7 +107,7 @@
             // 
             mainPanel.BackColor = System.Drawing.Color.FromArgb(((int)((byte)23)), ((int)((byte)33)), ((int)((byte)43)));
             mainPanel.BorderColor = System.Drawing.SystemColors.ActiveCaptionText;
-            mainPanel.Controls.Add(chatsPanel);
+            mainPanel.Controls.Add(chatListPanel);
             mainPanel.Controls.Add(searchPanel);
             mainPanel.CustomizableEdges = customizableEdges11;
             mainPanel.Dock = System.Windows.Forms.DockStyle.Left;
@@ -120,32 +120,32 @@
             // 
             // chatsPanel
             // 
-            chatsPanel.AutoScroll = true;
-            chatsPanel.Controls.Add(guna2PictureBox1);
-            chatsPanel.Controls.Add(lblLoadingChats);
-            chatsPanel.CustomizableEdges = customizableEdges5;
-            chatsPanel.Dock = System.Windows.Forms.DockStyle.Left;
-            chatsPanel.Location = new System.Drawing.Point(0, 67);
-            chatsPanel.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            chatsPanel.Name = "chatsPanel";
-            chatsPanel.ShadowDecoration.CustomizableEdges = customizableEdges6;
-            chatsPanel.Size = new System.Drawing.Size(245, 719);
-            chatsPanel.TabIndex = 11;
+            chatListPanel.AutoScroll = true;
+            chatListPanel.Controls.Add(rayanImage);
+            chatListPanel.Controls.Add(lblLoadingChats);
+            chatListPanel.CustomizableEdges = customizableEdges5;
+            chatListPanel.Dock = System.Windows.Forms.DockStyle.Left;
+            chatListPanel.Location = new System.Drawing.Point(0, 67);
+            chatListPanel.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            chatListPanel.Name = "chatListPanel";
+            chatListPanel.ShadowDecoration.CustomizableEdges = customizableEdges6;
+            chatListPanel.Size = new System.Drawing.Size(245, 719);
+            chatListPanel.TabIndex = 11;
             // 
             // guna2PictureBox1
             // 
-            guna2PictureBox1.CustomizableEdges = customizableEdges3;
-            guna2PictureBox1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            guna2PictureBox1.Image = global::Client.Properties.Resources.RayanGif;
-            guna2PictureBox1.ImageRotate = 0F;
-            guna2PictureBox1.Location = new System.Drawing.Point(0, 524);
-            guna2PictureBox1.Name = "guna2PictureBox1";
-            guna2PictureBox1.ShadowDecoration.CustomizableEdges = customizableEdges4;
-            guna2PictureBox1.Size = new System.Drawing.Size(245, 195);
-            guna2PictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
-            guna2PictureBox1.TabIndex = 14;
-            guna2PictureBox1.TabStop = false;
-            guna2PictureBox1.Visible = false;
+            rayanImage.CustomizableEdges = customizableEdges3;
+            rayanImage.Dock = System.Windows.Forms.DockStyle.Bottom;
+            rayanImage.Image = global::Client.Properties.Resources.RayanGif;
+            rayanImage.ImageRotate = 0F;
+            rayanImage.Location = new System.Drawing.Point(0, 524);
+            rayanImage.Name = "rayanImage";
+            rayanImage.ShadowDecoration.CustomizableEdges = customizableEdges4;
+            rayanImage.Size = new System.Drawing.Size(245, 195);
+            rayanImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
+            rayanImage.TabIndex = 14;
+            rayanImage.TabStop = false;
+            rayanImage.Visible = false;
             // 
             // lblLoadingChats
             // 
@@ -201,14 +201,14 @@
             // 
             // chatPanelGuna
             // 
-            chatPanelGuna.CustomizableEdges = customizableEdges13;
-            chatPanelGuna.Dock = System.Windows.Forms.DockStyle.Left;
-            chatPanelGuna.Location = new System.Drawing.Point(335, 67);
-            chatPanelGuna.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            chatPanelGuna.Name = "chatPanelGuna";
-            chatPanelGuna.ShadowDecoration.CustomizableEdges = customizableEdges14;
-            chatPanelGuna.Size = new System.Drawing.Size(1139, 654);
-            chatPanelGuna.TabIndex = 14;
+            dialogPanel.CustomizableEdges = customizableEdges13;
+            dialogPanel.Dock = System.Windows.Forms.DockStyle.Left;
+            dialogPanel.Location = new System.Drawing.Point(335, 67);
+            dialogPanel.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            dialogPanel.Name = "dialogPanel";
+            dialogPanel.ShadowDecoration.CustomizableEdges = customizableEdges14;
+            dialogPanel.Size = new System.Drawing.Size(1139, 654);
+            dialogPanel.TabIndex = 14;
             // 
             // guna2Panel8
             // 
@@ -415,7 +415,7 @@
             ClientSize = new System.Drawing.Size(1475, 786);
             Controls.Add(btnUpdServers);
             Controls.Add(availableServers);
-            Controls.Add(chatPanelGuna);
+            Controls.Add(dialogPanel);
             Controls.Add(txtBoxPanel);
             Controls.Add(chatTopPanel);
             Controls.Add(guna2Panel5);
@@ -427,9 +427,9 @@
             Text = "Messenger";
             FormClosing += ClientForm_Close;
             mainPanel.ResumeLayout(false);
-            chatsPanel.ResumeLayout(false);
-            chatsPanel.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)guna2PictureBox1).EndInit();
+            chatListPanel.ResumeLayout(false);
+            chatListPanel.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)rayanImage).EndInit();
             searchPanel.ResumeLayout(false);
             chatTopPanel.ResumeLayout(false);
             chatTopPanel.PerformLayout();
@@ -457,12 +457,12 @@
         private Guna.UI2.WinForms.Guna2ImageButton btnSndMsg;
         private Guna.UI2.WinForms.Guna2TextBox txtBoxSearch;
         private System.Windows.Forms.Label lblLoadedChat;
-        private Guna.UI2.WinForms.Guna2Panel chatsPanel;
+        private Guna.UI2.WinForms.Guna2Panel chatListPanel;
         private System.Windows.Forms.Label availableServers;
         private Guna.UI2.WinForms.Guna2Button btnUpdServers;
-        private Guna.UI2.WinForms.Guna2Panel chatPanelGuna;
+        private Guna.UI2.WinForms.Guna2Panel dialogPanel;
         private Label lblLoadingChats;
-        private Guna.UI2.WinForms.Guna2PictureBox guna2PictureBox1;
+        private Guna.UI2.WinForms.Guna2PictureBox rayanImage;
     }
 }
 

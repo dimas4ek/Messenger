@@ -29,7 +29,6 @@ public partial class ClientForm : BaseForm
     private FlowLayoutPanel _chatPanel = null!;
 
     private UserInfo _currentUser = null!;
-    private bool _isProfileOpen;
     private OutsideClickFilter? _menuFilter;
 
     private MessageQueueService? _messageQueue;
@@ -251,7 +250,6 @@ public partial class ClientForm : BaseForm
         if (e.UsernameChanged) friend.Username = user.Username;
         if (e.AvatarChanged) friend.Avatar = user.Avatar;
 
-
         var panel = FindPrivateChatPanel(user.Id);
         if (panel == null) return;
 
@@ -310,7 +308,7 @@ public partial class ClientForm : BaseForm
                 ? _chatController.Chats
                 : _chatController.Search(txtBoxSearch.Text);
 
-            chatsPanel.Controls.Clear();
+            chatListPanel.Controls.Clear();
             foreach (var chat in chats)
                 AddChatPanel(chat);
             return Task.CompletedTask;
@@ -342,7 +340,7 @@ public partial class ClientForm : BaseForm
             (s, _) => OnFriendPanelMove(s, p => ColorHelper.SetPanelColor(p, 23, 33, 43)),
             (s, e) => _ = SafeInvoke(() => HandleChatClick(s))
         );
-        chatsPanel.Controls.Add(panel);
+        chatListPanel.Controls.Add(panel);
     }
 
     private async Task HandleChatClick(object? sender)
@@ -357,7 +355,7 @@ public partial class ClientForm : BaseForm
 
         _chat = chat;
         lblLoadedChat.Text = _chat.Name;
-        chatPanelGuna.Controls.Clear();
+        dialogPanel.Controls.Clear();
 
         await LoadDialogAsync();
     }
@@ -366,7 +364,7 @@ public partial class ClientForm : BaseForm
     {
         _chatPanel = new FlowLayoutPanel
         {
-            Parent = chatPanelGuna,
+            Parent = dialogPanel,
             Dock = DockStyle.Fill,
             FlowDirection = FlowDirection.TopDown,
             WrapContents = false,
@@ -575,7 +573,7 @@ public partial class ClientForm : BaseForm
             case false:
                 _profilePanel.Visible = true;
                 leftPanel.Visible = false;
-                chatsPanel.Visible = false;
+                chatListPanel.Visible = false;
                 mainPanel.Visible = false;
                 searchPanel.Visible = false;
                 txtBoxSearch.Visible = false;
@@ -583,7 +581,7 @@ public partial class ClientForm : BaseForm
             case true:
                 _profilePanel.Visible = false;
                 leftPanel.Visible = true;
-                chatsPanel.Visible = true;
+                chatListPanel.Visible = true;
                 mainPanel.Visible = true;
                 searchPanel.Visible = true;
                 txtBoxSearch.Visible = true;
@@ -604,7 +602,7 @@ public partial class ClientForm : BaseForm
 
     private ChatPanelUC? FindPrivateChatPanel(int friendId)
     {
-        return chatsPanel.Controls
+        return chatListPanel.Controls
             .OfType<ChatPanelUC>()
             .FirstOrDefault(p => p.Tag is ChatInfo { Type: ChatType.Private } c &&
                                  c.Participants.Any(cp => cp.UserId == friendId));

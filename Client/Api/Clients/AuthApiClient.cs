@@ -1,79 +1,33 @@
-﻿using System.Net.Http.Json;
-using Application.Utils;
-using Client.Utils;
-using Contracts.DTO;
+﻿using Client.Utils;
 using Contracts.DTO.Auth;
 
 namespace Client.Api.Clients;
 
-public class AuthApiClient(HttpClient httpClient)
+public class AuthApiClient(HttpClient httpClient) : ApiClientBase(httpClient)
 {
-    public async Task<ApiResult<AuthResponse>> Login(string username, string password)
+    public Task<ApiResult<AuthResponse>> Login(string username, string password)
     {
-        return await SendAuthRequest("api/auth/login", username, password);
+        return PostAsync<AuthResponse>("api/auth/login", new AuthRequest
+        {
+            Username = username,
+            Password = password
+        });
     }
 
-    public async Task<ApiResult<AuthResponse>> Register(string username, string password)
+    public Task<ApiResult<AuthResponse>> Register(string username, string password)
     {
-        return await SendAuthRequest("api/auth/register", username, password);
+        return PostAsync<AuthResponse>("api/auth/login", new AuthRequest
+        {
+            Username = username,
+            Password = password
+        });
     }
 
-    public async Task<ApiResult<LogoutResponse>> Logout(int userId)
+    public Task<ApiResult<LogoutResponse>> Logout(int userId)
     {
-        try
+        return PostAsync<LogoutResponse>("api/auth/logout", new LogoutRequest
         {
-            var response = await httpClient.PostAsJsonAsync("api/auth/logout", new LogoutRequest
-            {
-                UserId = userId
-            });
-
-            if (response.IsSuccessStatusCode)
-            {
-                var logoutResponse = await response.Content.ReadFromJsonAsync<LogoutResponse>();
-
-                return logoutResponse == null
-                    ? ApiResult<LogoutResponse>.Failure(ErrorCode.EmptyResponse)
-                    : ApiResult<LogoutResponse>.Success(logoutResponse);
-            }
-
-            var errorResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-
-            return ApiResult<LogoutResponse>.Failure(errorResponse?.ErrorCode ?? ErrorCode.UnknownError);
-        }
-        catch
-        {
-            return ApiResult<LogoutResponse>.Failure(ErrorCode.AuthError);
-        }
-    }
-
-    private async Task<ApiResult<AuthResponse>> SendAuthRequest(string url, string username, string password)
-    {
-        try
-        {
-            var response = await httpClient.PostAsJsonAsync(url, new AuthRequest
-            {
-                Username = username,
-                Password = password
-            });
-
-            var body = await response.Content.ReadAsStringAsync();
-
-            if (response.IsSuccessStatusCode)
-            {
-                var authResponse = await response.Content.ReadFromJsonAsync<AuthResponse>();
-
-                return authResponse == null
-                    ? ApiResult<AuthResponse>.Failure(ErrorCode.EmptyResponse)
-                    : ApiResult<AuthResponse>.Success(authResponse);
-            }
-
-            var errorResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-
-            return ApiResult<AuthResponse>.Failure(errorResponse?.ErrorCode ?? ErrorCode.UnknownError);
-        }
-        catch
-        {
-            return ApiResult<AuthResponse>.Failure(ErrorCode.AuthError);
-        }
+            UserId = userId
+        });
     }
 }
