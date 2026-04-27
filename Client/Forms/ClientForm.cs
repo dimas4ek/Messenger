@@ -24,19 +24,17 @@ public partial class ClientForm : BaseForm
     private readonly UserContext _userContext = null!;
 
     private Guna2Panel? _activeMenuPanel;
-    private Guna2TextBox _addFriendTxtBox = null!;
     private ChatInfo? _chat;
 
     private FlowLayoutPanel _chatPanel = null!;
 
     private UserInfo _currentUser = null!;
-
-    private bool _isFriendTxtBoxOpen;
     private bool _isProfileOpen;
     private OutsideClickFilter? _menuFilter;
 
     private MessageQueueService? _messageQueue;
-    private Guna2Panel _profilePanel = null!;
+
+    private ProfilePanelUC _profilePanel = null!;
 
     public ClientForm()
     {
@@ -187,7 +185,7 @@ public partial class ClientForm : BaseForm
         var panel = FindMessagePanel(message.Id);
         if (panel == null) return;
 
-        MessagePanelFactory.UpdateText(panel, message.Text);
+        panel.UpdateText(message.Text);
         if (panel.Tag is MessageInfo m)
             m.Text = message.Text;
     }
@@ -211,13 +209,13 @@ public partial class ClientForm : BaseForm
         BeginInvoke(() =>
         {
             var panel = _chatPanel.Controls
-                .OfType<Guna2Panel>()
-                .FirstOrDefault(p => p.Tag is MessageInfo m && m.TempId == item.TempId);
+                .OfType<MessagePanelUC>()
+                .FirstOrDefault(p => p.Message.TempId == item.TempId);
 
             if (panel == null) return;
 
             message.TempId = item.TempId;
-            panel.Tag = message;
+            panel.ConfirmMessage(message);
         });
     }
 
@@ -257,8 +255,8 @@ public partial class ClientForm : BaseForm
         var panel = FindPrivateChatPanel(user.Id);
         if (panel == null) return;
 
-        if (e.UsernameChanged) ChatPanelFactory.UpdateText(panel, friend.Username);
-        if (e.AvatarChanged) ChatPanelFactory.UpdateAvatar(panel, friend.Avatar!);
+        if (e.UsernameChanged) panel.UpdateText(friend.Username);
+        if (e.AvatarChanged) panel.UpdateAvatar(friend.Avatar!);
 
         if (panel.Tag is not ChatInfo chat) return;
 
@@ -278,23 +276,12 @@ public partial class ClientForm : BaseForm
         if (panel == null) return;
 
         if (e.StatusChanged)
-            ChatPanelFactory.UpdateStatus(panel, e.User.Status);
+            panel.UpdateStatus(e.User.Status);
     }
 
     #endregion
 
     #region Friends
-
-    /*private void AddFriendPanel(UserInfo friend)
-    {
-        var panel = FriendPanelFactory.Create(
-            friend,
-            (s, _) => OnFriendPanelMove(s, p => ColorHelper.SetPanelColor(p, 35, 46, 60)),
-            (s, _) => OnFriendPanelMove(s, p => ColorHelper.SetPanelColor(p, 23, 33, 43)),
-            (s, e) => _ = SafeInvoke(() => HandleFriendClick(s))
-        );
-        addedFriendPanel.Controls.Add(panel);
-    }*/
 
     private static void OnFriendPanelMove(object? s, Action<Guna2Panel>? onPanel = null)
     {
@@ -304,32 +291,14 @@ public partial class ClientForm : BaseForm
         if (panel != null) onPanel?.Invoke(panel);
     }
 
-    /*private async Task HandleFriendClick(object? sender)
-    {
-        var user = sender switch
-        {
-            Control c => c.Tag as UserInfo,
-            _ => null
-        };
-
-        if (user == null || _companion?.Id == user.Id) return;
-
-        _companion = user;
-        lblLoadedChat.Text = _companion.Username;
-        chatPanelGuna.Controls.Clear();
-
-        _currentChatType = ChatType.Private;
-
-        await LoadDialogAsync();
-    }*/
-
     private void AddFriendTxtBox_KeyDown(object? sender, KeyEventArgs e)
     {
         if (e.KeyCode != Keys.Enter) return;
         _ = SafeInvoke(async () =>
         {
-            await _friendController.SendFriendRequest(_currentUser.Id, _currentUser.Username, _addFriendTxtBox.Text);
-            _addFriendTxtBox.Clear();
+            await _friendController.SendFriendRequest(_currentUser.Id, _currentUser.Username,
+                _profilePanel.FriendTextBoxText);
+            _profilePanel.ClearFriendTextBox();
         });
     }
 
@@ -366,7 +335,7 @@ public partial class ClientForm : BaseForm
 
     private void AddChatPanel(ChatInfo chat)
     {
-        var panel = ChatPanelFactory.Create(
+        var panel = new ChatPanelUC(
             chat,
             _currentUser.Id,
             (s, _) => OnFriendPanelMove(s, p => ColorHelper.SetPanelColor(p, 35, 46, 60)),
@@ -411,27 +380,11 @@ public partial class ClientForm : BaseForm
 
         if (_chat == null) return;
         await _chatController.LoadChat(_currentUser.Id, _chat.Id);
-
-        /*switch (_currentChatType)
-        {
-            case ChatType.Group when _chat == null:
-                return;
-            case ChatType.Group:
-                await _chatController.LoadChat(_currentUser.Id, _chat.Id, ChatType.Group);
-                break;
-            case ChatType.Private when _companion == null:
-                return;
-            case ChatType.Private:
-                await _chatController.LoadChat(_currentUser.Id, _companion.Id, ChatType.Private);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
-        }*/
     }
 
     private void LoadMessageUI(MessageInfo message)
     {
-        var panel = MessagePanelFactory.Create(message, Message_MouseClick);
+        var panel = new MessagePanelUC(message, Message_MouseClick);
         _chatPanel.Controls.Add(panel);
         _chatPanel.ScrollControlIntoView(panel);
     }
@@ -440,12 +393,17 @@ public partial class ClientForm : BaseForm
     {
         if ((e.Button & MouseButtons.Right) == 0) return;
 
-        var panel = sender is Label l ? (Guna2Panel)l.Parent! : (Guna2Panel)sender!;
-        var message = (MessageInfo)panel.Tag!;
-        ShowMessageContextMenu(panel, message, e.Location);
+        var control = sender as Control;
+
+        while (control != null && control is not MessagePanelUC)
+            control = control.Parent;
+
+        if (control is not MessagePanelUC panel) return;
+
+        ShowMessageContextMenu(panel, panel.Message, e.Location);
     }
 
-    private void ShowMessageContextMenu(Guna2Panel messagePanel, MessageInfo message, Point location)
+    private void ShowMessageContextMenu(MessagePanelUC messagePanel, MessageInfo message, Point location)
     {
         CloseActiveContextMenu();
 
@@ -499,7 +457,7 @@ public partial class ClientForm : BaseForm
 
                 await _chatController.EditMessage(message, dialog.Result);
                 var panel = FindMessagePanel(message.Id);
-                if (panel != null) MessagePanelFactory.UpdateText(panel, dialog.Result);
+                if (panel != null) panel.UpdateText(dialog.Result);
             });
         };
 
@@ -561,12 +519,6 @@ public partial class ClientForm : BaseForm
 
         if (string.IsNullOrWhiteSpace(text)) return;
         if (_chatController.CurrentChat == null) return;
-        /*switch (_currentChatType)
-        {
-            case ChatType.Group when _chat == null:
-            case ChatType.Private when _companion == null:
-                return;
-        }*/
 
         if (_chat == null) return;
 
@@ -595,99 +547,65 @@ public partial class ClientForm : BaseForm
 
     private void CreateProfilePanel()
     {
-        _profilePanel = ProfilePanelFactory.Create(
+        _profilePanel = new ProfilePanelUC(
             _currentUser,
             mainPanel.Width + leftPanel.Width,
             Height,
-            CloseProfile,
-            AddFriendButton_Click,
+            OpenCloseProfile,
+            AddFriendTxtBox_KeyDown,
             updatedUser =>
             {
                 _currentUser = updatedUser;
-
-                RefreshProfilePanel();
+                _profilePanel.UpdateUsername(_currentUser.Username);
             }
         );
 
         Controls.Add(_profilePanel);
-
-        _addFriendTxtBox = new Guna2TextBox { Visible = false };
-    }
-
-    private void RefreshProfilePanel()
-    {
-        var usernameLabel = _profilePanel.Controls
-            .OfType<Label>()
-            .FirstOrDefault(l => l.Name == "usernameLabel")!;
-
-        usernameLabel.Text = _currentUser.Username;
-    }
-
-    private void AddFriendButton_Click(object? sender, EventArgs e)
-    {
-        if (!_isFriendTxtBoxOpen)
-        {
-            _isFriendTxtBoxOpen = true;
-            _addFriendTxtBox.Visible = true;
-            _addFriendTxtBox.Parent = _profilePanel;
-            _addFriendTxtBox.PlaceholderText = "Enter Friend name...";
-            _addFriendTxtBox.PlaceholderForeColor = Color.FromArgb(193, 200, 207);
-            _addFriendTxtBox.FillColor = Color.FromArgb(35, 46, 60);
-            _addFriendTxtBox.Location = new Point(0, 103);
-            _addFriendTxtBox.Size = new Size(leftPanel.Width + mainPanel.Width, 45);
-            _addFriendTxtBox.BorderThickness = 0;
-            _addFriendTxtBox.KeyDown += AddFriendTxtBox_KeyDown;
-            return;
-        }
-
-        _isFriendTxtBoxOpen = false;
-        _addFriendTxtBox.Visible = false;
     }
 
     private void btnOpenProfile_Click(object sender, EventArgs e)
     {
-        OpenProfile();
+        OpenCloseProfile();
     }
 
-    private void OpenProfile()
+    private void OpenCloseProfile()
     {
-        if (_isProfileOpen) return;
-        _isProfileOpen = true;
-        _profilePanel.Visible = true;
-        leftPanel.Visible = false;
-        chatsPanel.Visible = false;
-        mainPanel.Visible = false;
-        searchPanel.Visible = false;
-        txtBoxSearch.Visible = false;
-    }
-
-    private void CloseProfile()
-    {
-        if (!_isProfileOpen) return;
-        _isProfileOpen = false;
-        _profilePanel.Visible = false;
-        leftPanel.Visible = true;
-        chatsPanel.Visible = true;
-        mainPanel.Visible = true;
-        searchPanel.Visible = true;
-        txtBoxSearch.Visible = true;
+        switch (_profilePanel.Visible)
+        {
+            case false:
+                _profilePanel.Visible = true;
+                leftPanel.Visible = false;
+                chatsPanel.Visible = false;
+                mainPanel.Visible = false;
+                searchPanel.Visible = false;
+                txtBoxSearch.Visible = false;
+                break;
+            case true:
+                _profilePanel.Visible = false;
+                leftPanel.Visible = true;
+                chatsPanel.Visible = true;
+                mainPanel.Visible = true;
+                searchPanel.Visible = true;
+                txtBoxSearch.Visible = true;
+                break;
+        }
     }
 
     #endregion
 
     #region Utils
 
-    private Guna2Panel? FindMessagePanel(int messageId)
+    private MessagePanelUC? FindMessagePanel(int messageId)
     {
         return _chatPanel.Controls
-            .OfType<Guna2Panel>()
-            .FirstOrDefault(p => p.Tag is MessageInfo m && m.Id == messageId);
+            .OfType<MessagePanelUC>()
+            .FirstOrDefault(p => p.Message.Id == messageId);
     }
 
-    private Guna2Panel? FindPrivateChatPanel(int friendId)
+    private ChatPanelUC? FindPrivateChatPanel(int friendId)
     {
         return chatsPanel.Controls
-            .OfType<Guna2Panel>()
+            .OfType<ChatPanelUC>()
             .FirstOrDefault(p => p.Tag is ChatInfo { Type: ChatType.Private } c &&
                                  c.Participants.Any(cp => cp.UserId == friendId));
     }

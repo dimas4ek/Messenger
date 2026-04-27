@@ -41,7 +41,7 @@ public partial class FriendRequestsDialog : BaseForm
 
     private void AddFriendRequestPanel(FriendRequestInfo request)
     {
-        var panel = FriendRequestPanelFactory.Create(
+        var panel = new FriendRequestPanelUC(
             request,
             (s, _) =>
             {
@@ -83,10 +83,8 @@ public partial class FriendRequestsDialog : BaseForm
 
     private void RemoveRequestPanel(FriendRequestInfo request)
     {
-        if (Controls
-                .Find("requestPanel", false)
-                .FirstOrDefault(p => p.Tag is FriendRequestInfo r && r.Id == request.Id) is
-            Guna2Panel panel)
-            Controls.Remove(panel);
+        var panel = Controls.OfType<FriendRequestPanelUC>()
+            .FirstOrDefault(p => p.Tag is FriendRequestInfo r && r.Id == request.Id);
+        Controls.Remove(panel);
     }
 }

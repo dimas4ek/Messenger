@@ -2,7 +2,7 @@
 
 namespace Client.UI.Utils;
 
-public class CirclePanel : Panel
+public sealed class CirclePanel : Panel
 {
     public CirclePanel()
     {

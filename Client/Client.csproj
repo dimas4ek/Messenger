@@ -55,6 +55,21 @@
         <Compile Update="Forms\Dialogs\ProfileSettingsDialog.cs">
             <SubType>Form</SubType>
         </Compile>
+        <Compile Update="UI\Factory\ChatPanelUC.cs">
+            <SubType>UserControl</SubType>
+        </Compile>
+        <Compile Update="UI\Factory\FriendRequestPanelUC.cs">
+            <SubType>UserControl</SubType>
+        </Compile>
+        <Compile Update="UI\Factory\FriendSelectPanelUC.cs">
+            <SubType>UserControl</SubType>
+        </Compile>
+        <Compile Update="UI\Factory\MessagePanelUC.cs">
+            <SubType>UserControl</SubType>
+        </Compile>
+        <Compile Update="UI\Factory\ProfilePanelUC.cs">
+            <SubType>UserControl</SubType>
+        </Compile>
     </ItemGroup>
 
     <ItemGroup>

@@ -50,7 +50,7 @@ public partial class CreateGroupChatDialog : Form
 
     private void AddFriendPanel(UserInfo friend)
     {
-        var panel = FriendSelectPanelFactory.Create(
+        var panel = new FriendSelectPanelUC(
             friend,
             (s, _) =>
             {
