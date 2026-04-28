@@ -1,5 +1,4 @@
 ﻿using Application.Services;
-using Contracts.DTO;
 using Contracts.DTO.Image;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,22 +6,15 @@ namespace HttpServer.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class UtilsController(ImageService imageService) : ControllerBase
+public class UtilsController(ImageService imageService) : AppControllerBase
 {
     [HttpPost("image")]
     public async Task<ActionResult<ImageResponse>> AddImage([FromBody] ImageRequest request)
     {
-        var result = await imageService.AddImage(request.Name, request.Bytes, request.ContentType);
+        if (!TryGetValue(await imageService.AddImage(request.Name, request.Bytes, request.ContentType), out var image,
+                out var error))
+            return error;
 
-        if (!result.IsSuccess)
-            return BadRequest(new ErrorResponse
-            {
-                ErrorCode = result.ErrorCode
-            });
-
-        return Ok(new ImageResponse
-        {
-            Image = result.Value
-        });
+        return Ok(new ImageResponse { Image = image });
     }
 }

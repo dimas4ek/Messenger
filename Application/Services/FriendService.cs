@@ -118,21 +118,21 @@ public class FriendService(
         }
     }
 
-    public async Task<Result> DeclineFriendRequest(int requestId)
+    public async Task<Result<bool>> DeclineFriendRequest(int requestId)
     {
         try
         {
             var request = await friendRequestRepository.GetById(requestId);
-            if (request == null) return Result.Failure(ErrorCode.FriendRequestNotFound);
+            if (request == null) return Result<bool>.Failure(ErrorCode.FriendRequestNotFound);
 
             friendRequestRepository.Remove(request);
             await friendRequestRepository.Save();
 
-            return Result.Success();
+            return Result<bool>.Success(true);
         }
         catch
         {
-            return Result.Failure(ErrorCode.DatabaseError);
+            return Result<bool>.Failure(ErrorCode.DatabaseError);
         }
     }
 }

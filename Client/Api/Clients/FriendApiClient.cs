@@ -24,9 +24,9 @@ public class FriendApiClient(HttpClient httpClient) : ApiClientBase(httpClient)
         });
     }
 
-    public Task<ApiResult<FriendRequestListResponse>> SendFriendRequest(int senderId, int receiverId)
+    public Task<ApiResult<FriendRequestResponse>> SendFriendRequest(int senderId, int receiverId)
     {
-        return PostAsync<FriendRequestListResponse>("api/friend/requests", new SendFriendRequest
+        return PostAsync<FriendRequestResponse>("api/friend/requests", new SendFriendRequest
         {
             SenderId = senderId,
             ReceiverId = receiverId

@@ -10,72 +10,43 @@ namespace HttpServer.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class ChatController(ChatService chatService, IHubContext<ChatHub> hubContext) : ControllerBase
+public class ChatController(ChatService chatService, IHubContext<ChatHub> hubContext) : AppControllerBase
 {
     [HttpGet("list")]
     public async Task<ActionResult<ChatListResponse>> GetChatList([FromQuery(Name = "userId")] int userId)
     {
-        var result = await chatService.GetChatList(userId);
+        if (!TryGetValue(await chatService.GetChatList(userId), out var chatList, out var error))
+            return error;
 
-        if (!result.IsSuccess)
-            return BadRequest(new ErrorResponse
-            {
-                ErrorCode = result.ErrorCode
-            });
-
-        return Ok(new ChatListResponse
-        {
-            Chats = result.Value
-        });
+        return Ok(new ChatListResponse { Chats = chatList });
     }
 
     [HttpPost("group")]
     public async Task<ActionResult<ChatResponse>> CreateGroupChat([FromBody] GroupChatRequest request)
     {
-        var chatResult =
-            await chatService.CreateGroupChat(request.Name, request.ImageId, request.CreatorId, request.AddedUserIds);
-
-        if (!chatResult.IsSuccess)
-            return BadRequest(new ErrorResponse
-            {
-                ErrorCode = chatResult.ErrorCode
-            });
-
-        var groupChatResult = await chatService.LoadChat(chatResult.Value.Id, request.CreatorId);
-
-        if (!groupChatResult.IsSuccess)
-            return BadRequest(new ErrorResponse
-            {
-                ErrorCode = chatResult.ErrorCode
-            });
-
-        var groupChat = groupChatResult.Value;
+        if (!TryGetValue(await chatService.CreateGroupChat(request.Name, request.ImageId, request.CreatorId,
+                    request.AddedUserIds),
+                out var chat,
+                out var error) ||
+            !TryGetValue(await chatService.LoadChat(chat.Id, request.CreatorId),
+                out var groupChat,
+                out error))
+            return error;
 
         foreach (var addedUserId in request.AddedUserIds)
             await hubContext.Clients.Group($"user:{addedUserId}")
                 .SendAsync("GroupChatCreated", new GroupChatCreatedEvent { Chat = groupChat });
 
-        return Ok(new ChatResponse
-        {
-            Chat = groupChat
-        });
+        return Ok(new ChatResponse { Chat = groupChat });
     }
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult<ChatResponse>> LoadChat(int id, [FromQuery(Name = "userId")] int userId)
     {
-        var result = await chatService.LoadChat(id, userId);
+        if (!TryGetValue(await chatService.LoadChat(id, userId), out var chat, out var error))
+            return error;
 
-        if (!result.IsSuccess)
-            return BadRequest(new ErrorResponse
-            {
-                ErrorCode = result.ErrorCode
-            });
-
-        return Ok(new ChatResponse
-        {
-            Chat = result.Value
-        });
+        return Ok(new ChatResponse { Chat = chat });
     }
 
     /*[HttpPatch("{id:int}/image")]
@@ -98,67 +69,43 @@ public class ChatController(ChatService chatService, IHubContext<ChatHub> hubCon
     [HttpPost("{chatId:int}/messages")]
     public async Task<ActionResult<MessageResponse>> SendMessage(int chatId, [FromBody] SendMessageRequest request)
     {
-        var result = await chatService.SaveMessage(chatId, request.SenderId, request.Text);
+        if (!TryGetValue(await chatService.SaveMessage(chatId, request.SenderId, request.Text), out var message,
+                out var error))
+            return error;
 
-        if (!result.IsSuccess)
-            return BadRequest(new ErrorResponse
-            {
-                ErrorCode = result.ErrorCode
-            });
+        var messageResponse = new MessageResponse { Message = message };
 
         await hubContext.Clients.Group($"chat:{chatId}")
-            .SendAsync("ReceiveMessage", new MessageResponse
-            {
-                Message = result.Value
-            });
+            .SendAsync("ReceiveMessage", messageResponse);
 
-        return Ok(new MessageResponse
-        {
-            Message = result.Value
-        });
+        return Ok(messageResponse);
     }
 
     [HttpPatch("{chatId:int}/messages/{messageId:int}")]
     public async Task<ActionResult<MessageResponse>> EditMessage(int chatId, int messageId,
         [FromBody] EditMessageRequest request)
     {
-        var result = await chatService.EditMessage(chatId, messageId, request.Message);
+        if (!TryGetValue(await chatService.EditMessage(chatId, messageId, request.Message), out var message,
+                out var error))
+            return error;
 
-        if (!result.IsSuccess)
-            return BadRequest(new ErrorResponse
-            {
-                ErrorCode = result.ErrorCode
-            });
+        var messageResponse = new MessageResponse { Message = message };
 
         await hubContext.Clients.Group($"chat:{chatId}")
-            .SendAsync("EditMessage", new MessageResponse
-            {
-                Message = result.Value
-            });
+            .SendAsync("EditMessage", messageResponse);
 
-        return Ok(new MessageResponse
-        {
-            Message = result.Value
-        });
+        return Ok(messageResponse);
     }
 
     [HttpDelete("{chatId:int}/messages/{messageId:int}")]
     public async Task<ActionResult<DeleteResponse>> DeleteMessage(int chatId, int messageId)
     {
-        var result = await chatService.DeleteMessage(chatId, messageId);
-
-        if (!result.IsSuccess)
-            return BadRequest(new ErrorResponse
-            {
-                ErrorCode = result.ErrorCode
-            });
+        if (!TryGetValue(await chatService.DeleteMessage(chatId, messageId), out var success, out var error))
+            return error;
 
         await hubContext.Clients.Group($"chat:{chatId}")
             .SendAsync("DeleteMessage", messageId);
 
-        return Ok(new DeleteResponse
-        {
-            Success = result.Value
-        });
+        return Ok(new DeleteResponse { Success = success });
     }
 }

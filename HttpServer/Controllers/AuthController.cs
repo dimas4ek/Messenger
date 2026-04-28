@@ -1,5 +1,4 @@
 ﻿using Application.Services;
-using Contracts.DTO;
 using Contracts.DTO.Auth;
 using Contracts.DTO.Event;
 using HttpServer.Hubs;
@@ -11,61 +10,45 @@ namespace HttpServer.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 public class AuthController(AuthService authService, FriendService friendService, IHubContext<FriendHub> hubContext)
-    : ControllerBase
+    : AppControllerBase
 {
     [HttpPost("login")]
     public async Task<ActionResult<AuthResponse>> Login([FromBody] AuthRequest request)
     {
-        var result = await authService.LoginUser(request.Username, request.Password);
+        if (!TryGetValue(await authService.LoginUser(request.Username, request.Password), out var user, out var error))
+            return error;
 
-        if (!result.IsSuccess)
-            return BadRequest(new ErrorResponse
-            {
-                ErrorCode = result.ErrorCode
-            });
-
-        await NotifyFriends(result.Value.Id, new FriendStatusEvent { User = result.Value, StatusChanged = true });
-
-        return Ok(new AuthResponse
+        await NotifyFriends(user.Id, new FriendStatusEvent
         {
-            User = result.Value
+            User = user,
+            StatusChanged = true
         });
+
+        return Ok(new AuthResponse { User = user });
     }
 
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponse>> Register([FromBody] AuthRequest request)
     {
-        var result = await authService.RegisterUser(request.Username, request.Password);
+        if (!TryGetValue(await authService.LoginUser(request.Username, request.Password), out var user, out var error))
+            return error;
 
-        if (!result.IsSuccess)
-            return BadRequest(new ErrorResponse
-            {
-                ErrorCode = result.ErrorCode
-            });
-
-        return Ok(new AuthResponse
-        {
-            User = result.Value
-        });
+        return Ok(new AuthResponse { User = user });
     }
 
     [HttpPost("logout")]
     public async Task<ActionResult<LogoutResponse>> Logout([FromBody] LogoutRequest request)
     {
-        var result = await authService.LogoutUser(request.UserId);
+        if (!TryGetValue(await authService.LogoutUser(request.UserId), out var user, out var error))
+            return error;
 
-        if (!result.IsSuccess)
-            return BadRequest(new ErrorResponse
-            {
-                ErrorCode = result.ErrorCode
-            });
-
-        await NotifyFriends(result.Value.Id, new FriendStatusEvent { User = result.Value, StatusChanged = true });
-
-        return Ok(new LogoutResponse
+        await NotifyFriends(user.Id, new FriendStatusEvent
         {
-            Success = true
+            User = user,
+            StatusChanged = true
         });
+
+        return Ok(new LogoutResponse { Success = true });
     }
 
     private async Task NotifyFriends(int userId, FriendStatusEvent friendEvent)

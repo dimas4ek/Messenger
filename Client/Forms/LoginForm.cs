@@ -30,7 +30,6 @@ public partial class LoginForm : BaseForm
     {
         FormBorderStyle = FormBorderStyle.FixedSingle;
         MaximizeBox = true;
-        txtPassword.PasswordChar = '*';
 
         Resize += (_, _) =>
         {

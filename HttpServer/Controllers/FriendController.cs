@@ -1,5 +1,4 @@
 ﻿using Application.Services;
-using Contracts.DTO;
 using Contracts.DTO.Event;
 using Contracts.DTO.Friend;
 using HttpServer.Hubs;
@@ -11,138 +10,87 @@ namespace HttpServer.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 public class FriendController(FriendService friendService, ChatService chatService, IHubContext<FriendHub> hubContext)
-    : ControllerBase
+    : AppControllerBase
 {
     [HttpGet("list")]
     public async Task<ActionResult<FriendListResponse>> GetFriendList([FromQuery(Name = "userId")] int userId)
     {
-        var result = await friendService.GetFriendList(userId);
+        if (!TryGetValue(await friendService.GetFriendList(userId), out var friendList, out var error))
+            return error;
 
-        if (!result.IsSuccess)
-            return BadRequest(new ErrorResponse
-            {
-                ErrorCode = result.ErrorCode
-            });
-
-        return Ok(new FriendListResponse
-        {
-            Friends = result.Value
-        });
+        return Ok(new FriendListResponse { Friends = friendList });
     }
 
     [HttpPost("already-friends")]
     public async Task<ActionResult<AlreadyFriendsResponse>> AlreadyFriends([FromBody] AlreadyFriendsRequest request)
     {
-        var result = await friendService.AlreadyFriends(request.UserId, request.FriendId);
+        if (!TryGetValue(await friendService.AlreadyFriends(request.UserId, request.FriendId), out var isFriends,
+                out var error))
+            return error;
 
-        if (!result.IsSuccess)
-            return BadRequest(new ErrorResponse
-            {
-                ErrorCode = result.ErrorCode
-            });
-
-        return Ok(new AlreadyFriendsResponse
-        {
-            IsFriends = result.Value
-        });
+        return Ok(new AlreadyFriendsResponse { IsFriends = isFriends });
     }
 
     [HttpPost("requests")]
-    public async Task<ActionResult<FriendRequestListResponse>> SendFriendRequest([FromBody] SendFriendRequest request)
+    public async Task<ActionResult<FriendRequestResponse>> SendFriendRequest([FromBody] SendFriendRequest request)
     {
-        var result = await friendService.AddFriendRequest(request.SenderId, request.ReceiverId);
+        if (!TryGetValue(await friendService.AddFriendRequest(request.SenderId, request.ReceiverId),
+                out var friendRequest,
+                out var error))
+            return error;
 
-        if (!result.IsSuccess)
-            return BadRequest(new ErrorResponse
-            {
-                ErrorCode = result.ErrorCode
-            });
-
-        return Ok(new FriendRequestResponse
-        {
-            FriendRequest = result.Value
-        });
+        return Ok(new FriendRequestResponse { FriendRequest = friendRequest });
     }
 
     [HttpGet("requests")]
     public async Task<ActionResult<FriendRequestListResponse>> GetFriendRequests(
         [FromQuery(Name = "userId")] int userId)
     {
-        var result = await friendService.GetFriendRequests(userId);
+        if (!TryGetValue(await friendService.GetFriendRequests(userId),
+                out var friendRequestList,
+                out var error))
+            return error;
 
-        if (!result.IsSuccess)
-            return BadRequest(new ErrorResponse
-            {
-                ErrorCode = result.ErrorCode
-            });
-
-        return Ok(new FriendRequestListResponse
-        {
-            FriendRequests = result.Value
-        });
+        return Ok(new FriendRequestListResponse { FriendRequests = friendRequestList });
     }
 
     [HttpPost("requests/{requestId:int}/accept")]
     public async Task<ActionResult<FriendRequestActionResponse>> AcceptFriendRequest(int requestId)
     {
-        var friendRequestResult = await friendService.AcceptFriendRequest(requestId);
-
-        if (!friendRequestResult.IsSuccess)
-            return BadRequest(new ErrorResponse
-            {
-                ErrorCode = friendRequestResult.ErrorCode
-            });
-
-        var friendRequest = friendRequestResult.Value;
-
-        var createdChatResult = await chatService.CreatePrivateChat(friendRequest.Receiver.Id, friendRequest.Sender.Id);
-
-        if (!createdChatResult.IsSuccess)
-            return BadRequest(new ErrorResponse
-            {
-                ErrorCode = createdChatResult.ErrorCode
-            });
-
-        var chatId = createdChatResult.Value.Id;
-
-        var chatForFriendResult = await chatService.LoadChat(chatId, friendRequest.Sender.Id);
-        if (!chatForFriendResult.IsSuccess)
-            return BadRequest(new ErrorResponse
-            {
-                ErrorCode = chatForFriendResult.ErrorCode
-            });
-
-        var chatForMeResult = await chatService.LoadChat(chatId, friendRequest.Receiver.Id);
-        if (!chatForMeResult.IsSuccess)
-            return BadRequest(new ErrorResponse
-            {
-                ErrorCode = chatForMeResult.ErrorCode
-            });
+        if (!TryGetValue(await friendService.AcceptFriendRequest(requestId),
+                out var friendRequest,
+                out var error) ||
+            !TryGetValue(await chatService.CreatePrivateChat(friendRequest.Receiver.Id, friendRequest.Sender.Id),
+                out var createdChat,
+                out error) ||
+            !TryGetValue(await chatService.LoadChat(createdChat.Id, friendRequest.Sender.Id),
+                out var chatForFriend,
+                out error) ||
+            !TryGetValue(await chatService.LoadChat(createdChat.Id, friendRequest.Receiver.Id),
+                out var chatForMe,
+                out error))
+            return error;
 
         await hubContext.Clients.Group($"user:{friendRequest.Sender.Id}")
             .SendAsync("FriendAdded",
                 new FriendAddedEvent
                 {
-                    Friend = friendRequest.Receiver, FriendChat = chatForFriendResult.Value
+                    Friend = friendRequest.Receiver,
+                    FriendChat = chatForFriend
                 });
 
         return Ok(new FriendRequestActionResponse
         {
             Friend = friendRequest.Sender,
-            CreatedChat = chatForMeResult.Value
+            CreatedChat = chatForMe
         });
     }
 
     [HttpPost("requests/{requestId:int}/decline")]
     public async Task<ActionResult> DeclineFriendRequest(int requestId)
     {
-        var result = await friendService.DeclineFriendRequest(requestId);
-
-        if (!result.IsSuccess)
-            return BadRequest(new ErrorResponse
-            {
-                ErrorCode = result.ErrorCode
-            });
+        if (!TryGetValue(await friendService.DeclineFriendRequest(requestId), out var error))
+            return error;
 
         return Ok();
     }
