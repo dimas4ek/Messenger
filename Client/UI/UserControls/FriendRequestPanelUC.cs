@@ -1,6 +1,7 @@
 ﻿using Application.DTO;
+using Client.UI.Utils;
 
-namespace Client.UI.Factory;
+namespace Client.UI.UserControls;
 
 public sealed partial class FriendRequestPanelUC : UserControl
 {
@@ -15,16 +16,10 @@ public sealed partial class FriendRequestPanelUC : UserControl
 
         Dock = DockStyle.Top;
         Tag = request;
-        MouseMove += onMove;
-        MouseLeave += onLeave;
 
         requestPanel.Tag = request;
-        requestPanel.MouseMove += onMove;
-        requestPanel.MouseLeave += onLeave;
 
         requestLabel.Text = request.Sender.Username;
-        requestLabel.MouseMove += onMove;
-        requestLabel.MouseLeave += onLeave;
         requestLabel.Tag = request;
 
         acceptButton.Text = "✓";
@@ -34,5 +29,9 @@ public sealed partial class FriendRequestPanelUC : UserControl
         declineButton.Text = "✗";
         declineButton.Tag = request;
         declineButton.Click += onDecline;
+
+        MouseEventUtils.PropagateMouseEvents(this, onMove, onLeave, null);
+        MouseEventUtils.PropagateMouseEvents(requestPanel, onMove, onLeave, null);
+        MouseEventUtils.PropagateMouseEvents(requestLabel, onMove, onLeave, null);
     }
 }

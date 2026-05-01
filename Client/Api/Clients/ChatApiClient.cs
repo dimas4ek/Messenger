@@ -30,6 +30,12 @@ public class ChatApiClient(HttpClient httpClient) : ApiClientBase(httpClient)
         return GetAsync<ChatResponse>($"api/chat/{chatId}?userId={currentUserId}");
     }
 
+    public Task<ApiResult<DeleteResponse>> DeletePrivateChat(int chatId, int currentUserId, int friendId)
+    {
+        return DeleteAsync<DeleteResponse>(
+            $"api/chat/private/{chatId}?currentUserId={currentUserId}&friendId={friendId}");
+    }
+
     public Task<ApiResult<MessageResponse>> SendMessage(int currentChatId, int senderId, string message)
     {
         return PostAsync<MessageResponse>($"api/chat/{currentChatId}/messages", new SendMessageRequest

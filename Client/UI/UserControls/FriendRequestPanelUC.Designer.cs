@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace Client.UI.Factory;
+namespace Client.UI.UserControls;
 
 sealed partial class FriendRequestPanelUC
 {
@@ -64,7 +64,7 @@ sealed partial class FriendRequestPanelUC
         acceptButton.FillColor = System.Drawing.Color.FromArgb(((int)((byte)39)), ((int)((byte)174)), ((int)((byte)96)));
         acceptButton.Font = new System.Drawing.Font("Segoe UI", 9F);
         acceptButton.ForeColor = System.Drawing.Color.White;
-        acceptButton.Location = new System.Drawing.Point(270, 20);
+        acceptButton.Location = new System.Drawing.Point(210, 20);
         acceptButton.Name = "acceptButton";
         acceptButton.ShadowDecoration.CustomizableEdges = customizableEdges2;
         acceptButton.Size = new System.Drawing.Size(40, 30);
@@ -81,7 +81,7 @@ sealed partial class FriendRequestPanelUC
         declineButton.FillColor = System.Drawing.Color.FromArgb(((int)((byte)192)), ((int)((byte)57)), ((int)((byte)43)));
         declineButton.Font = new System.Drawing.Font("Segoe UI", 9F);
         declineButton.ForeColor = System.Drawing.Color.White;
-        declineButton.Location = new System.Drawing.Point(315, 20);
+        declineButton.Location = new System.Drawing.Point(255, 20);
         declineButton.Name = "declineButton";
         declineButton.ShadowDecoration.CustomizableEdges = customizableEdges4;
         declineButton.Size = new System.Drawing.Size(40, 30);
@@ -98,16 +98,16 @@ sealed partial class FriendRequestPanelUC
         requestPanel.Location = new System.Drawing.Point(0, 0);
         requestPanel.Name = "requestPanel";
         requestPanel.ShadowDecoration.CustomizableEdges = customizableEdges6;
-        requestPanel.Size = new System.Drawing.Size(360, 70);
+        requestPanel.Size = new System.Drawing.Size(300, 70);
         requestPanel.TabIndex = 3;
         // 
-        // FriendRequestPanelFactoryUserControl
+        // FriendRequestPanelUC
         // 
         AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
         AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
         BackColor = System.Drawing.Color.FromArgb(((int)((byte)23)), ((int)((byte)33)), ((int)((byte)43)));
         Controls.Add(requestPanel);
-        Size = new System.Drawing.Size(360, 70);
+        Size = new System.Drawing.Size(300, 70);
         requestPanel.ResumeLayout(false);
         requestPanel.PerformLayout();
         ResumeLayout(false);

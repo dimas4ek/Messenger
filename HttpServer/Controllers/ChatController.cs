@@ -10,7 +10,10 @@ namespace HttpServer.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class ChatController(ChatService chatService, IHubContext<ChatHub> hubContext) : AppControllerBase
+public class ChatController(
+    ChatService chatService,
+    IHubContext<ChatHub> chatHubContext,
+    IHubContext<FriendHub> friendHubContext) : AppControllerBase
 {
     [HttpGet("list")]
     public async Task<ActionResult<ChatListResponse>> GetChatList([FromQuery(Name = "userId")] int userId)
@@ -34,7 +37,7 @@ public class ChatController(ChatService chatService, IHubContext<ChatHub> hubCon
             return error;
 
         foreach (var addedUserId in request.AddedUserIds)
-            await hubContext.Clients.Group($"user:{addedUserId}")
+            await chatHubContext.Clients.Group($"user:{addedUserId}")
                 .SendAsync("GroupChatCreated", new GroupChatCreatedEvent { Chat = groupChat });
 
         return Ok(new ChatResponse { Chat = groupChat });
@@ -47,6 +50,19 @@ public class ChatController(ChatService chatService, IHubContext<ChatHub> hubCon
             return error;
 
         return Ok(new ChatResponse { Chat = chat });
+    }
+
+    [HttpDelete("private/{chatId:int}")]
+    public async Task<ActionResult<DeleteResponse>> DeleteChat(int chatId,
+        [FromQuery(Name = "currentUserId")] int currentUserId, [FromQuery(Name = "friendId")] int friendId)
+    {
+        if (!TryGetValue(await chatService.DeleteChat(chatId, currentUserId), out var success, out var error))
+            return error;
+
+        await chatHubContext.Clients.Group($"user:{friendId}")
+            .SendAsync("DeleteChat", chatId);
+
+        return Ok(new DeleteResponse { Success = success });
     }
 
     /*[HttpPatch("{id:int}/image")]
@@ -75,7 +91,7 @@ public class ChatController(ChatService chatService, IHubContext<ChatHub> hubCon
 
         var messageResponse = new MessageResponse { Message = message };
 
-        await hubContext.Clients.Group($"chat:{chatId}")
+        await chatHubContext.Clients.Group($"chat:{chatId}")
             .SendAsync("ReceiveMessage", messageResponse);
 
         return Ok(messageResponse);
@@ -91,7 +107,7 @@ public class ChatController(ChatService chatService, IHubContext<ChatHub> hubCon
 
         var messageResponse = new MessageResponse { Message = message };
 
-        await hubContext.Clients.Group($"chat:{chatId}")
+        await chatHubContext.Clients.Group($"chat:{chatId}")
             .SendAsync("EditMessage", messageResponse);
 
         return Ok(messageResponse);
@@ -103,7 +119,7 @@ public class ChatController(ChatService chatService, IHubContext<ChatHub> hubCon
         if (!TryGetValue(await chatService.DeleteMessage(chatId, messageId), out var success, out var error))
             return error;
 
-        await hubContext.Clients.Group($"chat:{chatId}")
+        await chatHubContext.Clients.Group($"chat:{chatId}")
             .SendAsync("DeleteMessage", messageId);
 
         return Ok(new DeleteResponse { Success = success });

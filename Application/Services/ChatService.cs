@@ -39,6 +39,22 @@ public class ChatService(
         return Result<ChatInfo>.Success(chatDto);
     }
 
+    public async Task<Result<bool>> DeleteChat(int chatId, int currentUserId)
+    {
+        var chat = await chatRepository.GetChat(chatId, currentUserId);
+
+        if (chat == null)
+            return Result<bool>.Failure(ErrorCode.ChatNotFound);
+
+        if (chat.Id != chatId)
+            return Result<bool>.Failure(ErrorCode.AccessDenied);
+
+        chatRepository.Remove(chat);
+        await chatRepository.Save();
+
+        return Result<bool>.Success(true);
+    }
+
     public async Task<Result<ChatInfo>> CreateGroupChat(string name, int? imageId, int creatorId,
         IEnumerable<int> addedUserIds)
     {

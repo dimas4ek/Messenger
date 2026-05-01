@@ -1,6 +1,7 @@
 ﻿using Application.DTO;
+using Client.UI.Utils;
 
-namespace Client.UI.Factory;
+namespace Client.UI.UserControls;
 
 public sealed partial class FriendSelectPanelUC : UserControl
 {
@@ -16,15 +17,14 @@ public sealed partial class FriendSelectPanelUC : UserControl
         Dock = DockStyle.Top;
 
         friendPanel.Tag = friend;
-        friendPanel.MouseMove += onMove;
-        friendPanel.MouseLeave += onLeave;
 
         friendLabel.Text = friend.Username;
-        friendLabel.MouseMove += onMove;
-        friendLabel.MouseLeave += onLeave;
         friendLabel.Tag = friend;
 
         addButton.Tag = friend;
         addButton.Click += onAdd;
+
+        MouseEventUtils.PropagateMouseEvents(friendPanel, onMove, onLeave, null);
+        MouseEventUtils.PropagateMouseEvents(friendLabel, onMove, onLeave, null);
     }
 }

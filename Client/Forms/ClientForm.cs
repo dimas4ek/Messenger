@@ -5,7 +5,7 @@ using Client.Filter;
 using Client.Forms.Base;
 using Client.Forms.Dialogs;
 using Client.Services;
-using Client.UI.Factory;
+using Client.UI.UserControls;
 using Client.UI.Utils;
 using Contracts.DTO.Event;
 using Domain.Enums;
@@ -25,12 +25,12 @@ public partial class ClientForm : BaseForm
     private Guna2Panel? _activeMenuPanel;
     private ChatInfo? _chat;
 
-    private FlowLayoutPanel _chatPanel = null!;
-
     private UserInfo _currentUser = null!;
     private OutsideClickFilter? _menuFilter;
 
     private MessageQueueService? _messageQueue;
+
+    private FlowLayoutPanel _messagesPanel = null!;
 
     private ProfilePanelUC _profilePanel = null!;
 
@@ -56,6 +56,7 @@ public partial class ClientForm : BaseForm
         Load += ClientForm_Load;
 
         _chatController.GroupChatCreated += OnGroupChatCreated;
+        _chatController.ChatDeleted += OnChatDeleted;
 
         _chatController.MessageLoaded += OnMessageLoaded;
         _chatController.MessageReceived += OnMessageReceived;
@@ -149,6 +150,20 @@ public partial class ClientForm : BaseForm
         AddChatPanel(e.Chat);
     }
 
+    private void OnChatDeleted(int chatId)
+    {
+        if (InvokeRequired)
+        {
+            BeginInvoke(() => OnChatDeleted(chatId));
+            return;
+        }
+
+        var panel = FindPrivateChatPanel(chatId);
+        if (panel == null) return;
+
+        chatListPanel.Controls.Remove(panel);
+    }
+
     private void OnMessageLoaded(MessageInfo message)
     {
         if (InvokeRequired)
@@ -199,14 +214,14 @@ public partial class ClientForm : BaseForm
         var panel = FindMessagePanel(messageId);
         if (panel == null) return;
 
-        _chatPanel.Controls.Remove(panel);
+        _messagesPanel.Controls.Remove(panel);
     }
 
     private void OnMessageConfirmed(OutgoingChatMessage item, MessageInfo message)
     {
         BeginInvoke(() =>
         {
-            var panel = _chatPanel.Controls
+            var panel = _messagesPanel.Controls
                 .OfType<MessagePanelUC>()
                 .FirstOrDefault(p => p.Message.TempId == item.TempId);
 
@@ -280,14 +295,6 @@ public partial class ClientForm : BaseForm
 
     #region Friends
 
-    private static void OnFriendPanelMove(object? s, Action<Guna2Panel>? onPanel = null)
-    {
-        if (s is not Control c) return;
-        c.Cursor = Cursors.Hand;
-        var panel = c as Guna2Panel ?? c.Parent as Guna2Panel;
-        if (panel != null) onPanel?.Invoke(panel);
-    }
-
     private void AddFriendTxtBox_KeyDown(object? sender, KeyEventArgs e)
     {
         if (e.KeyCode != Keys.Enter) return;
@@ -316,7 +323,7 @@ public partial class ClientForm : BaseForm
 
     private void BtnFriendRequestsClick(object sender, EventArgs e)
     {
-        var dialog = new FriendRequestsDialog(_currentUser, _friendController.Friends, AddChatPanel);
+        var dialog = new FriendsDialog(_currentUser, _friendController.Friends, AddChatPanel);
         dialog.ShowDialog();
     }
 
@@ -335,72 +342,44 @@ public partial class ClientForm : BaseForm
         var panel = new ChatPanelUC(
             chat,
             _currentUser.Id,
-            (s, _) => OnFriendPanelMove(s, p => ColorHelper.SetPanelColor(p, 35, 46, 60)),
-            (s, _) => OnFriendPanelMove(s, p => ColorHelper.SetPanelColor(p, 23, 33, 43)),
-            (s, e) => _ = SafeInvoke(() => HandleChatClick(s))
+            (s, _) => MouseEventUtils.OnFriendPanelMove(s, p => ColorHelper.SetPanelColor(p, 35, 46, 60)),
+            (s, _) => MouseEventUtils.OnFriendPanelMove(s, p => ColorHelper.SetPanelColor(p, 23, 33, 43)),
+            (s, e) => _ = SafeInvoke(async () => await HandleChatClick(s, e))
         );
         chatListPanel.Controls.Add(panel);
     }
 
-    private async Task HandleChatClick(object? sender)
+    private async Task HandleChatClick(object? sender, MouseEventArgs e)
     {
-        var chat = sender switch
-        {
-            Control c => c.Tag as ChatInfo,
-            _ => null
-        };
-
-        if (chat == null || _chat?.Id == chat.Id) return;
-
-        _chat = chat;
-        lblLoadedChat.Text = _chat.Name;
-        dialogPanel.Controls.Clear();
-
-        await LoadDialogAsync();
-    }
-
-    private async Task LoadDialogAsync()
-    {
-        _chatPanel = new FlowLayoutPanel
-        {
-            Parent = dialogPanel,
-            Dock = DockStyle.Fill,
-            FlowDirection = FlowDirection.TopDown,
-            WrapContents = false,
-            AutoScroll = true
-        };
-
-        chatTopPanel.Visible = true;
-        btnSndMsg.Visible = true;
-        txtBoxMessage.Visible = true;
-        txtBoxPanel.Visible = true;
-
-        if (_chat == null) return;
-        await _chatController.LoadChat(_currentUser.Id, _chat.Id);
-    }
-
-    private void LoadMessageUI(MessageInfo message)
-    {
-        var panel = new MessagePanelUC(message, Message_MouseClick);
-        _chatPanel.Controls.Add(panel);
-        _chatPanel.ScrollControlIntoView(panel);
-    }
-
-    private void Message_MouseClick(object? sender, MouseEventArgs e)
-    {
-        if ((e.Button & MouseButtons.Right) == 0) return;
-
         var control = sender as Control;
 
-        while (control != null && control is not MessagePanelUC)
+        while (control != null && control is not ChatPanelUC)
             control = control.Parent;
 
-        if (control is not MessagePanelUC panel) return;
+        if (control is not ChatPanelUC panel) return;
 
-        ShowMessageContextMenu(panel, panel.Message, e.Location);
+        switch (e.Button)
+        {
+            case MouseButtons.Left:
+                _chat = panel.Chat;
+                lblLoadedChat.Text = _chat.Name;
+                dialogPanel.Controls.Clear();
+                await LoadDialogAsync();
+                break;
+            case MouseButtons.Right:
+                ShowChatContextMenu(panel, e.Location);
+                break;
+            case MouseButtons.None:
+            case MouseButtons.Middle:
+            case MouseButtons.XButton1:
+            case MouseButtons.XButton2:
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
     }
 
-    private void ShowMessageContextMenu(MessagePanelUC messagePanel, MessageInfo message, Point location)
+    private void ShowChatContextMenu(ChatPanelUC chatPanel, Point location)
     {
         CloseActiveContextMenu();
 
@@ -437,6 +416,135 @@ public partial class ClientForm : BaseForm
             HoverState = { FillColor = Color.FromArgb(45, 58, 71) }
         };
 
+        var chat = chatPanel.Chat;
+
+        var isAdmin = chat.Participants
+            .Select(p => p.Role == ChatParticipationRole.Admin && p.UserId == _currentUser.Id)
+            .FirstOrDefault();
+
+        editButton.Visible = isAdmin;
+        deleteButton.Location = isAdmin ? new Point(5, 42) : new Point(5, 5);
+        menuPanel.Size = isAdmin ? new Size(160, 80) : new Size(160, 42);
+
+        editButton.Click += (_, _) =>
+        {
+            CloseActiveContextMenu();
+            _ = SafeInvoke(async () =>
+            {
+                /*var dialog = new InputDialog("Изменить чат", chat.Text);
+                await dialog.ShowDialogAsync();
+                if (dialog.Result == null) return;
+
+                await _chatController.EditMessage(chat, dialog.Result);
+                var panel = FindMessagePanel(chat.Id);
+                if (panel != null) panel.UpdateText(dialog.Result);*/
+            });
+        };
+
+        deleteButton.Click += (_, _) =>
+        {
+            CloseActiveContextMenu();
+            _ = SafeInvoke(async () =>
+            {
+                await _chatController.DeletePrivateChat(chat, _currentUser.Id);
+                chatListPanel.Controls.Remove(chatPanel);
+            });
+        };
+
+        menuPanel.Controls.Add(editButton);
+        menuPanel.Controls.Add(deleteButton);
+
+        var formPos = PointToClient(chatPanel.PointToScreen(location));
+        menuPanel.Location = formPos;
+        Controls.Add(menuPanel);
+        menuPanel.BringToFront();
+        menuPanel.Focus();
+
+        _activeMenuPanel = menuPanel;
+        _menuFilter = new OutsideClickFilter(menuPanel, this, CloseActiveContextMenu);
+        System.Windows.Forms.Application.AddMessageFilter(_menuFilter);
+    }
+
+    private async Task LoadDialogAsync()
+    {
+        _messagesPanel = new FlowLayoutPanel
+        {
+            Parent = dialogPanel,
+            Dock = DockStyle.Fill,
+            FlowDirection = FlowDirection.TopDown,
+            WrapContents = false,
+            AutoScroll = true
+        };
+
+        chatTopPanel.Visible = true;
+        btnSndMsg.Visible = true;
+        txtBoxMessage.Visible = true;
+        txtBoxPanel.Visible = true;
+
+        if (_chat == null) return;
+        await _chatController.LoadChat(_currentUser.Id, _chat.Id);
+    }
+
+    private void LoadMessageUI(MessageInfo message)
+    {
+        var panel = new MessagePanelUC(message, Message_MouseClick);
+        _messagesPanel.Controls.Add(panel);
+        _messagesPanel.ScrollControlIntoView(panel);
+    }
+
+    private void Message_MouseClick(object? sender, MouseEventArgs e)
+    {
+        if ((e.Button & MouseButtons.Right) == 0) return;
+
+        var control = sender as Control;
+
+        while (control != null && control is not MessagePanelUC)
+            control = control.Parent;
+
+        if (control is not MessagePanelUC panel) return;
+
+        ShowMessageContextMenu(panel, e.Location);
+    }
+
+    private void ShowMessageContextMenu(MessagePanelUC messagePanel, Point location)
+    {
+        CloseActiveContextMenu();
+
+        var menuPanel = new Guna2Panel
+        {
+            Size = new Size(160, 80),
+            BackColor = Color.FromArgb(30, 43, 56),
+            BorderRadius = 8,
+            BorderColor = Color.FromArgb(50, 63, 76),
+            BorderThickness = 1
+        };
+
+        var editButton = new Guna2Button
+        {
+            Text = "Изменить",
+            Size = new Size(150, 32),
+            Location = new Point(5, 5),
+            ForeColor = Color.White,
+            BorderRadius = 6,
+            Font = new Font("Segoe UI", 9f),
+            FillColor = Color.Transparent,
+            HoverState = { FillColor = Color.FromArgb(45, 58, 71) }
+        };
+
+        var deleteButton = new Guna2Button
+        {
+            Text = "Удалить",
+            Size = new Size(150, 32),
+            Location = new Point(5, 42),
+            ForeColor = Color.FromArgb(220, 80, 80),
+            BorderRadius = 6,
+            Font = new Font("Segoe UI", 9f),
+            FillColor = Color.Transparent,
+            HoverState = { FillColor = Color.FromArgb(45, 58, 71) }
+        };
+
+        var message = messagePanel.Message;
+
         var isOwnMessage = message.Sender.Id == _currentUser.Id;
 
         editButton.Visible = isOwnMessage;
@@ -453,8 +561,9 @@ public partial class ClientForm : BaseForm
                 if (dialog.Result == null) return;
 
                 await _chatController.EditMessage(message, dialog.Result);
-                var panel = FindMessagePanel(message.Id);
-                if (panel != null) panel.UpdateText(dialog.Result);
+                messagePanel.UpdateText(dialog.Result);
+                /*var panel = FindMessagePanel(message.Id);
+                if (panel != null) panel.UpdateText(dialog.Result);*/
             });
         };
 
@@ -464,8 +573,9 @@ public partial class ClientForm : BaseForm
             _ = SafeInvoke(async () =>
             {
                 await _chatController.DeleteMessage(message);
-                var panel = FindMessagePanel(message.Id);
-                if (panel != null) _chatPanel.Controls.Remove(panel);
+                _messagesPanel.Controls.Remove(messagePanel);
+                /*var panel = FindMessagePanel(message.Id);
+                if (panel != null) _messagesPanel.Controls.Remove(panel);*/
             });
         };
 
@@ -594,17 +704,16 @@ public partial class ClientForm : BaseForm
 
     private MessagePanelUC? FindMessagePanel(int messageId)
     {
-        return _chatPanel.Controls
+        return _messagesPanel.Controls
             .OfType<MessagePanelUC>()
             .FirstOrDefault(p => p.Message.Id == messageId);
     }
 
-    private ChatPanelUC? FindPrivateChatPanel(int friendId)
+    private ChatPanelUC? FindPrivateChatPanel(int chatId)
     {
         return chatListPanel.Controls
             .OfType<ChatPanelUC>()
-            .FirstOrDefault(p => p.Tag is ChatInfo { Type: ChatType.Private } c &&
-                                 c.Participants.Any(cp => cp.UserId == friendId));
+            .FirstOrDefault(p => p.Tag is ChatInfo { Type: ChatType.Private } c && c.Id == chatId);
     }
 
     public void btnUpdServers_Click(object sender, EventArgs e)

@@ -1,8 +1,8 @@
 ﻿using Application.DTO;
 using Application.Utils;
 using Client.Api.Clients;
-using Client.Properties;
 using Client.Services;
+using Client.UI.Utils;
 using Client.Utils;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -28,7 +28,7 @@ public partial class ProfileSettingsDialog : Form
 
         Load += (_, _) =>
         {
-            avatar.Image = GetAvatar();
+            avatar.Image = ImageHelper.GetAvatar(_currentUser.Avatar);
             avatar.Click += ChangeAvatar;
 
             usernameValueLabel.Text = _currentUser.Username;
@@ -127,13 +127,5 @@ public partial class ProfileSettingsDialog : Form
         avatar.Image = Image.FromFile(filePath);
         avatar.SizeMode = PictureBoxSizeMode.Zoom;
         _currentUser.Avatar = resultValue.User.Avatar;
-    }
-
-    private Image GetAvatar()
-    {
-        if (_currentUser.Avatar?.Data == null) return Resources.DefaultAvatarImage;
-
-        using var ms = new MemoryStream(_currentUser.Avatar.Data);
-        return Image.FromStream(ms);
     }
 }

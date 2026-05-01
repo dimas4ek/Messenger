@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace Client.UI.Factory;
+namespace Client.UI.UserControls;
 
 sealed partial class ProfilePanelUC
 {

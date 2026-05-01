@@ -3,7 +3,7 @@ using Application.Utils;
 using Client.Api.Clients;
 using Client.Properties;
 using Client.Services;
-using Client.UI.Factory;
+using Client.UI.UserControls;
 using Client.UI.Utils;
 using Client.Utils;
 using Guna.UI2.WinForms;

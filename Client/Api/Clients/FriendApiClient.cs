@@ -49,7 +49,8 @@ public class FriendApiClient(HttpClient httpClient) : ApiClientBase(httpClient)
             if (response.IsSuccessStatusCode)
             {
                 if (!acceptRequest)
-                    return ApiResult<FriendRequestActionResponse>.Success(null!);
+                    return ApiResult<FriendRequestActionResponse>.Success(new FriendRequestActionResponse
+                        { CreatedChat = null, Friend = null });
                 var friendRequestActionResponse =
                     await response.Content.ReadFromJsonAsync<FriendRequestActionResponse>();
 

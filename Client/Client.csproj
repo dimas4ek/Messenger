@@ -46,7 +46,7 @@
         <Compile Update="Forms\Dialogs\CreateGroupChatDialog.cs">
             <SubType>Form</SubType>
         </Compile>
-        <Compile Update="Forms\Dialogs\FriendRequestsDialog.cs">
+        <Compile Update="Forms\Dialogs\FriendsDialog.cs">
             <SubType>Form</SubType>
         </Compile>
         <Compile Update="Forms\Dialogs\InputDialog.cs">
@@ -68,6 +68,9 @@
             <SubType>UserControl</SubType>
         </Compile>
         <Compile Update="UI\Factory\ProfilePanelUC.cs">
+            <SubType>UserControl</SubType>
+        </Compile>
+        <Compile Update="UI\UserControls\FriendPanelUC.cs">
             <SubType>UserControl</SubType>
         </Compile>
     </ItemGroup>

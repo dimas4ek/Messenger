@@ -1,6 +1,6 @@
 ﻿using Application.DTO;
 
-namespace Client.UI.Factory;
+namespace Client.UI.UserControls;
 
 public partial class MessagePanelUC : UserControl
 {

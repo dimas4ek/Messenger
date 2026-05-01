@@ -1,7 +1,7 @@
 ﻿using Application.DTO;
 using Client.Forms.Dialogs;
 
-namespace Client.UI.Factory;
+namespace Client.UI.UserControls;
 
 public sealed partial class ProfilePanelUC : UserControl
 {

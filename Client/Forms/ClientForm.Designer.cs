@@ -118,7 +118,7 @@
             mainPanel.Size = new System.Drawing.Size(245, 786);
             mainPanel.TabIndex = 3;
             // 
-            // chatsPanel
+            // chatListPanel
             // 
             chatListPanel.AutoScroll = true;
             chatListPanel.Controls.Add(rayanImage);
@@ -132,7 +132,7 @@
             chatListPanel.Size = new System.Drawing.Size(245, 719);
             chatListPanel.TabIndex = 11;
             // 
-            // guna2PictureBox1
+            // rayanImage
             // 
             rayanImage.CustomizableEdges = customizableEdges3;
             rayanImage.Dock = System.Windows.Forms.DockStyle.Bottom;
@@ -199,7 +199,7 @@
             txtBoxSearch.TabIndex = 1;
             txtBoxSearch.KeyUp += txtBoxSearch_KeyUp;
             // 
-            // chatPanelGuna
+            // dialogPanel
             // 
             dialogPanel.CustomizableEdges = customizableEdges13;
             dialogPanel.Dock = System.Windows.Forms.DockStyle.Left;
@@ -347,7 +347,7 @@
             // 
             // btnFriendRequests
             // 
-            btnFriendRequests.Image = global::Client.Properties.Resources.FriendRequestsImage;
+            btnFriendRequests.Image = global::Client.Properties.Resources.FriendListImage;
             btnFriendRequests.ImageOffset = new System.Drawing.Point(0, 0);
             btnFriendRequests.ImageRotate = 0F;
             btnFriendRequests.ImageSize = new System.Drawing.Size(35, 35);

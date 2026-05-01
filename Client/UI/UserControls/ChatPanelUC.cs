@@ -1,8 +1,8 @@
 ﻿using Application.DTO;
-using Client.Properties;
+using Client.UI.Utils;
 using Domain.Enums;
 
-namespace Client.UI.Factory;
+namespace Client.UI.UserControls;
 
 public sealed partial class ChatPanelUC : UserControl
 {
@@ -19,7 +19,9 @@ public sealed partial class ChatPanelUC : UserControl
         Dock = DockStyle.Top;
         chatPanel.Tag = chat;
 
-        chatImage.Image = GetAvatar(chat);
+        Chat = chat;
+
+        chatImage.Image = ImageHelper.GetAvatar(chat.Image);
         chatImage.Tag = chat;
 
         statusDot.Visible = false;
@@ -34,17 +36,19 @@ public sealed partial class ChatPanelUC : UserControl
 
             statusDot.BringToFront();
 
-            PropagateMouseEvents(statusDot, onMove, onLeave, onClick);
+            MouseEventUtils.PropagateMouseEvents(statusDot, onMove, onLeave, onClick);
         }
 
-        chatLabel.Text = chat.Name;
+        chatLabel.Text = chat.Name + " {" + chat.Id + "}";
         chatLabel.Location = new Point(chatImage.Size.Width + 10, 13);
         chatLabel.Tag = chat;
 
-        PropagateMouseEvents(chatPanel, onMove, onLeave, onClick);
-        PropagateMouseEvents(chatImage, onMove, onLeave, onClick);
-        PropagateMouseEvents(chatLabel, onMove, onLeave, onClick);
+        MouseEventUtils.PropagateMouseEvents(chatPanel, onMove, onLeave, onClick);
+        MouseEventUtils.PropagateMouseEvents(chatImage, onMove, onLeave, onClick);
+        MouseEventUtils.PropagateMouseEvents(chatLabel, onMove, onLeave, onClick);
     }
+
+    public ChatInfo Chat { get; private set; }
 
     public void UpdateText(string newText)
     {
@@ -59,21 +63,5 @@ public sealed partial class ChatPanelUC : UserControl
     public void UpdateStatus(UserStatus status)
     {
         statusDot.BackColor = status == UserStatus.Online ? Color.Green : Color.Gray;
-    }
-
-    private static Image GetAvatar(ChatInfo chat)
-    {
-        if (chat.Image?.Data == null) return Resources.DefaultAvatarImage;
-
-        using var ms = new MemoryStream(chat.Image.Data);
-        return Image.FromStream(ms);
-    }
-
-    private static void PropagateMouseEvents(Control control, MouseEventHandler onMove, EventHandler onLeave,
-        MouseEventHandler onClick)
-    {
-        control.MouseMove += onMove;
-        control.MouseLeave += onLeave;
-        control.MouseClick += onClick;
     }
 }
