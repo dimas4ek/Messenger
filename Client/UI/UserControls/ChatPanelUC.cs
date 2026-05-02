@@ -39,7 +39,7 @@ public sealed partial class ChatPanelUC : UserControl
             MouseEventUtils.PropagateMouseEvents(statusDot, onMove, onLeave, onClick);
         }
 
-        chatLabel.Text = chat.Name + " {" + chat.Id + "}";
+        chatLabel.Text = chat.Name;
         chatLabel.Location = new Point(chatImage.Size.Width + 10, 13);
         chatLabel.Tag = chat;
 

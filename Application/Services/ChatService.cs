@@ -39,6 +39,24 @@ public class ChatService(
         return Result<ChatInfo>.Success(chatDto);
     }
 
+    public async Task<Result<ChatInfo>> EditChat(int chatId, string newName)
+    {
+        var chat = await chatRepository.GetChatById(chatId);
+
+        if (chat == null)
+            return Result<ChatInfo>.Failure(ErrorCode.ChatNotFound);
+
+        if (chat.Id != chatId)
+            return Result<ChatInfo>.Failure(ErrorCode.AccessDenied);
+
+        chat.Name = newName;
+
+        chatRepository.Update(chat);
+        await chatRepository.Save();
+
+        return await GetChat(chatId);
+    }
+
     public async Task<Result<bool>> DeleteChat(int chatId, int currentUserId)
     {
         var chat = await chatRepository.GetChat(chatId, currentUserId);
@@ -134,16 +152,6 @@ public class ChatService(
         return await GetMessage(newMessage.Id);
     }
 
-    public async Task<Result<MessageInfo>> GetMessage(int messageId)
-    {
-        var message = await messageRepository.GetMessageById(messageId);
-
-        if (message == null) return Result<MessageInfo>.Failure(ErrorCode.MessageNotFound);
-
-        var messageDto = mapper.Map<Message, MessageInfo>(message);
-        return Result<MessageInfo>.Success(messageDto);
-    }
-
     public async Task<Result<MessageInfo>> EditMessage(int chatId, int messageId, string newText)
     {
         var message = await messageRepository.GetMessageById(messageId);
@@ -177,5 +185,25 @@ public class ChatService(
         await messageRepository.Save();
 
         return Result<bool>.Success(true);
+    }
+
+    private async Task<Result<ChatInfo>> GetChat(int chatId)
+    {
+        var chat = await chatRepository.GetChatById(chatId);
+
+        if (chat == null) return Result<ChatInfo>.Failure(ErrorCode.MessageNotFound);
+
+        var chatDto = mapper.Map<Chat, ChatInfo>(chat);
+        return Result<ChatInfo>.Success(chatDto);
+    }
+
+    private async Task<Result<MessageInfo>> GetMessage(int messageId)
+    {
+        var message = await messageRepository.GetMessageById(messageId);
+
+        if (message == null) return Result<MessageInfo>.Failure(ErrorCode.MessageNotFound);
+
+        var messageDto = mapper.Map<Message, MessageInfo>(message);
+        return Result<MessageInfo>.Success(messageDto);
     }
 }

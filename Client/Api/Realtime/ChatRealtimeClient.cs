@@ -13,6 +13,7 @@ public class ChatRealtimeClient(RemoteConfig remoteConfig, IDialogService dialog
     protected override string UserGroupMethod => "JoinUserGroup";
 
     public event Action<GroupChatCreatedEvent>? GroupChatCreated;
+    public event Action<GroupChatUpdatedEvent>? GroupChatUpdated;
     public event Action<int>? ChatDeleted;
     public event Action<MessageResponse>? MessageReceived;
     public event Action<MessageResponse>? MessageUpdated;
@@ -20,7 +21,8 @@ public class ChatRealtimeClient(RemoteConfig remoteConfig, IDialogService dialog
 
     protected override void RegisterHandlers(HubConnection connection)
     {
-        connection.On<GroupChatCreatedEvent>("GroupChatCreated", e => GroupChatCreated?.Invoke(e));
+        connection.On<GroupChatCreatedEvent>("CreateGroupChat", e => GroupChatCreated?.Invoke(e));
+        connection.On<GroupChatUpdatedEvent>("EditGroupChat", e => GroupChatUpdated?.Invoke(e));
         connection.On<int>("DeleteChat", chatId => ChatDeleted?.Invoke(chatId));
         connection.On<MessageResponse>("ReceiveMessage", message => MessageReceived?.Invoke(message));
         connection.On<MessageResponse>("EditMessage", message => MessageUpdated?.Invoke(message));

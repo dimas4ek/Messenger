@@ -22,6 +22,7 @@ public class ChatController
         _dialogService = dialogService;
 
         _chatRealtimeClient.GroupChatCreated += OnGroupChatCreated;
+        _chatRealtimeClient.GroupChatUpdated += OnGroupChatUpdated;
         _chatRealtimeClient.ChatDeleted += OnChatDeleted;
 
         _chatRealtimeClient.MessageReceived += OnMessageReceived;
@@ -34,6 +35,7 @@ public class ChatController
     private List<MessageInfo>? Messages { get; set; } = [];
 
     public event Action<GroupChatCreatedEvent>? GroupChatCreated;
+    public event Action<GroupChatUpdatedEvent>? GroupChatUpdated;
     public event Action<int>? ChatDeleted;
 
     public event Action<MessageInfo>? MessageLoaded;
@@ -74,6 +76,18 @@ public class ChatController
         await _chatRealtimeClient.JoinChat(CurrentChat.Id);
     }
 
+    public async Task EditChat(ChatInfo chat, string newName)
+    {
+        var result = await _chatApiClient.EditChat(chat.Id, newName);
+        if (!result.IsSuccess)
+        {
+            _dialogService.ShowError(result.ToMessage());
+            return;
+        }
+
+        chat.Name = newName;
+    }
+
     public async Task DeletePrivateChat(ChatInfo chat, int currentUserId)
     {
         var friendId = chat.Participants.First(p => p.UserId != currentUserId).UserId;
@@ -85,8 +99,7 @@ public class ChatController
             return;
         }
 
-        Chats?.Remove(chat);
-        //ChatDeleted?.Invoke(chat.Id);
+        Chats.Remove(chat);
     }
 
     public async Task EditMessage(MessageInfo message, string newText)
@@ -101,7 +114,6 @@ public class ChatController
         }
 
         message.Text = newText;
-        //MessageUpdated?.Invoke(message);
     }
 
     public async Task DeleteMessage(MessageInfo message)
@@ -116,7 +128,6 @@ public class ChatController
         }
 
         Messages?.Remove(message);
-        // MessageDeleted?.Invoke(message.Id);
     }
 
     public List<ChatInfo> Search(string query)
@@ -141,6 +152,11 @@ public class ChatController
     private void OnGroupChatCreated(GroupChatCreatedEvent e)
     {
         GroupChatCreated?.Invoke(e);
+    }
+
+    private void OnGroupChatUpdated(GroupChatUpdatedEvent e)
+    {
+        GroupChatUpdated?.Invoke(e);
     }
 
     private void OnChatDeleted(int id)

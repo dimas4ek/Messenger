@@ -10,25 +10,37 @@ public class ChatRepository(MessengerContext context) : Repository<Chat>(context
 {
     private readonly MessengerContext _context = context;
 
+    public async Task<Chat?> GetChatById(int chatId)
+    {
+        return await _context.Chats
+            .Include(c => c.Participants)
+            .FirstOrDefaultAsync(m => m.Id == chatId);
+    }
+
     public async Task<List<Chat>> GetChatsByUserId(int userId)
     {
         return await _context.Chats
-            .Where(c => c.Participants.Any(p => p.ParticipantId == userId))
+            .Where(c => c.Participants.Any(cp => cp.ParticipantId == userId))
             .Select(c => new Chat
             {
                 Id = c.Id,
                 Type = c.Type,
                 Name = c.Type == ChatType.Private
-                    ? c.Participants.FirstOrDefault(p => p.ParticipantId != userId).Participant.Username
+                    ? c.Participants.FirstOrDefault(cp => cp.ParticipantId != userId).Participant.Username
                     : c.Name,
                 Image = c.Type == ChatType.Private
-                    ? c.Participants.FirstOrDefault(p => p.ParticipantId != userId).Participant.Avatar
+                    ? c.Participants.FirstOrDefault(cp => cp.ParticipantId != userId).Participant.Avatar
                     : c.Image,
-                Participants = c.Participants.Select(p => new ChatParticipant
+                Participants = c.Participants.Select(cp => new ChatParticipant
                 {
-                    ChatId = p.ChatId,
-                    ParticipantId = p.ParticipantId,
-                    Participant = new User { Status = p.Participant.Status }
+                    ChatId = cp.ChatId,
+                    ParticipantId = cp.ParticipantId,
+                    Participant = new User
+                    {
+                        Username = cp.Participant.Username,
+                        Status = cp.Participant.Status
+                    },
+                    Role = cp.Role
                 }).ToList()
             })
             .ToListAsync();

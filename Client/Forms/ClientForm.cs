@@ -22,7 +22,7 @@ public partial class ClientForm : BaseForm
     private readonly ProfileController _profileController = null!;
     private readonly UserContext _userContext = null!;
 
-    private Guna2Panel? _activeMenuPanel;
+    private ContextMenuUC? _activeMenuPanel;
     private ChatInfo? _chat;
 
     private UserInfo _currentUser = null!;
@@ -56,6 +56,7 @@ public partial class ClientForm : BaseForm
         Load += ClientForm_Load;
 
         _chatController.GroupChatCreated += OnGroupChatCreated;
+        _chatController.GroupChatUpdated += OnGroupChatUpdated;
         _chatController.ChatDeleted += OnChatDeleted;
 
         _chatController.MessageLoaded += OnMessageLoaded;
@@ -148,6 +149,24 @@ public partial class ClientForm : BaseForm
         }
 
         AddChatPanel(e.Chat);
+    }
+
+    private void OnGroupChatUpdated(GroupChatUpdatedEvent e)
+    {
+        if (InvokeRequired)
+        {
+            BeginInvoke(() => OnGroupChatUpdated(e));
+            return;
+        }
+
+        var chat = e.Chat;
+
+        var panel = FindGroupChatPanel(chat.Id);
+        if (panel == null) return;
+
+        panel.UpdateText(chat.Name);
+        if (panel.Tag is ChatInfo c)
+            c.Name = chat.Name;
     }
 
     private void OnChatDeleted(int chatId)
@@ -383,76 +402,17 @@ public partial class ClientForm : BaseForm
     {
         CloseActiveContextMenu();
 
-        var menuPanel = new Guna2Panel
-        {
-            Size = new Size(160, 80),
-            BackColor = Color.FromArgb(30, 43, 56),
-            BorderRadius = 8,
-            BorderColor = Color.FromArgb(50, 63, 76),
-            BorderThickness = 1
-        };
-
-        var editButton = new Guna2Button
-        {
-            Text = "Изменить",
-            Size = new Size(150, 32),
-            Location = new Point(5, 5),
-            ForeColor = Color.White,
-            BorderRadius = 6,
-            Font = new Font("Segoe UI", 9f),
-            FillColor = Color.Transparent,
-            HoverState = { FillColor = Color.FromArgb(45, 58, 71) }
-        };
-
-        var deleteButton = new Guna2Button
-        {
-            Text = "Удалить",
-            Size = new Size(150, 32),
-            Location = new Point(5, 42),
-            ForeColor = Color.FromArgb(220, 80, 80),
-            BorderRadius = 6,
-            Font = new Font("Segoe UI", 9f),
-            FillColor = Color.Transparent,
-            HoverState = { FillColor = Color.FromArgb(45, 58, 71) }
-        };
-
         var chat = chatPanel.Chat;
 
         var isAdmin = chat.Participants
             .Select(p => p.Role == ChatParticipationRole.Admin && p.UserId == _currentUser.Id)
             .FirstOrDefault();
 
-        editButton.Visible = isAdmin;
-        deleteButton.Location = isAdmin ? new Point(5, 42) : new Point(5, 5);
-        menuPanel.Size = isAdmin ? new Size(160, 80) : new Size(160, 42);
-
-        editButton.Click += (_, _) =>
-        {
-            CloseActiveContextMenu();
-            _ = SafeInvoke(async () =>
-            {
-                /*var dialog = new InputDialog("Изменить чат", chat.Text);
-                await dialog.ShowDialogAsync();
-                if (dialog.Result == null) return;
-
-                await _chatController.EditMessage(chat, dialog.Result);
-                var panel = FindMessagePanel(chat.Id);
-                if (panel != null) panel.UpdateText(dialog.Result);*/
-            });
-        };
-
-        deleteButton.Click += (_, _) =>
-        {
-            CloseActiveContextMenu();
-            _ = SafeInvoke(async () =>
-            {
-                await _chatController.DeletePrivateChat(chat, _currentUser.Id);
-                chatListPanel.Controls.Remove(chatPanel);
-            });
-        };
-
-        menuPanel.Controls.Add(editButton);
-        menuPanel.Controls.Add(deleteButton);
+        var menuPanel = new ContextMenuUC(
+            OnEditClick,
+            OnDeleteClick,
+            isAdmin
+        );
 
         var formPos = PointToClient(chatPanel.PointToScreen(location));
         menuPanel.Location = formPos;
@@ -463,6 +423,31 @@ public partial class ClientForm : BaseForm
         _activeMenuPanel = menuPanel;
         _menuFilter = new OutsideClickFilter(menuPanel, this, CloseActiveContextMenu);
         System.Windows.Forms.Application.AddMessageFilter(_menuFilter);
+        return;
+
+        void OnEditClick(object? sender, EventArgs e)
+        {
+            CloseActiveContextMenu();
+            _ = SafeInvoke(async () =>
+            {
+                var dialog = new InputDialog("Изменить чат", chat.Name);
+                await dialog.ShowDialogAsync();
+                if (dialog.Result == null) return;
+
+                await _chatController.EditChat(chat, dialog.Result);
+                chatPanel.UpdateText(dialog.Result);
+            });
+        }
+
+        void OnDeleteClick(object? sender, EventArgs e)
+        {
+            CloseActiveContextMenu();
+            _ = SafeInvoke(async () =>
+            {
+                await _chatController.DeletePrivateChat(chat, _currentUser.Id);
+                chatListPanel.Controls.Remove(chatPanel);
+            });
+        }
     }
 
     private async Task LoadDialogAsync()
@@ -510,77 +495,15 @@ public partial class ClientForm : BaseForm
     {
         CloseActiveContextMenu();
 
-        var menuPanel = new Guna2Panel
-        {
-            Size = new Size(160, 80),
-            BackColor = Color.FromArgb(30, 43, 56),
-            BorderRadius = 8,
-            BorderColor = Color.FromArgb(50, 63, 76),
-            BorderThickness = 1
-        };
-
-        var editButton = new Guna2Button
-        {
-            Text = "Изменить",
-            Size = new Size(150, 32),
-            Location = new Point(5, 5),
-            ForeColor = Color.White,
-            BorderRadius = 6,
-            Font = new Font("Segoe UI", 9f),
-            FillColor = Color.Transparent,
-            HoverState = { FillColor = Color.FromArgb(45, 58, 71) }
-        };
-
-        var deleteButton = new Guna2Button
-        {
-            Text = "Удалить",
-            Size = new Size(150, 32),
-            Location = new Point(5, 42),
-            ForeColor = Color.FromArgb(220, 80, 80),
-            BorderRadius = 6,
-            Font = new Font("Segoe UI", 9f),
-            FillColor = Color.Transparent,
-            HoverState = { FillColor = Color.FromArgb(45, 58, 71) }
-        };
-
         var message = messagePanel.Message;
 
         var isOwnMessage = message.Sender.Id == _currentUser.Id;
 
-        editButton.Visible = isOwnMessage;
-        deleteButton.Location = isOwnMessage ? new Point(5, 42) : new Point(5, 5);
-        menuPanel.Size = isOwnMessage ? new Size(160, 80) : new Size(160, 42);
-
-        editButton.Click += (_, _) =>
-        {
-            CloseActiveContextMenu();
-            _ = SafeInvoke(async () =>
-            {
-                var dialog = new InputDialog("Изменить сообщение", message.Text);
-                await dialog.ShowDialogAsync();
-                if (dialog.Result == null) return;
-
-                await _chatController.EditMessage(message, dialog.Result);
-                messagePanel.UpdateText(dialog.Result);
-                /*var panel = FindMessagePanel(message.Id);
-                if (panel != null) panel.UpdateText(dialog.Result);*/
-            });
-        };
-
-        deleteButton.Click += (_, _) =>
-        {
-            CloseActiveContextMenu();
-            _ = SafeInvoke(async () =>
-            {
-                await _chatController.DeleteMessage(message);
-                _messagesPanel.Controls.Remove(messagePanel);
-                /*var panel = FindMessagePanel(message.Id);
-                if (panel != null) _messagesPanel.Controls.Remove(panel);*/
-            });
-        };
-
-        menuPanel.Controls.Add(editButton);
-        menuPanel.Controls.Add(deleteButton);
+        var menuPanel = new ContextMenuUC(
+            OnEditClick,
+            OnDeleteClick,
+            isOwnMessage
+        );
 
         var formPos = PointToClient(messagePanel.PointToScreen(location));
         menuPanel.Location = formPos;
@@ -591,6 +514,31 @@ public partial class ClientForm : BaseForm
         _activeMenuPanel = menuPanel;
         _menuFilter = new OutsideClickFilter(menuPanel, this, CloseActiveContextMenu);
         System.Windows.Forms.Application.AddMessageFilter(_menuFilter);
+        return;
+
+        void OnEditClick(object? o, EventArgs eventArgs)
+        {
+            CloseActiveContextMenu();
+            _ = SafeInvoke(async () =>
+            {
+                var dialog = new InputDialog("Изменить сообщение", message.Text);
+                await dialog.ShowDialogAsync();
+                if (dialog.Result == null) return;
+
+                await _chatController.EditMessage(message, dialog.Result);
+                messagePanel.UpdateText(dialog.Result);
+            });
+        }
+
+        void OnDeleteClick(object? o, EventArgs eventArgs)
+        {
+            CloseActiveContextMenu();
+            _ = SafeInvoke(async () =>
+            {
+                await _chatController.DeleteMessage(message);
+                _messagesPanel.Controls.Remove(messagePanel);
+            });
+        }
     }
 
     private void CloseActiveContextMenu()
@@ -707,6 +655,13 @@ public partial class ClientForm : BaseForm
         return _messagesPanel.Controls
             .OfType<MessagePanelUC>()
             .FirstOrDefault(p => p.Message.Id == messageId);
+    }
+
+    private ChatPanelUC? FindGroupChatPanel(int chatId)
+    {
+        return chatListPanel.Controls
+            .OfType<ChatPanelUC>()
+            .FirstOrDefault(p => p.Tag is ChatInfo { Type: ChatType.Group } c && c.Id == chatId);
     }
 
     private ChatPanelUC? FindPrivateChatPanel(int chatId)

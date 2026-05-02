@@ -1,4 +1,5 @@
-﻿using Application.Services;
+﻿using Application.DTO;
+using Application.Services;
 using Contracts.DTO;
 using Contracts.DTO.Chat;
 using Contracts.DTO.Event;
@@ -12,8 +13,7 @@ namespace HttpServer.Controllers;
 [ApiController]
 public class ChatController(
     ChatService chatService,
-    IHubContext<ChatHub> chatHubContext,
-    IHubContext<FriendHub> friendHubContext) : AppControllerBase
+    IHubContext<ChatHub> chatHubContext) : AppControllerBase
 {
     [HttpGet("list")]
     public async Task<ActionResult<ChatListResponse>> GetChatList([FromQuery(Name = "userId")] int userId)
@@ -38,7 +38,7 @@ public class ChatController(
 
         foreach (var addedUserId in request.AddedUserIds)
             await chatHubContext.Clients.Group($"user:{addedUserId}")
-                .SendAsync("GroupChatCreated", new GroupChatCreatedEvent { Chat = groupChat });
+                .SendAsync("CreateGroupChat", new GroupChatCreatedEvent { Chat = groupChat });
 
         return Ok(new ChatResponse { Chat = groupChat });
     }
@@ -50,6 +50,20 @@ public class ChatController(
             return error;
 
         return Ok(new ChatResponse { Chat = chat });
+    }
+
+    [HttpPatch("{chatId:int}")]
+    public async Task<ActionResult<ChatResponse>> EditChat(int chatId, [FromBody] EditChatRequest request)
+    {
+        if (!TryGetValue(await chatService.EditChat(chatId, request.Name), out var chat,
+                out var error))
+            return error;
+
+        var chatResponse = new ChatResponse { Chat = chat };
+
+        await NotifyChatParticipants(chat, new GroupChatUpdatedEvent { Chat = chat });
+
+        return Ok(chatResponse);
     }
 
     [HttpDelete("private/{chatId:int}")]
@@ -123,5 +137,12 @@ public class ChatController(
             .SendAsync("DeleteMessage", messageId);
 
         return Ok(new DeleteResponse { Success = success });
+    }
+
+    private async Task NotifyChatParticipants(ChatInfo chat, GroupChatUpdatedEvent groupChatEvent)
+    {
+        foreach (var participant in chat.Participants)
+            await chatHubContext.Clients.Group($"user:{participant.UserId}")
+                .SendAsync("EditGroupChat", groupChatEvent);
     }
 }

@@ -16,18 +16,28 @@ public class ChatApiClient(HttpClient httpClient) : ApiClientBase(httpClient)
     public Task<ApiResult<ChatResponse>> CreateGroupChat(string name, int? imageId, int currentUserId,
         IEnumerable<int> addedUserIds)
     {
-        return PostAsync<ChatResponse>("api/chat/group", new GroupChatRequest
-        {
-            Name = name,
-            ImageId = imageId,
-            CreatorId = currentUserId,
-            AddedUserIds = addedUserIds
-        });
+        return PostAsync<ChatResponse>("api/chat/group",
+            new GroupChatRequest
+            {
+                Name = name,
+                ImageId = imageId,
+                CreatorId = currentUserId,
+                AddedUserIds = addedUserIds
+            });
     }
 
     public Task<ApiResult<ChatResponse>> LoadChat(int currentUserId, int chatId)
     {
         return GetAsync<ChatResponse>($"api/chat/{chatId}?userId={currentUserId}");
+    }
+
+    public Task<ApiResult<ChatResponse>> EditChat(int chatId, string newName)
+    {
+        return PatchAsync<ChatResponse>($"api/chat/{chatId}",
+            new EditChatRequest
+            {
+                Name = newName
+            });
     }
 
     public Task<ApiResult<DeleteResponse>> DeletePrivateChat(int chatId, int currentUserId, int friendId)
@@ -38,11 +48,12 @@ public class ChatApiClient(HttpClient httpClient) : ApiClientBase(httpClient)
 
     public Task<ApiResult<MessageResponse>> SendMessage(int currentChatId, int senderId, string message)
     {
-        return PostAsync<MessageResponse>($"api/chat/{currentChatId}/messages", new SendMessageRequest
-        {
-            SenderId = senderId,
-            Text = message
-        });
+        return PostAsync<MessageResponse>($"api/chat/{currentChatId}/messages",
+            new SendMessageRequest
+            {
+                SenderId = senderId,
+                Text = message
+            });
     }
 
     public Task<ApiResult<MessageResponse>> EditMessage(int chatId, int messageId, string newText)
@@ -62,11 +73,12 @@ public class ChatApiClient(HttpClient httpClient) : ApiClientBase(httpClient)
     public Task<ApiResult<ImageResponse>> ChangeGroupImage(int chatId, string name, byte[] imageBytes,
         ImageContentType contentType)
     {
-        return PatchAsync<ImageResponse>($"api/chat/{chatId}/image", new ImageRequest
-        {
-            Name = name,
-            Bytes = imageBytes,
-            ContentType = contentType
-        });
+        return PatchAsync<ImageResponse>($"api/chat/{chatId}/image",
+            new ImageRequest
+            {
+                Name = name,
+                Bytes = imageBytes,
+                ContentType = contentType
+            });
     }
 }

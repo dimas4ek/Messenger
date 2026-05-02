@@ -73,6 +73,9 @@
         <Compile Update="UI\UserControls\FriendPanelUC.cs">
             <SubType>UserControl</SubType>
         </Compile>
+        <Compile Update="UI\UserControls\ContextMenuUC.cs">
+            <SubType>UserControl</SubType>
+        </Compile>
     </ItemGroup>
 
     <ItemGroup>
