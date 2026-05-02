@@ -1,4 +1,5 @@
 ﻿using Application.Services;
+using Contracts;
 using Contracts.DTO.Auth;
 using Contracts.DTO.Event;
 using HttpServer.Hubs;
@@ -58,6 +59,6 @@ public class AuthController(AuthService authService, FriendService friendService
 
         foreach (var friend in friendListResult.Value)
             await hubContext.Clients.Group($"user:{friend.Id}")
-                .SendAsync("FriendStatus", friendEvent);
+                .SendAsync(HubMethods.Friends.FriendStatusUpdated, friendEvent);
     }
 }

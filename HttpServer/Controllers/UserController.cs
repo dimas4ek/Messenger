@@ -1,4 +1,5 @@
 ﻿using Application.Services;
+using Contracts;
 using Contracts.DTO.Event;
 using Contracts.DTO.Image;
 using Contracts.DTO.User;
@@ -73,6 +74,6 @@ public class UserController(UserService userService, FriendService friendService
 
         foreach (var friend in friendListResult.Value)
             await hubContext.Clients.Group($"user:{friend.Id}")
-                .SendAsync("FriendUpdated", friendEvent);
+                .SendAsync(HubMethods.Friends.FriendUpdated, friendEvent);
     }
 }

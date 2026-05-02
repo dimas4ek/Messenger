@@ -1,5 +1,6 @@
 ﻿using Client.Config;
 using Client.Services;
+using Contracts;
 using Contracts.DTO.Event;
 using Microsoft.AspNetCore.SignalR.Client;
 
@@ -9,15 +10,16 @@ public class FriendRealtimeClient(RemoteConfig remoteConfig, IDialogService dial
     : RealtimeClientBase(remoteConfig, dialogService)
 {
     protected override string HubPath => "friendHub";
-    protected override string UserGroupMethod => "JoinFriendGroup";
+    protected override string UserGroupMethod => HubMethods.Groups.JoinFriendGroup;
+
     public event Action<FriendAddedEvent>? FriendAdded;
     public event Action<FriendUpdatedEvent>? FriendUpdated;
     public event Action<FriendStatusEvent>? FriendStatus;
 
     protected override void RegisterHandlers(HubConnection connection)
     {
-        connection.On<FriendAddedEvent>("FriendAdded", e => FriendAdded?.Invoke(e));
-        connection.On<FriendUpdatedEvent>("FriendUpdated", e => FriendUpdated?.Invoke(e));
-        connection.On<FriendStatusEvent>("FriendStatus", e => FriendStatus?.Invoke(e));
+        connection.On<FriendAddedEvent>(HubMethods.Friends.FriendAdded, e => FriendAdded?.Invoke(e));
+        connection.On<FriendUpdatedEvent>(HubMethods.Friends.FriendUpdated, e => FriendUpdated?.Invoke(e));
+        connection.On<FriendStatusEvent>(HubMethods.Friends.FriendStatusUpdated, e => FriendStatus?.Invoke(e));
     }
 }

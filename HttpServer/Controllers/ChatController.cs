@@ -1,5 +1,6 @@
 ﻿using Application.DTO;
 using Application.Services;
+using Contracts;
 using Contracts.DTO;
 using Contracts.DTO.Chat;
 using Contracts.DTO.Event;
@@ -38,7 +39,7 @@ public class ChatController(
 
         foreach (var addedUserId in request.AddedUserIds)
             await chatHubContext.Clients.Group($"user:{addedUserId}")
-                .SendAsync("CreateGroupChat", new GroupChatCreatedEvent { Chat = groupChat });
+                .SendAsync(HubMethods.Chats.GroupChatCreated, new GroupChatCreatedEvent { Chat = groupChat });
 
         return Ok(new ChatResponse { Chat = groupChat });
     }
@@ -74,7 +75,7 @@ public class ChatController(
             return error;
 
         await chatHubContext.Clients.Group($"user:{friendId}")
-            .SendAsync("DeleteChat", chatId);
+            .SendAsync(HubMethods.Chats.GroupChatDeleted, chatId);
 
         return Ok(new DeleteResponse { Success = success });
     }
@@ -106,7 +107,7 @@ public class ChatController(
         var messageResponse = new MessageResponse { Message = message };
 
         await chatHubContext.Clients.Group($"chat:{chatId}")
-            .SendAsync("ReceiveMessage", messageResponse);
+            .SendAsync(HubMethods.Messages.MessageReceived, messageResponse);
 
         return Ok(messageResponse);
     }
@@ -122,7 +123,7 @@ public class ChatController(
         var messageResponse = new MessageResponse { Message = message };
 
         await chatHubContext.Clients.Group($"chat:{chatId}")
-            .SendAsync("EditMessage", messageResponse);
+            .SendAsync(HubMethods.Messages.MessageUpdated, messageResponse);
 
         return Ok(messageResponse);
     }
@@ -134,7 +135,7 @@ public class ChatController(
             return error;
 
         await chatHubContext.Clients.Group($"chat:{chatId}")
-            .SendAsync("DeleteMessage", messageId);
+            .SendAsync(HubMethods.Messages.MessageDeleted, messageId);
 
         return Ok(new DeleteResponse { Success = success });
     }
@@ -143,6 +144,6 @@ public class ChatController(
     {
         foreach (var participant in chat.Participants)
             await chatHubContext.Clients.Group($"user:{participant.UserId}")
-                .SendAsync("EditGroupChat", groupChatEvent);
+                .SendAsync(HubMethods.Chats.GroupChatUpdated, groupChatEvent);
     }
 }

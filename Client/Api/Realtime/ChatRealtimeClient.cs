@@ -1,5 +1,6 @@
 ﻿using Client.Config;
 using Client.Services;
+using Contracts;
 using Contracts.DTO.Chat;
 using Contracts.DTO.Event;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -10,7 +11,7 @@ public class ChatRealtimeClient(RemoteConfig remoteConfig, IDialogService dialog
     : RealtimeClientBase(remoteConfig, dialogService)
 {
     protected override string HubPath => "chatHub";
-    protected override string UserGroupMethod => "JoinUserGroup";
+    protected override string UserGroupMethod => HubMethods.Groups.JoinUserGroup;
 
     public event Action<GroupChatCreatedEvent>? GroupChatCreated;
     public event Action<GroupChatUpdatedEvent>? GroupChatUpdated;
@@ -21,21 +22,21 @@ public class ChatRealtimeClient(RemoteConfig remoteConfig, IDialogService dialog
 
     protected override void RegisterHandlers(HubConnection connection)
     {
-        connection.On<GroupChatCreatedEvent>("CreateGroupChat", e => GroupChatCreated?.Invoke(e));
-        connection.On<GroupChatUpdatedEvent>("EditGroupChat", e => GroupChatUpdated?.Invoke(e));
-        connection.On<int>("DeleteChat", chatId => ChatDeleted?.Invoke(chatId));
-        connection.On<MessageResponse>("ReceiveMessage", message => MessageReceived?.Invoke(message));
-        connection.On<MessageResponse>("EditMessage", message => MessageUpdated?.Invoke(message));
-        connection.On<int>("DeleteMessage", messageId => MessageDeleted?.Invoke(messageId));
+        connection.On<GroupChatCreatedEvent>(HubMethods.Chats.GroupChatCreated, e => GroupChatCreated?.Invoke(e));
+        connection.On<GroupChatUpdatedEvent>(HubMethods.Chats.GroupChatUpdated, e => GroupChatUpdated?.Invoke(e));
+        connection.On<int>(HubMethods.Chats.GroupChatDeleted, chatId => ChatDeleted?.Invoke(chatId));
+        connection.On<MessageResponse>(HubMethods.Messages.MessageReceived, message => MessageReceived?.Invoke(message));
+        connection.On<MessageResponse>(HubMethods.Messages.MessageUpdated, message => MessageUpdated?.Invoke(message));
+        connection.On<int>(HubMethods.Messages.MessageDeleted, messageId => MessageDeleted?.Invoke(messageId));
     }
 
     public Task JoinChat(int chatId)
     {
-        return InvokeAsync("JoinChatGroup", chatId.ToString());
+        return InvokeAsync(HubMethods.Groups.JoinChatGroup, chatId.ToString());
     }
 
     public Task LeaveChat(int chatId)
     {
-        return InvokeAsync("LeaveChatGroup", chatId.ToString());
+        return InvokeAsync(HubMethods.Groups.LeaveChatGroup, chatId.ToString());
     }
 }

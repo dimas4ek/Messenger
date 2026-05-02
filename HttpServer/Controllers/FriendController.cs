@@ -1,4 +1,5 @@
 ﻿using Application.Services;
+using Contracts;
 using Contracts.DTO.Event;
 using Contracts.DTO.Friend;
 using HttpServer.Hubs;
@@ -72,7 +73,7 @@ public class FriendController(FriendService friendService, ChatService chatServi
             return error;
 
         await hubContext.Clients.Group($"user:{friendRequest.Sender.Id}")
-            .SendAsync("FriendAdded",
+            .SendAsync(HubMethods.Friends.FriendAdded,
                 new FriendAddedEvent
                 {
                     Friend = friendRequest.Receiver,
