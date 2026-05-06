@@ -31,7 +31,7 @@ public class AuthController(AuthService authService, FriendService friendService
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponse>> Register([FromBody] AuthRequest request)
     {
-        if (!TryGetValue(await authService.LoginUser(request.Username, request.Password), out var user, out var error))
+        if (!TryGetValue(await authService.RegisterUser(request.Username, request.Password), out var user, out var error))
             return error;
 
         return Ok(new AuthResponse { User = user });
