@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Data;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace Infrastructure.Database;
 
@@ -128,8 +130,14 @@ public static class DatabaseInitializer
 
         await db.Database.ExecuteSqlRawAsync(sql);
 
-        /*var conn = (NpgsqlConnection)db.Database.GetDbConnection();
-        await conn.OpenAsync();
-        await conn.ReloadTypesAsync();*/
+        // On a fresh database the enum types (user_status, chat_type, ...) are created
+        // by the SQL above, but Npgsql has already cached the database's type catalog
+        // from its first connection — without those enums. Reload the type cache so the
+        // freshly-created enums are recognized right away; otherwise the first enum query
+        // fails until the process is restarted.
+        var connection = (NpgsqlConnection)db.Database.GetDbConnection();
+        if (connection.State != ConnectionState.Open)
+            await connection.OpenAsync();
+        await connection.ReloadTypesAsync();
     }
 }
