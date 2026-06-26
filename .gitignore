@@ -16,3 +16,8 @@ riderModule.iml
 *.suo
 *.cache
 *.dbmdl
+
+# Release build artifacts
+publish/
+installer/Output/
+Messenger-*-win-x64.zip

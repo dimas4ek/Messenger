@@ -8,6 +8,18 @@
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <AssemblyName>Messenger</AssemblyName>
+        <Version>1.0.0</Version>
+        <Product>Messenger</Product>
+        <AssemblyTitle>Messenger</AssemblyTitle>
+        <Authors>dimas4ek</Authors>
+        <Company>dimas4ek</Company>
+        <Description>Desktop messenger client (chats, friends, video, multi-language)</Description>
+        <Copyright>Copyright © 2026 dimas4ek</Copyright>
+        <RepositoryUrl>https://github.com/dimas4ek/Messenger</RepositoryUrl>
+    </PropertyGroup>
+
     <ItemGroup>
         <None Remove="appsettings.json" />
     </ItemGroup>
