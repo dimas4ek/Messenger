@@ -54,13 +54,14 @@
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges21 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges22 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges23 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges29 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges30 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges31 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges26 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges27 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges28 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges31 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges29 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges32 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges33 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             guna2Panel1 = new Guna.UI2.WinForms.Guna2Panel();
             mainPanel = new Guna.UI2.WinForms.Guna2Panel();
             chatListPanel = new Guna.UI2.WinForms.Guna2Panel();
@@ -77,6 +78,7 @@
             btnSndMsg = new Guna.UI2.WinForms.Guna2ImageButton();
             txtBoxMessage = new Guna.UI2.WinForms.Guna2TextBox();
             leftPanel = new Guna.UI2.WinForms.Guna2Panel();
+            changeLanguageButton = new Guna.UI2.WinForms.Guna2ImageButton();
             btnCreateGroupChat = new Guna.UI2.WinForms.Guna2ImageButton();
             btnFriendRequests = new Guna.UI2.WinForms.Guna2ImageButton();
             btnOpenProfile = new Guna.UI2.WinForms.Guna2ImageButton();
@@ -138,14 +140,13 @@
             rayanImage.Dock = System.Windows.Forms.DockStyle.Bottom;
             rayanImage.Image = global::Client.Properties.Resources.RayanGif;
             rayanImage.ImageRotate = 0F;
-            rayanImage.Location = new System.Drawing.Point(0, 524);
+            rayanImage.Location = new System.Drawing.Point(0, 540);
             rayanImage.Name = "rayanImage";
             rayanImage.ShadowDecoration.CustomizableEdges = customizableEdges4;
-            rayanImage.Size = new System.Drawing.Size(245, 195);
+            rayanImage.Size = new System.Drawing.Size(245, 179);
             rayanImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             rayanImage.TabIndex = 14;
             rayanImage.TabStop = false;
-            rayanImage.Visible = false;
             // 
             // lblLoadingChats
             // 
@@ -192,7 +193,7 @@
             txtBoxSearch.Location = new System.Drawing.Point(7, 7);
             txtBoxSearch.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             txtBoxSearch.Name = "txtBoxSearch";
-            txtBoxSearch.PlaceholderText = "Поиск...";
+            txtBoxSearch.PlaceholderText = "Search...";
             txtBoxSearch.SelectedText = "";
             txtBoxSearch.ShadowDecoration.CustomizableEdges = customizableEdges8;
             txtBoxSearch.Size = new System.Drawing.Size(231, 50);
@@ -255,9 +256,9 @@
             lblLoadedChat.Location = new System.Drawing.Point(7, 10);
             lblLoadedChat.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             lblLoadedChat.Name = "lblLoadedChat";
-            lblLoadedChat.Size = new System.Drawing.Size(87, 20);
+            lblLoadedChat.Size = new System.Drawing.Size(40, 20);
             lblLoadedChat.TabIndex = 12;
-            lblLoadedChat.Text = "companion";
+            lblLoadedChat.Text = "chat";
             // 
             // txtBoxPanel
             // 
@@ -310,7 +311,7 @@
             txtBoxMessage.Location = new System.Drawing.Point(0, 0);
             txtBoxMessage.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             txtBoxMessage.Name = "txtBoxMessage";
-            txtBoxMessage.PlaceholderText = "Введите сообщение...";
+            txtBoxMessage.PlaceholderText = "Enter message...";
             txtBoxMessage.SelectedText = "";
             txtBoxMessage.ShadowDecoration.CustomizableEdges = customizableEdges23;
             txtBoxMessage.Size = new System.Drawing.Size(1139, 65);
@@ -319,20 +320,37 @@
             // 
             // leftPanel
             // 
+            leftPanel.Controls.Add(changeLanguageButton);
             leftPanel.Controls.Add(btnCreateGroupChat);
             leftPanel.Controls.Add(btnFriendRequests);
             leftPanel.Controls.Add(btnOpenProfile);
-            leftPanel.CustomizableEdges = customizableEdges29;
+            leftPanel.CustomizableEdges = customizableEdges30;
             leftPanel.Dock = System.Windows.Forms.DockStyle.Left;
             leftPanel.Location = new System.Drawing.Point(0, 0);
             leftPanel.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             leftPanel.Name = "leftPanel";
-            leftPanel.ShadowDecoration.CustomizableEdges = customizableEdges30;
+            leftPanel.ShadowDecoration.CustomizableEdges = customizableEdges31;
             leftPanel.Size = new System.Drawing.Size(88, 786);
             leftPanel.TabIndex = 10;
             // 
+            // changeLanguageButton
+            // 
+            changeLanguageButton.Dock = System.Windows.Forms.DockStyle.Bottom;
+            changeLanguageButton.Image = global::Client.Properties.Resources.ChangeLanguageImage;
+            changeLanguageButton.ImageOffset = new System.Drawing.Point(0, 0);
+            changeLanguageButton.ImageRotate = 0F;
+            changeLanguageButton.ImageSize = new System.Drawing.Size(40, 40);
+            changeLanguageButton.Location = new System.Drawing.Point(0, 719);
+            changeLanguageButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            changeLanguageButton.Name = "changeLanguageButton";
+            changeLanguageButton.ShadowDecoration.CustomizableEdges = customizableEdges26;
+            changeLanguageButton.Size = new System.Drawing.Size(88, 67);
+            changeLanguageButton.TabIndex = 14;
+            changeLanguageButton.Click += ChangeLanguage;
+            // 
             // btnCreateGroupChat
             // 
+            btnCreateGroupChat.Dock = System.Windows.Forms.DockStyle.Top;
             btnCreateGroupChat.Image = global::Client.Properties.Resources.CreateGroupChatImage;
             btnCreateGroupChat.ImageOffset = new System.Drawing.Point(0, 0);
             btnCreateGroupChat.ImageRotate = 0F;
@@ -340,13 +358,14 @@
             btnCreateGroupChat.Location = new System.Drawing.Point(0, 134);
             btnCreateGroupChat.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             btnCreateGroupChat.Name = "btnCreateGroupChat";
-            btnCreateGroupChat.ShadowDecoration.CustomizableEdges = customizableEdges26;
+            btnCreateGroupChat.ShadowDecoration.CustomizableEdges = customizableEdges27;
             btnCreateGroupChat.Size = new System.Drawing.Size(88, 67);
             btnCreateGroupChat.TabIndex = 13;
             btnCreateGroupChat.Click += BtnCreateGroupChat_Click;
             // 
             // btnFriendRequests
             // 
+            btnFriendRequests.Dock = System.Windows.Forms.DockStyle.Top;
             btnFriendRequests.Image = global::Client.Properties.Resources.FriendListImage;
             btnFriendRequests.ImageOffset = new System.Drawing.Point(0, 0);
             btnFriendRequests.ImageRotate = 0F;
@@ -354,13 +373,14 @@
             btnFriendRequests.Location = new System.Drawing.Point(0, 67);
             btnFriendRequests.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             btnFriendRequests.Name = "btnFriendRequests";
-            btnFriendRequests.ShadowDecoration.CustomizableEdges = customizableEdges27;
+            btnFriendRequests.ShadowDecoration.CustomizableEdges = customizableEdges28;
             btnFriendRequests.Size = new System.Drawing.Size(88, 67);
             btnFriendRequests.TabIndex = 12;
             btnFriendRequests.Click += BtnFriendRequestsClick;
             // 
             // btnOpenProfile
             // 
+            btnOpenProfile.Dock = System.Windows.Forms.DockStyle.Top;
             btnOpenProfile.Image = global::Client.Properties.Resources.ProfileButtonImage;
             btnOpenProfile.ImageOffset = new System.Drawing.Point(0, 0);
             btnOpenProfile.ImageRotate = 0F;
@@ -368,8 +388,8 @@
             btnOpenProfile.Location = new System.Drawing.Point(0, 0);
             btnOpenProfile.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             btnOpenProfile.Name = "btnOpenProfile";
-            btnOpenProfile.ShadowDecoration.CustomizableEdges = customizableEdges28;
-            btnOpenProfile.Size = new System.Drawing.Size(89, 67);
+            btnOpenProfile.ShadowDecoration.CustomizableEdges = customizableEdges29;
+            btnOpenProfile.Size = new System.Drawing.Size(88, 67);
             btnOpenProfile.TabIndex = 11;
             btnOpenProfile.Click += btnOpenProfile_Click;
             // 
@@ -389,7 +409,7 @@
             // btnUpdServers
             // 
             btnUpdServers.BorderRadius = 6;
-            btnUpdServers.CustomizableEdges = customizableEdges31;
+            btnUpdServers.CustomizableEdges = customizableEdges32;
             btnUpdServers.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
             btnUpdServers.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
             btnUpdServers.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)((byte)169)), ((int)((byte)169)), ((int)((byte)169)));
@@ -401,7 +421,7 @@
             btnUpdServers.Location = new System.Drawing.Point(694, 325);
             btnUpdServers.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             btnUpdServers.Name = "btnUpdServers";
-            btnUpdServers.ShadowDecoration.CustomizableEdges = customizableEdges32;
+            btnUpdServers.ShadowDecoration.CustomizableEdges = customizableEdges33;
             btnUpdServers.Size = new System.Drawing.Size(141, 38);
             btnUpdServers.TabIndex = 13;
             btnUpdServers.Text = "Обновить";
@@ -438,6 +458,8 @@
             ResumeLayout(false);
             PerformLayout();
         }
+
+        private Guna.UI2.WinForms.Guna2ImageButton changeLanguageButton;
 
         private Guna.UI2.WinForms.Guna2ImageButton btnCreateGroupChat;
 

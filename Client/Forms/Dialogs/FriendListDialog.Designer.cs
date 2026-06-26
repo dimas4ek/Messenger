@@ -2,7 +2,7 @@
 
 namespace Client.Forms.Dialogs;
 
-partial class FriendsDialog
+partial class FriendListDialog
 {
     /// <summary>
     /// Required designer variable.
@@ -148,7 +148,7 @@ partial class FriendsDialog
         // noneFriendsLabel
         // 
         noneFriendsLabel.AutoSize = true;
-        noneFriendsLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+        noneFriendsLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F);
         noneFriendsLabel.ForeColor = System.Drawing.Color.White;
         noneFriendsLabel.Location = new System.Drawing.Point(63, 20);
         noneFriendsLabel.Name = "noneFriendsLabel";

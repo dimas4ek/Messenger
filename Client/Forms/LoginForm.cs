@@ -1,7 +1,9 @@
 ﻿using Client.Controllers;
 using Client.Forms.Base;
+using Client.Properties;
 using Client.Services;
 using Client.UI.Utils;
+using Client.Utils;
 
 namespace Client.Forms;
 
@@ -22,6 +24,8 @@ public partial class LoginForm : BaseForm
 
         InitializeComponent();
         InitializeUI();
+        LanguageManager.LanguageChanged += ApplyLocalization; 
+        ApplyLocalization();
     }
 
     #region Main Things
@@ -125,20 +129,16 @@ public partial class LoginForm : BaseForm
 
         var isLogin = mode == LoginSwitch.Login;
 
-        lblLogin.Text = isLogin ? "Вход" : "Регистрация";
+        lblLogin.Text = isLogin ? Strings.AuthForm_Login : Strings.AuthForm_Register;
         lblLogin.Location = isLogin ? new Point(112, 30) : new Point(80, 30);
 
-        btnLogin.Text = isLogin ? "Войти" : "Регистрация";
+        btnLogin.Text = isLogin ? Strings.AuthForm_Login : Strings.AuthForm_Register;
 
-        lblAccount.Text = isLogin
-            ? "У вас нет аккаунта?\nЗарегистрируйтесь!"
-            : "У вас уже есть аккаунт?\nВойдите!";
-
-        lblAccount.Location = isLogin
-            ? new Point(90, 253)
-            : new Point(80, 253);
-
-        btnRegister.Text = isLogin ? "Регистрация" : "Вход";
+        lblAccount.Text = isLogin ? Strings.AuthForm_NoAccount : Strings.AuthForm_HasAccount;
+        lblAccount.Location = new Point(
+            (Width - lblAccount.PreferredWidth) / 2, 253);
+        
+        btnRegister.Text = isLogin ? Strings.AuthForm_Register : Strings.AuthForm_Login;
 
         lblAccount.TextAlign = ContentAlignment.MiddleCenter;
 
@@ -151,6 +151,36 @@ public partial class LoginForm : BaseForm
         txtPassword.Clear();
     }
 
+    #endregion
+    
+    #region Language
+    
+    private void ApplyLocalization()
+    {
+        label1.Text = Strings.AuthForm_Username;
+        label2.Text = Strings.AuthForm_Password;
+        CenterFieldLabels();
+        SetMode(_mode);
+    }
+
+    private void CenterFieldLabels()
+    {
+        var centerX = txtUsername.Left + txtUsername.Width / 2;
+        label1.Left = centerX - label1.PreferredWidth / 2;
+        label2.Left = centerX - label2.PreferredWidth / 2;
+    }
+
+    private void ChangeLanguage(object sender, EventArgs e)
+    {
+        LanguageManager.SetLanguage(LanguageManager.CurrentLanguage == "ru" ? "en" : "ru");
+    }
+
+    protected override void OnFormClosed(FormClosedEventArgs e)
+    {
+        LanguageManager.LanguageChanged -= ApplyLocalization;
+        base.OnFormClosed(e);
+    }
+    
     #endregion
 }
 

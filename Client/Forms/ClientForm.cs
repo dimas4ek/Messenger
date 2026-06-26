@@ -1,12 +1,15 @@
-﻿using Application.DTO;
+﻿using System.Diagnostics;
+using Application.DTO;
 using Client.Api.Clients;
 using Client.Controllers;
 using Client.Filter;
 using Client.Forms.Base;
 using Client.Forms.Dialogs;
+using Client.Properties;
 using Client.Services;
 using Client.UI.UserControls;
 using Client.UI.Utils;
+using Client.Utils;
 using Contracts.DTO.Event;
 using Domain.Enums;
 using Guna.UI2.WinForms;
@@ -52,6 +55,9 @@ public partial class ClientForm : BaseForm
         _chatApiClient = chatApiClient;
 
         InitializeComponent();
+        
+        LanguageManager.LanguageChanged += ApplyLocalization; 
+        ApplyLocalization();
 
         Load += ClientForm_Load;
 
@@ -76,9 +82,10 @@ public partial class ClientForm : BaseForm
         _currentUser = _userContext.CurrentUser ?? throw new Exception("Пользователь не авторизован");
 
         DoImportantThings();
-        SetupButtons(btnOpenProfile, btnFriendRequests, btnCreateGroupChat);
+        SetupButtons(btnOpenProfile, btnFriendRequests, btnCreateGroupChat, changeLanguageButton);
         CreateProfilePanel();
 
+        
         _ = SafeInvoke(async () =>
         {
             await _chatController.ConnectAsync(_currentUser.Id);
@@ -98,7 +105,7 @@ public partial class ClientForm : BaseForm
 
         DoubleBuffered = true;
     }
-
+    
     private void ClientForm_Close(object sender, FormClosingEventArgs e)
     {
         _ = SafeInvoke(async () =>
@@ -342,7 +349,7 @@ public partial class ClientForm : BaseForm
 
     private void BtnFriendRequestsClick(object sender, EventArgs e)
     {
-        var dialog = new FriendsDialog(_currentUser, _friendController.Friends, AddChatPanel);
+        var dialog = new FriendListDialog(_currentUser, _friendController.Friends, AddChatPanel);
         dialog.ShowDialog();
     }
 
@@ -361,8 +368,8 @@ public partial class ClientForm : BaseForm
         var panel = new ChatPanelUC(
             chat,
             _currentUser.Id,
-            (s, _) => MouseEventUtils.OnFriendPanelMove(s, p => ColorHelper.SetPanelColor(p, 35, 46, 60)),
-            (s, _) => MouseEventUtils.OnFriendPanelMove(s, p => ColorHelper.SetPanelColor(p, 23, 33, 43)),
+            (s, _) => MouseEventUtils.OnPanelMove(s, p => ColorHelper.SetPanelColor(p, 35, 46, 60)),
+            (s, _) => MouseEventUtils.OnPanelMove(s, p => ColorHelper.SetPanelColor(p, 23, 33, 43)),
             (s, e) => _ = SafeInvoke(async () => await HandleChatClick(s, e))
         );
         chatListPanel.Controls.Add(panel);
@@ -430,7 +437,7 @@ public partial class ClientForm : BaseForm
             CloseActiveContextMenu();
             _ = SafeInvoke(async () =>
             {
-                var dialog = new InputDialog("Изменить чат", chat.Name);
+                var dialog = new InputDialog(Strings.ClientForm_EditChat, chat.Name);
                 await dialog.ShowDialogAsync();
                 if (dialog.Result == null) return;
 
@@ -521,7 +528,7 @@ public partial class ClientForm : BaseForm
             CloseActiveContextMenu();
             _ = SafeInvoke(async () =>
             {
-                var dialog = new InputDialog("Изменить сообщение", message.Text);
+                var dialog = new InputDialog(Strings.ClientForm_EditMessage, message.Text);
                 await dialog.ShowDialogAsync();
                 if (dialog.Result == null) return;
 
@@ -676,5 +683,38 @@ public partial class ClientForm : BaseForm
         /* todo */
     }
 
+    #endregion
+    
+    #region Language
+    
+    private void ApplyLocalization()
+    {
+        availableServers.Text = Strings.ClientForm_NoAvailableServers;
+        btnUpdServers.Text = Strings.ClientForm_RefreshServers;
+        lblLoadingChats.Text = Strings.ClientForm_LoadingChats;
+        txtBoxMessage.PlaceholderText = Strings.ClientForm_EnterMessage;
+        txtBoxSearch.PlaceholderText = Strings.ClientForm_Search;
+    }
+    
+    private void ChangeLanguage(object sender, EventArgs e)
+    {
+        var lang = LanguageManager.CurrentLanguage;
+        switch (lang)
+        {
+            case "en":
+                LanguageManager.SetLanguage("ru");
+                break;
+            case "ru":
+                LanguageManager.SetLanguage("en");
+                break;
+        }
+    }
+
+    protected override void OnFormClosed(FormClosedEventArgs e)
+    {
+        LanguageManager.LanguageChanged -= ApplyLocalization;
+        base.OnFormClosed(e);
+    }
+    
     #endregion
 }

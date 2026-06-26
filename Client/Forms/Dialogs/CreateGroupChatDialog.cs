@@ -33,12 +33,15 @@ public partial class CreateGroupChatDialog : Form
         _utilsApiClient = App.Services.GetRequiredService<UtilsApiClient>();
 
         InitializeComponent();
+        
+        LanguageManager.LanguageChanged += ApplyLocalization;
+        ApplyLocalization();
 
         Load += (_, _) =>
         {
             groupImage.Image = GetImage();
             groupImage.Click += AddGroupImage;
-            createButton.Click += HandleCreateGroupChat;
+            createGroupChatButton.Click += HandleCreateGroupChatGroupChat;
 
             foreach (var friend in friends)
                 AddFriendPanel(friend);
@@ -46,7 +49,7 @@ public partial class CreateGroupChatDialog : Form
     }
 
     private string GroupName => groupNameTextBox.Text;
-    private IReadOnlyList<int> SelectedUsers => _selectedUsers.Select(u => u.Id).ToList();
+    private List<int> SelectedUsers => _selectedUsers.Select(u => u.Id).ToList();
 
     private void AddFriendPanel(UserInfo friend)
     {
@@ -64,16 +67,16 @@ public partial class CreateGroupChatDialog : Form
             },
             (s, _) =>
             {
-                if (s is not Guna2Button btn || btn.Tag is not UserInfo user) return;
+                if (s is not Guna2Button { Tag: UserInfo user } btn) return;
                 if (_selectedUsers.Remove(user))
                 {
-                    btn.Text = "Add";
+                    btn.Text = Strings.CreateGroupChatDialog_AddToGroup;
                     btn.FillColor = Color.FromArgb(114, 137, 218);
                 }
                 else
                 {
                     _selectedUsers.Add(user);
-                    btn.Text = "Added";
+                    btn.Text = Strings.CreateGroupChatDialog_AddedToGroup;
                     btn.FillColor = Color.FromArgb(80, 80, 80);
                 }
             }
@@ -82,7 +85,7 @@ public partial class CreateGroupChatDialog : Form
         friendsPanel.Controls.Add(panel);
     }
 
-    private async void HandleCreateGroupChat(object? s, EventArgs e)
+    private async void HandleCreateGroupChatGroupChat(object? s, EventArgs e)
     {
         if (string.IsNullOrWhiteSpace(GroupName)) return;
         if (SelectedUsers.Count == 0) return;
@@ -101,23 +104,13 @@ public partial class CreateGroupChatDialog : Form
 
     private async void AddGroupImage(object? sender, EventArgs e)
     {
-        var filePath = await Task.Factory.StartNew(() =>
-            {
-                using var dialog = new OpenFileDialog();
-                dialog.Filter = "Images|*.jpg;*.jpeg;*.png;*.gif;*.bmp;*.webp";
-                dialog.Title = "Выберите изображение";
+        var file = await ImageHelper.OpenFile();
 
-                return dialog.ShowDialog() == DialogResult.OK ? dialog.FileName : null;
-            },
-            CancellationToken.None,
-            TaskCreationOptions.None,
-            new StaTaskScheduler());
+        if (file == null) return;
 
-        if (filePath == null) return;
-
-        var imageBytes = await File.ReadAllBytesAsync(filePath);
-        var name = Path.GetFileNameWithoutExtension(filePath);
-        var contentType = ImageContentTypeExtensions.FromExtension(filePath);
+        var imageBytes = await File.ReadAllBytesAsync(file);
+        var name = Path.GetFileNameWithoutExtension(file);
+        var contentType = ImageContentTypeExtensions.FromExtension(file);
 
         var result = await _utilsApiClient.AddImage(name, imageBytes, contentType);
 
@@ -129,7 +122,7 @@ public partial class CreateGroupChatDialog : Form
             return;
         }
 
-        groupImage?.Image = Image.FromFile(filePath);
+        groupImage?.Image = Image.FromFile(file);
         groupImage?.SizeMode = PictureBoxSizeMode.Zoom;
 
         _image = imageResponse.Image;
@@ -142,4 +135,22 @@ public partial class CreateGroupChatDialog : Form
         using var ms = new MemoryStream(_image.Data);
         return Image.FromStream(ms);
     }
+    
+    #region Language
+    
+    private void ApplyLocalization()
+    {
+        groupNameLabel.Text = Strings.CreateGroupChatDialog_GroupName;
+        groupNameTextBox.PlaceholderText = Strings.CreateGroupChatDialog_EnterGroupName;
+        addFriendsLabel.Text = Strings.CreateGroupChatDialog_AddFriends;
+        createGroupChatButton.Text = Strings.CreateGroupChatDialog_CreateGroupChat;
+    }
+
+    protected override void OnFormClosed(FormClosedEventArgs e)
+    {
+        LanguageManager.LanguageChanged -= ApplyLocalization;
+        base.OnFormClosed(e);
+    }
+    
+    #endregion
 }

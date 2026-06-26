@@ -76,9 +76,9 @@ partial class ProfileSettingsDialog
         usernameValueLabel.ForeColor = System.Drawing.Color.White;
         usernameValueLabel.Location = new System.Drawing.Point(30, 175);
         usernameValueLabel.Name = "usernameValueLabel";
-        usernameValueLabel.Size = new System.Drawing.Size(51, 20);
+        usernameValueLabel.Size = new System.Drawing.Size(78, 20);
         usernameValueLabel.TabIndex = 2;
-        usernameValueLabel.Text = "label2";
+        usernameValueLabel.Text = "username";
         // 
         // editUsernameButton
         // 
@@ -135,7 +135,7 @@ partial class ProfileSettingsDialog
         editPasswordButton.TabIndex = 6;
         editPasswordButton.Text = "Изменить";
         // 
-        // ProfileSettingsDialogForm
+        // ProfileSettingsDialog
         // 
         AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
         AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;

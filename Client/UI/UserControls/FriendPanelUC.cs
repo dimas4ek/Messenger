@@ -1,5 +1,6 @@
 ﻿using Application.DTO;
 using Client.UI.Utils;
+using Client.Utils;
 
 namespace Client.UI.UserControls;
 

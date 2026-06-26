@@ -12,7 +12,7 @@ public static class MouseEventUtils
         control.MouseClick += onClick;
     }
 
-    public static void OnFriendPanelMove(object? s, Action<Guna2Panel>? onPanel = null)
+    public static void OnPanelMove(object? s, Action<Guna2Panel>? onPanel = null)
     {
         if (s is not Control c) return;
         c.Cursor = Cursors.Hand;

@@ -1,14 +1,16 @@
-﻿namespace Client.Services;
+﻿using Client.Properties;
+
+namespace Client.Services;
 
 public class DialogService : IDialogService
 {
     public void ShowMessage(string message)
     {
-        MessageBox.Show(message, @"Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        MessageBox.Show(message, Strings.DialogService_Info, MessageBoxButtons.OK, MessageBoxIcon.Information);
     }
 
     public void ShowError(string message)
     {
-        MessageBox.Show(message, @"Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        MessageBox.Show(message, Strings.DialogService_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
     }
 }

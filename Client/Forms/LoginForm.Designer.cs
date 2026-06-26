@@ -40,6 +40,7 @@ namespace Client.Forms
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges8 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges9 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges10 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges11 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             lblLogin = new System.Windows.Forms.Label();
             label1 = new System.Windows.Forms.Label();
             label2 = new System.Windows.Forms.Label();
@@ -49,6 +50,7 @@ namespace Client.Forms
             btnRegister = new Guna.UI2.WinForms.Guna2Button();
             lblAccount = new System.Windows.Forms.Label();
             loginBackPanel = new Guna.UI2.WinForms.Guna2Panel();
+            changeLanguageButton = new Guna.UI2.WinForms.Guna2ImageButton();
             loginBackPanel.SuspendLayout();
             SuspendLayout();
             // 
@@ -188,9 +190,28 @@ namespace Client.Forms
             lblAccount.Size = new System.Drawing.Size(0, 15);
             lblAccount.TabIndex = 7;
             lblAccount.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
+            //
+            // changeLanguageButton
+            //
+            changeLanguageButton.Cursor = System.Windows.Forms.Cursors.Hand;
+            changeLanguageButton.Image = global::Client.Properties.Resources.ChangeLanguageImage;
+            changeLanguageButton.ImageOffset = new System.Drawing.Point(0, 0);
+            changeLanguageButton.ImageRotate = 0F;
+            changeLanguageButton.ImageSize = new System.Drawing.Size(32, 32);
+            changeLanguageButton.CheckedState.ImageSize = new System.Drawing.Size(32, 32);
+            changeLanguageButton.HoverState.ImageSize = new System.Drawing.Size(32, 32);
+            changeLanguageButton.PressedState.ImageSize = new System.Drawing.Size(32, 32);
+            changeLanguageButton.Location = new System.Drawing.Point(8, 304);
+            changeLanguageButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            changeLanguageButton.Name = "changeLanguageButton";
+            changeLanguageButton.ShadowDecoration.CustomizableEdges = customizableEdges11;
+            changeLanguageButton.Size = new System.Drawing.Size(40, 40);
+            changeLanguageButton.TabIndex = 9;
+            changeLanguageButton.Click += ChangeLanguage;
+            //
             // loginBackPanel
-            // 
+            //
+            loginBackPanel.Controls.Add(changeLanguageButton);
             loginBackPanel.Controls.Add(txtUsername);
             loginBackPanel.Controls.Add(lblAccount);
             loginBackPanel.Controls.Add(label2);
@@ -232,5 +253,6 @@ namespace Client.Forms
         private Guna.UI2.WinForms.Guna2Button btnRegister;
         private System.Windows.Forms.Label lblAccount;
         private Guna.UI2.WinForms.Guna2Panel loginBackPanel;
+        private Guna.UI2.WinForms.Guna2ImageButton changeLanguageButton;
     }
 }

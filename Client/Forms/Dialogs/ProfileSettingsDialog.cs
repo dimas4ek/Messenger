@@ -1,6 +1,7 @@
 ﻿using Application.DTO;
 using Application.Utils;
 using Client.Api.Clients;
+using Client.Properties;
 using Client.Services;
 using Client.UI.Utils;
 using Client.Utils;
@@ -25,6 +26,8 @@ public partial class ProfileSettingsDialog : Form
         _userApiClient = App.Services.GetRequiredService<UserApiClient>();
 
         InitializeComponent();
+        LanguageManager.LanguageChanged += ApplyLocalization;
+        ApplyLocalization();
 
         Load += (_, _) =>
         {
@@ -41,9 +44,9 @@ public partial class ProfileSettingsDialog : Form
     private async void EditUsername(object? sender, EventArgs e)
     {
         var dialog = new InputDialog(
-            "Изменить имя",
+            Strings.ProfileSettingsDialog_ChangeName,
             _currentUser.Username,
-            "Введите новое имя");
+            Strings.ProfileSettingsDialog_EnterNewName);
 
         if (await dialog.ShowDialogAsync() != DialogResult.OK ||
             string.IsNullOrWhiteSpace(dialog.Result)) return;
@@ -66,9 +69,9 @@ public partial class ProfileSettingsDialog : Form
     private async void EditPassword(object? sender, EventArgs e)
     {
         var dialog = new InputDialog(
-            "Изменить пароль",
+            Strings.ProfileSettingsDialog_ChangePassword,
             "",
-            "Введите новый пароль",
+            Strings.ProfileSettingsDialog_EnterNewPassword,
             true);
 
         if (await dialog.ShowDialogAsync() != DialogResult.OK ||
@@ -78,41 +81,16 @@ public partial class ProfileSettingsDialog : Form
 
         if (!result.IsSuccess || result.Value == null) _dialogService.ShowError(result.ToMessage());
     }
-
-    // Открывает системный диалог выбора файла изображения
-    // в отдельном STA-потоке и возвращает путь к выбранному файлу.
-    //
-    // Почему используется StaTaskScheduler:
-    // OpenFileDialog требует поток с ApartmentState.STA.
-    // Если вызвать диалог из обычного Task.Run / ThreadPool,
-    // поток будет MTA и диалог может завершиться ошибкой.
-    //
-    // Почему используется Task.Factory.StartNew:
-    // Позволяет указать собственный TaskScheduler,
-    // чтобы задача выполнилась именно в STA-потоке.
-    //
-    // Результат:
-    // - путь к выбранному файлу, если пользователь нажал OK
-    // - null, если пользователь отменил выбор
+    
     private async void ChangeAvatar(object? sender, EventArgs e)
     {
-        var filePath = await Task.Factory.StartNew(() =>
-            {
-                using var dialog = new OpenFileDialog();
-                dialog.Filter = "Images|*.jpg;*.jpeg;*.png;*.gif;*.bmp;*.webp";
-                dialog.Title = "Выберите изображение";
+        var file = await ImageHelper.OpenFile();
 
-                return dialog.ShowDialog() == DialogResult.OK ? dialog.FileName : null;
-            },
-            CancellationToken.None,
-            TaskCreationOptions.None,
-            new StaTaskScheduler());
+        if (file == null) return;
 
-        if (filePath == null) return;
-
-        var imageBytes = await File.ReadAllBytesAsync(filePath);
-        var name = Path.GetFileNameWithoutExtension(filePath);
-        var contentType = ImageContentTypeExtensions.FromExtension(filePath);
+        var imageBytes = await File.ReadAllBytesAsync(file);
+        var name = Path.GetFileNameWithoutExtension(file);
+        var contentType = ImageContentTypeExtensions.FromExtension(file);
 
         var result = await _userApiClient.ChangeAvatar(_currentUser.Id, name, imageBytes, contentType);
 
@@ -124,8 +102,26 @@ public partial class ProfileSettingsDialog : Form
             return;
         }
 
-        avatar.Image = Image.FromFile(filePath);
+        avatar.Image = Image.FromFile(file);
         avatar.SizeMode = PictureBoxSizeMode.Zoom;
         _currentUser.Avatar = resultValue.User.Avatar;
     }
+    
+    #region Language
+    
+    private void ApplyLocalization()
+    {
+        usernameLabel.Text = Strings.ProfileSettingsDialog_Username;
+        passwordLabel.Text = Strings.ProfileSettingsDialog_Password;
+        editUsernameButton.Text = Strings.ProfileSettingsDialog_Edit;
+        editPasswordButton.Text = Strings.ProfileSettingsDialog_Edit;
+    }
+
+    protected override void OnFormClosed(FormClosedEventArgs e)
+    {
+        LanguageManager.LanguageChanged -= ApplyLocalization;
+        base.OnFormClosed(e);
+    }
+    
+    #endregion
 }

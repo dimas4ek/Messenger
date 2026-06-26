@@ -1,5 +1,7 @@
 ﻿using Application.DTO;
 using Client.Forms.Dialogs;
+using Client.Properties;
+using Client.Utils;
 
 namespace Client.UI.UserControls;
 
@@ -11,6 +13,9 @@ public sealed partial class ProfilePanelUC : UserControl
         Action<UserInfo> onUserUpdated)
     {
         InitializeComponent();
+        LanguageManager.LanguageChanged += ApplyLocalization;
+        Disposed += (_, _) => LanguageManager.LanguageChanged -= ApplyLocalization;
+        ApplyLocalization();
 
         Size = new Size(width, height);
         Location = new Point(0, 0);
@@ -60,4 +65,15 @@ public sealed partial class ProfilePanelUC : UserControl
     {
         addFriendTextBox.Clear();
     }
+
+    #region Language
+
+    private void ApplyLocalization()
+    {
+        addFriendButton.Text = Strings.ProfilePanelUC_AddFriend;
+        addFriendTextBox.PlaceholderText = Strings.ProfilePanelUC_EnterFriendName;
+        settingsButton.Text = Strings.ProfilePanelUC_Settings;
+    }
+
+    #endregion
 }

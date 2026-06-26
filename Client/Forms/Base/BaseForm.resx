@@ -123,4 +123,7 @@
             PublicKeyToken=b77a5c561934e089
         </value>
     </resheader>
+    <data name="FriendListDialog_FriendList" xml:space="preserve">
+        <value>Friends</value>
+    </data>
 </root>

@@ -62,6 +62,16 @@ namespace Client.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap ChangeLanguageImage {
+            get {
+                object obj = ResourceManager.GetObject("ChangeLanguageImage", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap CreateGroupChatImage {
             get {
                 object obj = ResourceManager.GetObject("CreateGroupChatImage", resourceCulture);

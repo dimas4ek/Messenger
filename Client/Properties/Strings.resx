@@ -1,0 +1,147 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+            
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="AuthForm_Login" xml:space="preserve">
+        <value>Login</value>
+    </data>
+    <data name="AuthForm_NoAccount" xml:space="preserve">
+        <value>Don't have an account?</value>
+    </data>
+    <data name="AuthForm_Register" xml:space="preserve">
+        <value>Register</value>
+    </data>
+    <data name="AuthForm_HasAccount" xml:space="preserve">
+        <value>Already have an account?</value>
+    </data>
+    <data name="ClientForm_EditChat" xml:space="preserve">
+        <value>Edit chat</value>
+    </data>
+    <data name="ClientForm_EditMessage" xml:space="preserve">
+        <value>Edit message</value>
+    </data>
+    <data name="ClientForm_LoadingChats" xml:space="preserve">
+        <value>Loading Chats</value>
+    </data>
+    <data name="ClientForm_EnterMessage" xml:space="preserve">
+        <value>Enter message</value>
+    </data>
+    <data name="ClientForm_NoAvailableServers" xml:space="preserve">
+        <value>No available servers</value>
+    </data>
+    <data name="ClientForm_RefreshServers" xml:space="preserve">
+        <value>Refresh</value>
+    </data>
+    <data name="CreateGroupChatDialog_AddToGroup" xml:space="preserve">
+        <value>Add</value>
+    </data>
+    <data name="CreateGroupChatDialog_AddedToGroup" xml:space="preserve">
+        <value>Added</value>
+    </data>
+    <data name="ImageHelper_SelectImageTitle" xml:space="preserve">
+        <value>Select an image</value>
+    </data>
+    <data name="CreateGroupChatDialog_GroupName" xml:space="preserve">
+        <value>Group name</value>
+    </data>
+    <data name="CreateGroupChatDialog_EnterGroupName" xml:space="preserve">
+        <value>Enter group name</value>
+    </data>
+    <data name="CreateGroupChatDialog_AddFriends" xml:space="preserve">
+        <value>Add friends</value>
+    </data>
+    <data name="CreateGroupChatDialog_CreateGroupChat" xml:space="preserve">
+        <value>Create</value>
+    </data>
+    <data name="FriendListDialog_FriendRequests" xml:space="preserve">
+        <value>Friend requests</value>
+    </data>
+    <data name="FriendListDialog_NoFriends" xml:space="preserve">
+        <value>Nothing here yet</value>
+    </data>
+    <data name="FriendListDialog_NoFriendRequests" xml:space="preserve">
+        <value>No friend requests yet</value>
+    </data>
+    <data name="InputDialog_Save" xml:space="preserve">
+        <value>Save</value>
+    </data>
+    <data name="ProfileSettingsDialog_ChangeName" xml:space="preserve">
+        <value>Change username</value>
+    </data>
+    <data name="ProfileSettingsDialog_EnterNewName" xml:space="preserve">
+        <value>Enter new username</value>
+    </data>
+    <data name="ProfileSettingsDialog_ChangePassword" xml:space="preserve">
+        <value>Change password</value>
+    </data>
+    <data name="ProfileSettingsDialog_EnterNewPassword" xml:space="preserve">
+        <value>Enter new password</value>
+    </data>
+    <data name="ProfileSettingsDialog_Username" xml:space="preserve">
+        <value>Username</value>
+    </data>
+    <data name="ProfileSettingsDialog_Password" xml:space="preserve">
+        <value>Password</value>
+    </data>
+    <data name="ProfileSettingsDialog_Edit" xml:space="preserve">
+        <value>Edit</value>
+    </data>
+    <data name="ContextMenuUC_Edit" xml:space="preserve">
+        <value>Edit</value>
+    </data>
+    <data name="ContextMenuUC_Delete" xml:space="preserve">
+        <value>Delete</value>
+    </data>
+    <data name="FriendSelectPanelUC_Add" xml:space="preserve">
+        <value>Add</value>
+    </data>
+    <data name="ProfilePanelUC_EnterFriendName" xml:space="preserve">
+        <value>Enter friend name</value>
+    </data>
+    <data name="ProfilePanelUC_Settings" xml:space="preserve">
+        <value>Settings</value>
+    </data>
+    <data name="ClientForm_Search" xml:space="preserve">
+        <value>Search...</value>
+    </data>
+    <data name="ProfilePanelUC_AddFriend" xml:space="preserve">
+        <value>Add friend</value>
+    </data>
+    <data name="FriendListDialog_FriendList" xml:space="preserve">
+        <value>Friends</value>
+    </data>
+    <data name="AuthForm_Username" xml:space="preserve">
+        <value>Username</value>
+    </data>
+    <data name="AuthForm_Password" xml:space="preserve">
+        <value>Password</value>
+    </data>
+    <data name="DialogService_Info" xml:space="preserve">
+        <value>Information</value>
+    </data>
+    <data name="DialogService_Error" xml:space="preserve">
+        <value>Error</value>
+    </data>
+    <data name="Program_ConnectionError" xml:space="preserve">
+        <value>Server is unavailable. Please try to start the application later.</value>
+    </data>
+    <data name="Program_ConnectionErrorTitle" xml:space="preserve">
+        <value>Connection error</value>
+    </data>
+</root>

@@ -4,6 +4,7 @@ using Client.Config;
 using Client.Controllers;
 using Client.Forms;
 using Client.Services;
+using Client.Utils;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,6 +15,11 @@ internal static class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        System.Windows.Forms.Application.EnableVisualStyles();
+        System.Windows.Forms.Application.SetCompatibleTextRenderingDefault(false);
+
+        LanguageManager.LoadSavedLanguage();
+        
         MainAsync().GetAwaiter().GetResult();
     }
 
@@ -55,8 +61,8 @@ internal static class Program
         if (!isAvailable)
         {
             MessageBox.Show(
-                "Сервер недоступен. Попробуйте открыть приложение чуть позже.",
-                "Ошибка подключения",
+                Properties.Strings.Program_ConnectionError,
+                Properties.Strings.Program_ConnectionErrorTitle,
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
 

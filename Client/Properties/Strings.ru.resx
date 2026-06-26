@@ -1,0 +1,147 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+            
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="ClientForm_Search" xml:space="preserve">
+        <value>Поиск...</value>
+    </data>
+    <data name="AuthForm_HasAccount" xml:space="preserve">
+        <value>Уже есть аккаунт?</value>
+    </data>
+    <data name="AuthForm_Login" xml:space="preserve">
+        <value>Войти</value>
+    </data>
+    <data name="AuthForm_NoAccount" xml:space="preserve">
+        <value>Нет аккаунта?</value>
+    </data>
+    <data name="AuthForm_Register" xml:space="preserve">
+        <value>Регистрация</value>
+    </data>
+    <data name="ClientForm_EditChat" xml:space="preserve">
+        <value>Изменить чат</value>
+    </data>
+    <data name="ClientForm_EditMessage" xml:space="preserve">
+        <value>Изменить сообщение</value>
+    </data>
+    <data name="ClientForm_EnterMessage" xml:space="preserve">
+        <value>Введите сообщение...</value>
+    </data>
+    <data name="ClientForm_LoadingChats" xml:space="preserve">
+        <value>Загрузка чатов</value>
+    </data>
+    <data name="ClientForm_NoAvailableServers" xml:space="preserve">
+        <value>Нет доступных серверов</value>
+    </data>
+    <data name="ClientForm_RefreshServers" xml:space="preserve">
+        <value>Обновить</value>
+    </data>
+    <data name="ContextMenuUC_Delete" xml:space="preserve">
+        <value>Удалить</value>
+    </data>
+    <data name="ContextMenuUC_Edit" xml:space="preserve">
+        <value>Изменить</value>
+    </data>
+    <data name="CreateGroupChatDialog_AddedToGroup" xml:space="preserve">
+        <value>Добавлен</value>
+    </data>
+    <data name="CreateGroupChatDialog_AddFriends" xml:space="preserve">
+        <value>Добавить друзей</value>
+    </data>
+    <data name="CreateGroupChatDialog_AddToGroup" xml:space="preserve">
+        <value>Добавить</value>
+    </data>
+    <data name="CreateGroupChatDialog_CreateGroupChat" xml:space="preserve">
+        <value>Создать</value>
+    </data>
+    <data name="CreateGroupChatDialog_EnterGroupName" xml:space="preserve">
+        <value>Введите имя группы</value>
+    </data>
+    <data name="CreateGroupChatDialog_GroupName" xml:space="preserve">
+        <value>Имя группы</value>
+    </data>
+    <data name="FriendListDialog_FriendRequests" xml:space="preserve">
+        <value>Заявки в друзья</value>
+    </data>
+    <data name="FriendListDialog_NoFriendRequests" xml:space="preserve">
+        <value>Заявок в друзья нет</value>
+    </data>
+    <data name="FriendListDialog_NoFriends" xml:space="preserve">
+        <value>Здесь пока ничего нет</value>
+    </data>
+    <data name="FriendListDialog_FriendList" xml:space="preserve">
+        <value>Друзья</value>
+    </data>
+    <data name="AuthForm_Username" xml:space="preserve">
+        <value>Имя пользователя</value>
+    </data>
+    <data name="AuthForm_Password" xml:space="preserve">
+        <value>Пароль</value>
+    </data>
+    <data name="DialogService_Info" xml:space="preserve">
+        <value>Информация</value>
+    </data>
+    <data name="DialogService_Error" xml:space="preserve">
+        <value>Ошибка</value>
+    </data>
+    <data name="Program_ConnectionError" xml:space="preserve">
+        <value>Сервер недоступен. Попробуйте запустить приложение позже.</value>
+    </data>
+    <data name="Program_ConnectionErrorTitle" xml:space="preserve">
+        <value>Ошибка подключения</value>
+    </data>
+    <data name="FriendSelectPanelUC_Add" xml:space="preserve">
+        <value>Добавить</value>
+    </data>
+    <data name="ImageHelper_SelectImageTitle" xml:space="preserve">
+        <value>Выбрать изображение</value>
+    </data>
+    <data name="InputDialog_Save" xml:space="preserve">
+        <value>Сохранить</value>
+    </data>
+    <data name="ProfilePanelUC_EnterFriendName" xml:space="preserve">
+        <value>Введите имя друга</value>
+    </data>
+    <data name="ProfilePanelUC_Settings" xml:space="preserve">
+        <value>Настройки</value>
+    </data>
+    <data name="ProfileSettingsDialog_ChangeName" xml:space="preserve">
+        <value>Изменить имя пользователя</value>
+    </data>
+    <data name="ProfileSettingsDialog_ChangePassword" xml:space="preserve">
+        <value>Изменить пароль</value>
+    </data>
+    <data name="ProfileSettingsDialog_Edit" xml:space="preserve">
+        <value>Изменить</value>
+    </data>
+    <data name="ProfileSettingsDialog_EnterNewName" xml:space="preserve">
+        <value>Введите новое имя пользователя</value>
+    </data>
+    <data name="ProfileSettingsDialog_EnterNewPassword" xml:space="preserve">
+        <value>Введите новый пароль</value>
+    </data>
+    <data name="ProfileSettingsDialog_Password" xml:space="preserve">
+        <value>Пароль</value>
+    </data>
+    <data name="ProfileSettingsDialog_Username" xml:space="preserve">
+        <value>Имя пользователя</value>
+    </data>
+    <data name="ProfilePanelUC_AddFriend" xml:space="preserve">
+        <value>Добавить друга</value>
+    </data>
+</root>

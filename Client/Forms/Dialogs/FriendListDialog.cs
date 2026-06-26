@@ -1,6 +1,7 @@
 ﻿using Application.DTO;
 using Client.Api.Clients;
 using Client.Forms.Base;
+using Client.Properties;
 using Client.Services;
 using Client.UI.UserControls;
 using Client.UI.Utils;
@@ -10,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Client.Forms.Dialogs;
 
-public partial class FriendsDialog : BaseForm
+public partial class FriendListDialog : BaseForm
 {
     private readonly IDialogService _dialogService;
     private readonly FriendApiClient _friendApiClient;
@@ -19,7 +20,7 @@ public partial class FriendsDialog : BaseForm
 
     private readonly Action<ChatInfo> _onFriendAdded;
 
-    public FriendsDialog(UserInfo currentUser, List<UserInfo> friends, Action<ChatInfo> onFriendAdded)
+    public FriendListDialog(UserInfo currentUser, List<UserInfo> friends, Action<ChatInfo> onFriendAdded)
     {
         _friends = friends;
         _onFriendAdded = onFriendAdded;
@@ -28,6 +29,8 @@ public partial class FriendsDialog : BaseForm
         _friendApiClient = App.Services.GetRequiredService<FriendApiClient>();
 
         InitializeComponent();
+        LanguageManager.LanguageChanged += ApplyLocalization;
+        ApplyLocalization();
 
         friendListLabel.Location = new Point(
             (friendListTopPanel.Width - friendListLabel.PreferredWidth) / 2,
@@ -68,8 +71,8 @@ public partial class FriendsDialog : BaseForm
     {
         var panel = new FriendPanelUC(
             friend,
-            (s, _) => MouseEventUtils.OnFriendPanelMove(s, p => ColorHelper.SetPanelColor(p, 35, 46, 60)),
-            (s, _) => MouseEventUtils.OnFriendPanelMove(s, p => ColorHelper.SetPanelColor(p, 23, 33, 43))
+            (s, _) => MouseEventUtils.OnPanelMove(s, p => ColorHelper.SetPanelColor(p, 35, 46, 60)),
+            (s, _) => MouseEventUtils.OnPanelMove(s, p => ColorHelper.SetPanelColor(p, 23, 33, 43))
         );
 
         friendListPanel.Controls.Add(panel);
@@ -125,4 +128,22 @@ public partial class FriendsDialog : BaseForm
             .FirstOrDefault(p => p.Tag is FriendRequestInfo r && r.Id == request.Id);
         friendRequestsPanel.Controls.Remove(panel);
     }
+    
+    #region Language
+    
+    private void ApplyLocalization()
+    {
+        friendListLabel.Text = Strings.FriendListDialog_FriendList;
+        friendRequestsLabel.Text = Strings.FriendListDialog_FriendRequests;
+        noneFriendsLabel.Text = Strings.FriendListDialog_NoFriends;
+        noneFriendsRequestsLabel.Text = Strings.FriendListDialog_NoFriendRequests;
+    }
+
+    protected override void OnFormClosed(FormClosedEventArgs e)
+    {
+        LanguageManager.LanguageChanged -= ApplyLocalization;
+        base.OnFormClosed(e);
+    }
+    
+    #endregion
 }

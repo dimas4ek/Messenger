@@ -39,11 +39,11 @@ partial class CreateGroupChatDialog
         Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges6 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
         Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges7 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
         groupImage = new Guna.UI2.WinForms.Guna2CirclePictureBox();
-        nameLabel = new System.Windows.Forms.Label();
+        groupNameLabel = new System.Windows.Forms.Label();
         groupNameTextBox = new Guna.UI2.WinForms.Guna2TextBox();
-        friendsLabel = new System.Windows.Forms.Label();
+        addFriendsLabel = new System.Windows.Forms.Label();
         friendsPanel = new Guna.UI2.WinForms.Guna2Panel();
-        createButton = new Guna.UI2.WinForms.Guna2Button();
+        createGroupChatButton = new Guna.UI2.WinForms.Guna2Button();
         ((System.ComponentModel.ISupportInitialize)groupImage).BeginInit();
         SuspendLayout();
         // 
@@ -62,13 +62,13 @@ partial class CreateGroupChatDialog
         // 
         // nameLabel
         // 
-        nameLabel.AutoSize = true;
-        nameLabel.ForeColor = System.Drawing.Color.White;
-        nameLabel.Location = new System.Drawing.Point(20, 120);
-        nameLabel.Name = "nameLabel";
-        nameLabel.Size = new System.Drawing.Size(75, 15);
-        nameLabel.TabIndex = 1;
-        nameLabel.Text = "Group Name";
+        groupNameLabel.AutoSize = true;
+        groupNameLabel.ForeColor = System.Drawing.Color.White;
+        groupNameLabel.Location = new System.Drawing.Point(20, 120);
+        groupNameLabel.Name = "groupNameLabel";
+        groupNameLabel.Size = new System.Drawing.Size(75, 15);
+        groupNameLabel.TabIndex = 1;
+        groupNameLabel.Text = "Group Name";
         // 
         // groupNameTextBox
         // 
@@ -95,13 +95,13 @@ partial class CreateGroupChatDialog
         // 
         // friendsLabel
         // 
-        friendsLabel.AutoSize = true;
-        friendsLabel.ForeColor = System.Drawing.Color.White;
-        friendsLabel.Location = new System.Drawing.Point(20, 205);
-        friendsLabel.Name = "friendsLabel";
-        friendsLabel.Size = new System.Drawing.Size(68, 15);
-        friendsLabel.TabIndex = 3;
-        friendsLabel.Text = "Add friends";
+        addFriendsLabel.AutoSize = true;
+        addFriendsLabel.ForeColor = System.Drawing.Color.White;
+        addFriendsLabel.Location = new System.Drawing.Point(20, 205);
+        addFriendsLabel.Name = "addFriendsLabel";
+        addFriendsLabel.Size = new System.Drawing.Size(68, 15);
+        addFriendsLabel.TabIndex = 3;
+        addFriendsLabel.Text = "Add friends";
         // 
         // friendsPanel
         // 
@@ -115,20 +115,20 @@ partial class CreateGroupChatDialog
         // 
         // createButton
         // 
-        createButton.CustomizableEdges = customizableEdges6;
-        createButton.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
-        createButton.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
-        createButton.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)((byte)169)), ((int)((byte)169)), ((int)((byte)169)));
-        createButton.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)((byte)141)), ((int)((byte)141)), ((int)((byte)141)));
-        createButton.FillColor = System.Drawing.Color.FromArgb(((int)((byte)114)), ((int)((byte)137)), ((int)((byte)218)));
-        createButton.Font = new System.Drawing.Font("Segoe UI", 9F);
-        createButton.ForeColor = System.Drawing.Color.White;
-        createButton.Location = new System.Drawing.Point(20, 420);
-        createButton.Name = "createButton";
-        createButton.ShadowDecoration.CustomizableEdges = customizableEdges7;
-        createButton.Size = new System.Drawing.Size(345, 36);
-        createButton.TabIndex = 5;
-        createButton.Text = "Create";
+        createGroupChatButton.CustomizableEdges = customizableEdges6;
+        createGroupChatButton.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
+        createGroupChatButton.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
+        createGroupChatButton.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)((byte)169)), ((int)((byte)169)), ((int)((byte)169)));
+        createGroupChatButton.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)((byte)141)), ((int)((byte)141)), ((int)((byte)141)));
+        createGroupChatButton.FillColor = System.Drawing.Color.FromArgb(((int)((byte)114)), ((int)((byte)137)), ((int)((byte)218)));
+        createGroupChatButton.Font = new System.Drawing.Font("Segoe UI", 9F);
+        createGroupChatButton.ForeColor = System.Drawing.Color.White;
+        createGroupChatButton.Location = new System.Drawing.Point(20, 420);
+        createGroupChatButton.Name = "createGroupChatButton";
+        createGroupChatButton.ShadowDecoration.CustomizableEdges = customizableEdges7;
+        createGroupChatButton.Size = new System.Drawing.Size(345, 36);
+        createGroupChatButton.TabIndex = 5;
+        createGroupChatButton.Text = "Create";
         // 
         // CreateGroupChatDialog
         // 
@@ -136,11 +136,11 @@ partial class CreateGroupChatDialog
         AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
         BackColor = System.Drawing.Color.FromArgb(((int)((byte)23)), ((int)((byte)33)), ((int)((byte)43)));
         ClientSize = new System.Drawing.Size(384, 461);
-        Controls.Add(createButton);
+        Controls.Add(createGroupChatButton);
         Controls.Add(friendsPanel);
-        Controls.Add(friendsLabel);
+        Controls.Add(addFriendsLabel);
         Controls.Add(groupNameTextBox);
-        Controls.Add(nameLabel);
+        Controls.Add(groupNameLabel);
         Controls.Add(groupImage);
         FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
         MaximizeBox = false;
@@ -152,15 +152,15 @@ partial class CreateGroupChatDialog
         PerformLayout();
     }
 
-    private Guna.UI2.WinForms.Guna2Button createButton;
+    private Guna.UI2.WinForms.Guna2Button createGroupChatButton;
 
     private Guna.UI2.WinForms.Guna2Panel friendsPanel;
 
-    private System.Windows.Forms.Label friendsLabel;
+    private System.Windows.Forms.Label addFriendsLabel;
 
     private Guna.UI2.WinForms.Guna2TextBox groupNameTextBox;
 
-    private System.Windows.Forms.Label nameLabel;
+    private System.Windows.Forms.Label groupNameLabel;
 
     private Guna.UI2.WinForms.Guna2CirclePictureBox groupImage;
 

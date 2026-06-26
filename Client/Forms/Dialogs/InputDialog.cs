@@ -1,4 +1,7 @@
-﻿namespace Client.Forms.Dialogs;
+﻿using Client.Properties;
+using Client.Utils;
+
+namespace Client.Forms.Dialogs;
 
 public partial class InputDialog : Form
 {
@@ -8,6 +11,8 @@ public partial class InputDialog : Form
         bool isPassword = false)
     {
         InitializeComponent();
+        LanguageManager.LanguageChanged += ApplyLocalization;
+        ApplyLocalization();
 
         Load += (_, _) =>
         {
@@ -17,7 +22,7 @@ public partial class InputDialog : Form
             textBox.PlaceholderText = placeholder;
             textBox.UseSystemPasswordChar = isPassword;
 
-            confirmButton.Click += (_, _) =>
+            saveButton.Click += (_, _) =>
             {
                 Result = textBox.Text.Trim();
                 DialogResult = DialogResult.OK;
@@ -25,6 +30,21 @@ public partial class InputDialog : Form
             };
         };
     }
+    
+    #region Language
+    
+    private void ApplyLocalization()
+    {
+        saveButton.Text = Strings.InputDialog_Save;
+    }
+
+    protected override void OnFormClosed(FormClosedEventArgs e)
+    {
+        LanguageManager.LanguageChanged -= ApplyLocalization;
+        base.OnFormClosed(e);
+    }
+    
+    #endregion
 
     public string? Result { get; private set; }
 }

@@ -36,7 +36,7 @@ partial class InputDialog
         Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges3 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
         Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges4 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
         textBox = new Guna.UI2.WinForms.Guna2TextBox();
-        confirmButton = new Guna.UI2.WinForms.Guna2Button();
+        saveButton = new Guna.UI2.WinForms.Guna2Button();
         SuspendLayout();
         // 
         // textBox
@@ -61,30 +61,30 @@ partial class InputDialog
         textBox.Size = new System.Drawing.Size(360, 40);
         textBox.TabIndex = 0;
         // 
-        // confirmButton
+        // saveButton
         // 
-        confirmButton.CustomizableEdges = customizableEdges3;
-        confirmButton.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
-        confirmButton.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
-        confirmButton.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)((byte)169)), ((int)((byte)169)), ((int)((byte)169)));
-        confirmButton.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)((byte)141)), ((int)((byte)141)), ((int)((byte)141)));
-        confirmButton.FillColor = System.Drawing.Color.FromArgb(((int)((byte)45)), ((int)((byte)140)), ((int)((byte)240)));
-        confirmButton.Font = new System.Drawing.Font("Segoe UI", 9F);
-        confirmButton.ForeColor = System.Drawing.Color.White;
-        confirmButton.Location = new System.Drawing.Point(270, 70);
-        confirmButton.Name = "confirmButton";
-        confirmButton.ShadowDecoration.CustomizableEdges = customizableEdges4;
-        confirmButton.Size = new System.Drawing.Size(100, 35);
-        confirmButton.TabIndex = 1;
-        confirmButton.Text = "Сохранить";
+        saveButton.CustomizableEdges = customizableEdges3;
+        saveButton.DisabledState.BorderColor = System.Drawing.Color.DarkGray;
+        saveButton.DisabledState.CustomBorderColor = System.Drawing.Color.DarkGray;
+        saveButton.DisabledState.FillColor = System.Drawing.Color.FromArgb(((int)((byte)169)), ((int)((byte)169)), ((int)((byte)169)));
+        saveButton.DisabledState.ForeColor = System.Drawing.Color.FromArgb(((int)((byte)141)), ((int)((byte)141)), ((int)((byte)141)));
+        saveButton.FillColor = System.Drawing.Color.FromArgb(((int)((byte)45)), ((int)((byte)140)), ((int)((byte)240)));
+        saveButton.Font = new System.Drawing.Font("Segoe UI", 9F);
+        saveButton.ForeColor = System.Drawing.Color.White;
+        saveButton.Location = new System.Drawing.Point(270, 70);
+        saveButton.Name = "saveButton";
+        saveButton.ShadowDecoration.CustomizableEdges = customizableEdges4;
+        saveButton.Size = new System.Drawing.Size(100, 35);
+        saveButton.TabIndex = 1;
+        saveButton.Text = "Сохранить";
         // 
-        // InputDialogForm
+        // InputDialog
         // 
         AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
         AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
         BackColor = System.Drawing.Color.FromArgb(((int)((byte)23)), ((int)((byte)33)), ((int)((byte)43)));
         ClientSize = new System.Drawing.Size(384, 131);
-        Controls.Add(confirmButton);
+        Controls.Add(saveButton);
         Controls.Add(textBox);
         FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
         MaximizeBox = false;
@@ -94,7 +94,7 @@ partial class InputDialog
         ResumeLayout(false);
     }
 
-    private Guna.UI2.WinForms.Guna2Button confirmButton;
+    private Guna.UI2.WinForms.Guna2Button saveButton;
 
     private Guna.UI2.WinForms.Guna2TextBox textBox;
 

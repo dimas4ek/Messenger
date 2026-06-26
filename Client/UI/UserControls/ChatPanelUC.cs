@@ -1,5 +1,6 @@
 ﻿using Application.DTO;
 using Client.UI.Utils;
+using Client.Utils;
 using Domain.Enums;
 
 namespace Client.UI.UserControls;

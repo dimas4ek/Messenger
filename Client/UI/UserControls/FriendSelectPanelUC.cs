@@ -1,5 +1,7 @@
 ﻿using Application.DTO;
+using Client.Properties;
 using Client.UI.Utils;
+using Client.Utils;
 
 namespace Client.UI.UserControls;
 
@@ -12,6 +14,10 @@ public sealed partial class FriendSelectPanelUC : UserControl
         EventHandler onAdd)
     {
         InitializeComponent();
+
+        LanguageManager.LanguageChanged += ApplyLocalization;
+        Disposed += (_, _) => LanguageManager.LanguageChanged -= ApplyLocalization;
+        ApplyLocalization();
 
         Tag = friend;
         Dock = DockStyle.Top;
@@ -27,4 +33,13 @@ public sealed partial class FriendSelectPanelUC : UserControl
         MouseEventUtils.PropagateMouseEvents(friendPanel, onMove, onLeave, null);
         MouseEventUtils.PropagateMouseEvents(friendLabel, onMove, onLeave, null);
     }
+    
+    #region Language
+    
+    private void ApplyLocalization()
+    {
+        addButton.Text = Strings.FriendSelectPanelUC_Add;
+    }
+    
+    #endregion
 }
