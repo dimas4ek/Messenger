@@ -16,7 +16,7 @@ public class AuthApiClient(HttpClient httpClient) : ApiClientBase(httpClient)
 
     public Task<ApiResult<AuthResponse>> Register(string username, string password)
     {
-        return PostAsync<AuthResponse>("api/auth/login", new AuthRequest
+        return PostAsync<AuthResponse>("api/auth/register", new AuthRequest
         {
             Username = username,
             Password = password
